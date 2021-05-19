@@ -1,0 +1,33 @@
+{
+  "name": "tshare-server",
+  "version": "1.0.0",
+  "description": "This is the webserver for tShare.",
+  "main": "main.js",
+  "scripts": {
+    "test": "node main"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tmoss404/tShare.git"
+  },
+  "keywords": [
+    "tshare",
+    "fms",
+    "file",
+    "files",
+    "file",
+    "management",
+    "directory",
+    "dir",
+    "directories"
+  ],
+  "author": "Eric McDonald, Ramon Galindo, and Tanner Moss",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tmoss404/tShare/issues"
+  },
+  "homepage": "https://github.com/tmoss404/tShare#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
