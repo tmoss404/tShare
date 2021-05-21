@@ -1,7 +1,7 @@
 # tShare
 PRJ666 - tShare
 
-Following this directory structure: https://www.tutorialspoint.com/expressjs/expressjs_best_practices.htm 
+Following this directory structure (at least in back-end-server): https://www.tutorialspoint.com/expressjs/expressjs_best_practices.htm 
 
 Installation:
 
