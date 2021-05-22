@@ -14,6 +14,9 @@ function connectToDb() {
 }
 module.exports.init = function() {
     module.exports.dbConnection.on("error", (err) => {
+        // Eric: re-establishes the connection to the database because for some reason mysql decides to just drop it after a while...
+        module.exports.dbConnection = mySql.createConnection(appConstants.mySqlCfg);
+        accountModel.init(module.exports.dbConnection);
         connectToDb();
     });
     connectToDb();
