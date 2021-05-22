@@ -4,7 +4,8 @@
   "description": "This is the webserver for tShare.",
   "main": "main.js",
   "scripts": {
-    "test": "node main"
+    "test": "node main",
+    "start": "node main"
   },
   "repository": {
     "type": "git",
@@ -28,6 +29,9 @@
   },
   "homepage": "https://github.com/tmoss404/tShare#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "mysql": "^2.18.1"
   }
 }
