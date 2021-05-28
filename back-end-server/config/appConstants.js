@@ -5,3 +5,4 @@ module.exports.mySqlCfg = {
     password: "964b560d",
     database: "heroku_7c63935b5a98fc3"
   };
+  module.exports.testLoginToken = "test_token";
