@@ -12,3 +12,15 @@ Installation (Back-end server):
 
 Running tests (Back-end server):
 1. Run "node main" or run the test script in package.json
+
+
+Installation (Front-end server):
+
+1. Clone this git
+2. go to path/to/front-end-server
+3. Run "npm install"
+4. Done!
+
+Running tests (Front-end server):
+0. Ensure you have the Angular cli installed on your computer, run "npm install -g @angular/cli"
+1. Run "ng serve --open" or run the test script in package.json
