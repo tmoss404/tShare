@@ -13,6 +13,8 @@ Installation (Back-end server):
 Running tests (Back-end server):
 1. Run "node main" or run the test script in package.json
 
+Check out path/to/back-end-server/docs for documentation on the back-end API routes.
+
 
 Installation (Front-end server):
 

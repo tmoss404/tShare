@@ -3,15 +3,23 @@ const accountModel = require("../models/account");
 module.exports.setupRoutes = function(app) {
     app.post("/account/register", (req, res) => {
         accountModel.registerAccount(req.body).then((msg) => {
-            res.status(200).send({
-                message: msg,
-                success: true
-            });
+            res.status(200).send(msg);
         }).catch((err) => {
-            res.status(200).send({
-                message: err,
-                success: false
-            });
+            res.status(200).send(err);
+        });
+    });
+    app.post("/account/forgot-password", (req, res) => {
+        accountModel.forgotPassword(req.body).then((msg) => {
+            res.status(200).send(msg);
+        }).catch((err) => {
+            res.status(200).send(err);
+        });
+    });
+    app.post("/account/reset-password/:resetPwdId", (req, res) => {
+        accountModel.resetPassword(req.body, req.params.resetPwdId).then((msg) => {
+            res.status(200).send(msg);
+        }).catch((err) => {
+            res.status(200).send(err);
         });
     });
 
@@ -23,7 +31,7 @@ module.exports.setupRoutes = function(app) {
             res.status(200).send(err);
         });
     });
-    app.post("/account/check_login", (req, res) => {
+    app.post("/account/check-login", (req, res) => {
         accountModel.checkLogin(req.body).then((responseData) => {
             res.status(200).send(responseData);
         }).catch((err) => {
@@ -33,7 +41,7 @@ module.exports.setupRoutes = function(app) {
     
     app.get("/account/test", (req, res) => {
         res.status(200).send({
-            message: msg,
+            message: "This account route works!",
             success: true
         });
     });

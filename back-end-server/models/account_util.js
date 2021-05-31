@@ -21,3 +21,8 @@ module.exports.isPasswordValid = function(password) {
     }
     return password.length > 8 && strContainsCharIn(password, validSymbols) && strContainsCharIn(password, validNums);
 };
+module.exports.getRandomInt = function(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+};
