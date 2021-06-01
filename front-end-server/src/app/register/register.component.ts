@@ -16,7 +16,9 @@ export class RegisterComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  createAccount(){
+  createAccount( event: Event){
+    event.preventDefault();
+
     console.log("Submit Submit!");
   }
 
