@@ -6,10 +6,9 @@ Also, all requests have the fields listed wrapped in an Object. All routes shoul
 /account/register:
 
 This route registers account information in the database. It takes three parameters inside an Object and returns an Object containing a message and success property.
-If the email, password, permissionsLvl, or the request body is malformed, the request will be rejected and a success status of false is returned along with an error message:
+If the email, password, or the request body is malformed, the request will be rejected and a success status of false is returned along with an error message:
 - email: String
 - password: String
-- permissionsLvl: int
 
 Returns a message and a success status wrapped in an object:
 {"message":"Created your account successfully.","success":true}
@@ -26,8 +25,7 @@ xhttp.open("POST", "http://tshare-back-end.herokuapp.com/account/register", true
 xhttp.setRequestHeader("Content-Type", "application/json");  // Please note that the Content-Type must be application/json to be received properly. This goes for ALL routes.
 xhttp.send(JSON.stringify({
     email: "eric.d.mcdonald@gmail.com",
-    password: "myValidTestPwd!123",
-    permissionsLvl: 0
+    password: "myValidTestPwd!123"
 }));
 
 
@@ -104,7 +102,7 @@ xhttp.send(JSON.stringify({
 
 /account/reset-password/:resetPwdId:
 
-This route is for the INTERNAL link that is sent in a password reset email. This link should ONLY be visible to the front-end server, not to the clients.
+This route is for the INTERNAL link that is sent for a password reset email. Basically, the front-end should have a route like /reset-password/<id> that displays a password reset page that then connects to here.
 It takes one parameter: newPassword wrapped in an Object, as well as the resetPwdId in the URL parameters. Please note that the newPassword parameter must follow the password conventions used in /models/account_util#isPasswordValid:
 - newPassword: String
 

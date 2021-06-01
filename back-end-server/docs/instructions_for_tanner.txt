@@ -1,0 +1,9 @@
+To finish the password resetting implementation, do the following:
+
+1. Host your Angular server somewhere, also give me access to the hosting account if possible so that I can edit stuff and debug when I need to
+2. Create a route on your Angular server called "/reset-password/<id>" (it takes in some kinda string/value) that displays a password reset screen for the user
+3. In the page that displays the Password Reset screen, make the "Reset My Password" button or w/e perform a POST request to https://tshare-back-end.herokuapp.com/account/reset-password/<id> containing:
+{
+ newPassword: "myNewPassword!123"
+}
+4. Add your server url to <the git repo>/front-end-server/config/appConstants#frontEndUrl
