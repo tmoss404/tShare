@@ -222,13 +222,6 @@ module.exports.registerAccount = function(account) {
             });
             return;
         }
-        if (objUtil.isNullOrUndefined(account.permissionsLvl) || account.permissionsLvl < 0) {
-            reject({
-                message: "Malformed request. Trying to hack the server?",
-                success: false
-            });
-            return;
-        }
         if (!accountUtil.isEmailValid(account.email)) {
             reject({
                 message: "Email is invalid.",
@@ -268,8 +261,7 @@ module.exports.registerAccount = function(account) {
                     var salt = bcrypt.genSaltSync(10);
                     var hash = bcrypt.hashSync(accountObj.password, salt);
                     accountObj.password = hash;
-                    var sqlQuery = "INSERT INTO Account (email, password_hash, permissions_lvl) VALUES('" + accountObj.email + "', '" + accountObj.password + "', " + 
-                        accountObj.permissionsLvl + ")";
+                    var sqlQuery = "INSERT INTO Account (email, password_hash, permissions_lvl) VALUES('" + accountObj.email + "', '" + accountObj.password + "', 0)";
                     connection.query(sqlQuery);
                     resolve({
                         message: "Created your account successfully.",
