@@ -10,6 +10,9 @@ import { PageNotFoundComponent } from './page-not-found/page-not-found.component
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { ProductComponent } from './product/product.component';
+import { CompanyComponent } from './company/company.component';
+import { ContactUsComponent } from './contact-us/contact-us.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +23,10 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
     PageNotFoundComponent,
     LoginComponent,
     RegisterComponent,
-    ForgotPasswordComponent
+    ForgotPasswordComponent,
+    ProductComponent,
+    CompanyComponent,
+    ContactUsComponent
   ],
   imports: [
     BrowserModule,
