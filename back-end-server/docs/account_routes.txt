@@ -102,7 +102,7 @@ xhttp.send(JSON.stringify({
 
 /account/reset-password/:resetPwdId:
 
-This route is for the INTERNAL link that is sent in a password reset email. This link should ONLY be visible to the front-end server, not to the clients.
+This route is for the INTERNAL link that is sent for a password reset email. Basically, the front-end should have a route like /reset-password/<id> that displays a password reset page that then connects to here.
 It takes one parameter: newPassword wrapped in an Object, as well as the resetPwdId in the URL parameters. Please note that the newPassword parameter must follow the password conventions used in /models/account_util#isPasswordValid:
 - newPassword: String
 
