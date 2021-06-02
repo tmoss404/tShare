@@ -9,17 +9,16 @@ import { AccountService } from '../account.service';
 })
 export class RegisterComponent implements OnInit {
 
-  constructor(private accountService: AccountService) { }
-
   userAccount: User = new User;
+  termsOfService: boolean;
+
+  constructor(private accountService: AccountService) { }
 
   ngOnInit(): void {
   }
 
-  createAccount( event: Event){
-    event.preventDefault();
-
-    console.log("Submit Submit!");
+  createAccount(){
+    this.accountService.newAccount(this.userAccount).subscribe(data => console.log(data));
   }
 
 }
