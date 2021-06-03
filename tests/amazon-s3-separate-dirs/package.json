@@ -1,0 +1,17 @@
+{
+  "name": "amazon-s3-separate-dirs",
+  "version": "1.0.0",
+  "description": "A test project for Amazon S3.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index"
+  },
+  "author": "Eric McDonald",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.920.0",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1"
+  }
+}
