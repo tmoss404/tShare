@@ -1950,9 +1950,9 @@ pre code {
 }
 
 .form-control:focus {
-  border-color: #80bdff;
+  border-color: #1ab9d1;
   outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  box-shadow: 0 0 0 0.2rem rgba(26, 185, 209, 0.25);
 }
 
 .form-control::-webkit-input-placeholder {
