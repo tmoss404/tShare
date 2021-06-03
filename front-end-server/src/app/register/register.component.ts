@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { User } from '../User';
 import { AccountService } from '../account.service';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-register',
@@ -9,16 +10,25 @@ import { AccountService } from '../account.service';
 })
 export class RegisterComponent implements OnInit {
 
+  accountForm: FormGroup;
   userAccount: User = new User;
-  termsOfService: boolean;
 
-  constructor(private accountService: AccountService) { }
+  constructor(private accountService: AccountService, private formBuilder: FormBuilder) { }
 
   ngOnInit(): void {
+    this.accountForm = this.formBuilder.group({
+      email: ['', [Validators.required, Validators.pattern("^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")]],
+      password: ['', [Validators.required]],
+      confirm: ['', [Validators.required]],
+      termsOfService: [false, [Validators.requiredTrue]]
+    });
   }
 
   createAccount(){
-    this.accountService.newAccount(this.userAccount).subscribe(data => console.log(data));
+    //this.accountService.newAccount(this.userAccount).subscribe(data => console.log(data));
+    console.log(this.accountForm.get('termsOfService').value);
   }
+
+  get form() { return this.accountForm.controls }
 
 }

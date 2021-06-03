@@ -2,22 +2,43 @@
     <div class="row">
         <div class="center">
             <div class="col-md-12">
-            <form (ngSubmit)="createAccount()">
+            <form (ngSubmit)="createAccount()" [formGroup]="accountForm">
                 <div class="form-group">
-                    <input class="form-control" type="text" name='username' placeholder="Email" [(ngModel)]="userAccount.email"/>          
-                </div>
-                <div class="form-group">
-                    <input class="form-control" type="password" name='password' placeholder="Password" [(ngModel)]="userAccount.password"/>     
-                </div>
-                <div class="form-group">
-                    <input class="form-control" type="password" name='confirmPassword' placeholder="Confirm Password"/>     
+                    <input class="form-control" type="text" formControlName="email" placeholder="Email" required/>
+                    <div *ngIf="form.email.dirty || form.email.touched">
+                        <div *ngIf="form.email.errors?.required" class="form-control alert">
+                            Email is required.
+                        </div>
+                        <div *ngIf="form.email.invalid && !form.email.errors?.required" class="form-control alert">
+                            Email is invalid.
+                        </div>
+                    </div>     
+                
+                    <input class="form-control" type="password" formControlName="password" placeholder="Password" required/>
+                    <div *ngIf="form.password.invalid && (form.password.dirty || form.password.touched)">
+                        <div *ngIf="form.password.errors?.required" class="form-control alert">
+                            Password is required.
+                        </div>   
+                    </div>
+                      
+                    <input class="form-control" type="password" formControlName="confirm" placeholder="Confirm Password" required/>
+                    <div *ngIf="form.confirm.invalid && (form.confirm.dirty || form.confirm.touched)">   
+                        <div *ngIf="form.confirm.errors?.required" class="form-control alert">
+                            You must confirm your password.
+                        </div>
+                    </div>  
                 </div>
                 <div class="form-group">  
                     <label class="check-label">
-                        <input type="checkbox" name="termsConditions" class="check">
+                        <input type="checkbox" class="check" formControlName="termsOfService" required>
                         I Agree to the Terms and Conditions
-                    </label>    
-                    <button type="submit" class="form-control btn-custom btn-custom-center">Create Account</button>
+                    </label>
+                    <div *ngIf="form.termsOfService.invalid && (form.termsOfService.dirty || form.termsOfService.touched)">   
+                        <div *ngIf="form.termsOfService.errors?.required" class="form-control alert">
+                            You must accept the Terms and Conditons.
+                        </div> 
+                    </div>    
+                    <button type="submit" class="form-control btn-custom btn-custom-center" [disabled]="!accountForm.valid">Create Account</button>
                 </div>
             </form>        
             </div>  
