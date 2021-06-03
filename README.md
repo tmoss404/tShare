@@ -15,6 +15,8 @@ Running tests (Back-end server):
 
 Check out path/to/back-end-server/docs for documentation on the back-end API routes.
 
+Every time you refactor something in back-end-server, make sure to run path/to/back-end-server/docs/test_script.js in your web browser to ensure that no routes were broken.
+
 
 Installation (Front-end server):
 
