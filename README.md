@@ -26,7 +26,11 @@ Installation (Front-end server):
 4. Done!
 
 Running tests (Front-end server):
-0. Ensure you have the Angular cli installed on your computer, run 'npm install -g @angular/cli'
+
+1. Ensure you have the Angular cli installed on your computer, run 'npm install -g @angular/cli'
+
    If you already have the Angular cli installed do a quick update to ensure you are running the latest version 'ng update @angular-cli'
+
    If you get an error about an unclean repo run the command as 'ng update @angular-cli --allow-dirty' it is a bug with a specific version of Angular
-1. Run 'ng serve --open' or run the test script in package.json
+
+2. Run 'ng serve --open' or run the test script in package.json
