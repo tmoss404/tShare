@@ -23,7 +23,6 @@ module.exports.insertIntoTable = function(tableName, columnsClause, valuesClause
     return new Promise((resolve, reject) => {
         connection.query("INSERT INTO " + tableName + " (" + columnsClause + ") VALUES (" + valuesClause + ")", function(err, results, fields) {
             if (err) {
-                console.log(err);
                 reject(false);
             } else {
                 resolve(true);
