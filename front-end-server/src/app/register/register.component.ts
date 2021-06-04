@@ -30,8 +30,7 @@ export class RegisterComponent implements OnInit {
   }
 
   createAccount(){
-    //this.accountService.newAccount(this.userAccount).subscribe(data => console.log(data));
-    console.log(this.accountForm.get('termsOfService').value);
+    this.accountService.newAccount(this.userAccount).subscribe(data => console.log(data));
   }
 
   get form() { return this.accountForm.controls }
