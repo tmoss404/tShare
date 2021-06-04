@@ -1,7 +1,7 @@
 import { AbstractControl, ValidationErrors, ValidatorFn} from "@angular/forms";
 
 
-export function confirmPassword( password: string, confirm: string) : ValidatorFn{
+export function confirmPassword( password: string, confirm: string) : ValidatorFn {
 
     return (formGroup: AbstractControl) : ValidationErrors => {
         const passwordControl = formGroup.get(password);
