@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { User } from '../User';
 import { AccountService } from '../account.service';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
+import { ConfirmPassword } from './confirmPassword.validator';
 
 @Component({
   selector: 'app-register',
@@ -18,9 +19,13 @@ export class RegisterComponent implements OnInit {
   ngOnInit(): void {
     this.accountForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
+      //Minimum 9 characters
       password: ['', [Validators.required]],
       confirm: ['', [Validators.required]],
       termsOfService: [false, [Validators.requiredTrue]]
+    },
+    {
+      validators: ConfirmPassword("password", "confirm")
     });
   }
 

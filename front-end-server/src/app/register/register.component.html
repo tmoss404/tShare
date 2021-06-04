@@ -26,6 +26,9 @@
                         <div *ngIf="form.confirm.errors?.required" class="form-control alert">
                             You must confirm your password.
                         </div>
+                        <div *ngIf="form.confirm.errors?.noMatch" class="form-control alert">
+                            Passwords must match.
+                        </div>
                     </div>  
                 </div>
                 <div class="form-group">  
