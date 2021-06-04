@@ -18,7 +18,19 @@
                     <div *ngIf="form.password.invalid && (form.password.dirty || form.password.touched)">
                         <div *ngIf="form.password.errors?.required" class="form-control alert">
                             Password is required.
-                        </div>   
+                        </div>
+                        <div *ngIf="form.password.errors?.invalidChars" class="form-control alert">
+                            Password contains invalid characters.
+                        </div>
+                        <div *ngIf="form.password.errors?.invalidLength" class="form-control alert">
+                            Password must be at least 9 characters long.
+                        </div>
+                        <div *ngIf="form.password.errors?.noNumbers" class="form-control alert">
+                            Password must include at least one number.
+                        </div>
+                        <div *ngIf="form.password.errors?.noSymbols" class="form-control alert">
+                            Password must include at least one symbol.
+                        </div>           
                     </div>
                       
                     <input class="form-control" type="password" formControlName="confirm" placeholder="Confirm Password" required/>
@@ -40,7 +52,8 @@
                         <div *ngIf="form.termsOfService.errors?.required" class="form-control alert">
                             You must accept the Terms and Conditons.
                         </div> 
-                    </div>    
+                    </div>
+
                     <button type="submit" class="form-control btn-custom btn-custom-center" [disabled]="!accountForm.valid">Create Account</button>
                 </div>
             </form>        

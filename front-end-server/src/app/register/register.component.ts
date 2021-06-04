@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { User } from '../User';
 import { AccountService } from '../account.service';
 import { FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
-import { ConfirmPassword } from './confirmPassword.validator';
+import { confirmPassword } from './confirmPassword.validator';
+import { passwordFormat } from './passwordFormat.validator';
 
 @Component({
   selector: 'app-register',
@@ -25,7 +26,7 @@ export class RegisterComponent implements OnInit {
       termsOfService: [false, [Validators.requiredTrue]]
     },
     {
-      validators: ConfirmPassword("password", "confirm")
+      validators: [confirmPassword("password", "confirm"), passwordFormat()]
     });
   }
 
