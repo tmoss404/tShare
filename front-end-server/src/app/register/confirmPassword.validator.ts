@@ -13,7 +13,7 @@ export function confirmPassword( password: string, confirm: string) : ValidatorF
 
         if(confirmControl.value !== passwordControl.value){
             confirmControl.setErrors({ noMatch : true });
-            return({ noMatch : true });
+            return { noMatch : true };
         } else {
             confirmControl.setErrors(null);
             return null;
