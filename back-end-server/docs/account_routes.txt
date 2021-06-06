@@ -61,6 +61,14 @@ This route attempts to login a user using their email and password. It takes two
 Returns a message, success status, and a login token (or null if the request was rejected):
 {"message":"Logged in successfully.","success":true,"loginToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI4NCwiZW1haWwiOiJlcmljLmQubWNkb25hbGRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDE2NjI3LCJleHAiOjE2MjMwMTY5Mjd9.gIXfYy3TKTgo5dWxbZdiomxsEwhiDfTlw52YZluG7gI"}
 
+Decoded JWT token format:
+{
+    accountId: <number>,  // This corresponds with the actual primary key in the Account table.
+    email: "<email>",
+    iat: <standard JWT IAT value>,
+    exp: <standard JWT EXP value>
+}
+
 Example request:
 
 var xhttp = new XMLHttpRequest();
@@ -79,14 +87,8 @@ xhttp.send(JSON.stringify({
 
 /account/check-login:
 
-This route checks a user's login token for validity. It takes one parameter: loginToken wrapped in an Object. The loginToken returned is a JWT web token containing. For now, multiple sessions are allowed. If the login token is invalid, the request is considered rejected and a message with a success status of false is returned:
+This route checks a user's login token for validity. It takes one parameter: loginToken wrapped in an Object. For now, multiple sessions are allowed. If the login token is invalid, the request is considered rejected and a message with a success status of false is returned:
 - loginToken: String
-
-Decoded JWT token format:
-{
-    accountId: <number>,  // This corresponds with the actual primary key in the Account table.
-    email: "<email>"
-}
 
 Returns a message and a success status wrapped in an Object:
 {"message":"Your login token is still valid.","success":true}
