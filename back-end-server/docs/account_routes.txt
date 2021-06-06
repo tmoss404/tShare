@@ -5,7 +5,7 @@ Also, all requests have the fields listed wrapped in an Object. All routes shoul
 
 /account/register:
 
-This route registers account information in the database. It takes three parameters inside an Object and returns an Object containing a message and success property.
+This route registers account information in the database. It takes two parameters inside an Object and returns an Object containing a message and success property.
 If the email, password, or the request body is malformed, the request will be rejected and a success status of false is returned along with an error message:
 - email: String
 - password: String
@@ -29,6 +29,29 @@ xhttp.send(JSON.stringify({
 }));
 
 
+/account/logout:
+
+This route will logout the user by adding their JWT token to the Invalid_Token table in the database. It takes the same parameter as check-login, which is one parameter: loginToken wrapped in an Object. This request will basically always return a status of success with a message, even if the login token is totally invalid:
+- loginToken: String
+
+Returns a message and a success status such as:
+{"message":"Token has been invalidated successfully.","success":true}
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://tshare-back-end.herokuapp.com/account/logout", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI4NCwiZW1haWwiOiJlcmljLmQubWNkb25hbGRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDE2NjI3LCJleHAiOjE2MjMwMTY5Mjd9.gIXfYy3TKTgo5dWxbZdiomxsEwhiDfTlw52YZluG7gI"
+}));
+
+
 /account/login:
 
 This route attempts to login a user using their email and password. It takes two parameters wrapped in an Object. If the email, password, or the Object itself is malformed, then the request will be rejected:
@@ -36,7 +59,7 @@ This route attempts to login a user using their email and password. It takes two
 - password: String
 
 Returns a message, success status, and a login token (or null if the request was rejected):
-{"message":"Logged in successfully.","success":true,"loginToken":"test_token"}
+{"message":"Logged in successfully.","success":true,"loginToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI4NCwiZW1haWwiOiJlcmljLmQubWNkb25hbGRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDE2NjI3LCJleHAiOjE2MjMwMTY5Mjd9.gIXfYy3TKTgo5dWxbZdiomxsEwhiDfTlw52YZluG7gI"}
 
 Example request:
 
@@ -56,11 +79,16 @@ xhttp.send(JSON.stringify({
 
 /account/check-login:
 
-This route checks a user's login token for validity. It takes one parameter: loginToken wrapped in an Object. This route is currently unimplemented and the only valid login token is "test_token" at the moment. If the loginToken property is not "test_token", then the request is rejected:
+This route checks a user's login token for validity. It takes one parameter: loginToken wrapped in an Object. The loginToken returned is a JWT web token containing. For now, multiple sessions are allowed. If the login token is invalid, the request is considered rejected and a message with a success status of false is returned:
 - loginToken: String
+Decoded JWT token format:
+{
+    accountId: <number>,  // This corresponds with the actual primary key in the Account table.
+    email: "<email>"
+}
 
 Returns a message and a success status wrapped in an Object:
-{"message":"Your session is still valid.","success":true}
+{"message":"Your login token is still valid.","success":true}
 
 Example request:
 
@@ -73,7 +101,7 @@ xhttp.onreadystatechange = function() {
 xhttp.open("POST", "http://tshare-back-end.herokuapp.com/account/check-login", true);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
-    loginToken: "test_token"
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI4NCwiZW1haWwiOiJlcmljLmQubWNkb25hbGRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDE2NjI3LCJleHAiOjE2MjMwMTY5Mjd9.gIXfYy3TKTgo5dWxbZdiomxsEwhiDfTlw52YZluG7gI"
 }));
 
 

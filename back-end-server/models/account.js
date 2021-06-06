@@ -1,8 +1,9 @@
 const bcrypt = require("bcryptjs");
+const request = require("request");
+const jsonWebToken = require("jsonwebtoken");
 const objUtil = require("../objectUtil");
 const accountUtil = require("./account_util");
 const appConstants = require("../config/appConstants");
-const request = require("request");
 const database = require("../config/database");
 
 var dbConnectionPool;
@@ -158,18 +159,74 @@ module.exports.forgotPassword = function(forgotPwdInfo) {
         });
     });
 }
+module.exports.logout = function(loginInfo) {
+    return new Promise((resolve, reject) => {
+        dbConnectionPool.getConnection((err, connection) => {
+            database.deleteFromTable("Invalid_Token", Date.now() + " - UNIX_TIMESTAMP(invalidated_date)*1000 > " + appConstants.jwtTokenExpiresInAsMillis, connection).then((results) => {}).catch((resultsNull) => {});
+            module.exports.checkLogin(loginInfo).then((responseData) => {
+                try {
+                    var decodedToken = jsonWebToken.verify(loginInfo.loginToken, appConstants.jwtSecretKey);
+                    var whereClause = "'" + JSON.stringify(decodedToken) + "'";
+                    database.selectFromTable("Invalid_Token", whereClause, connection).then((results) => {
+                        if (results.length == 0) {
+                            database.insertIntoTable("Invalid_Token", "token", whereClause, connection).then((results) => {}).catch((results) => {});
+                        }
+                    }).catch((resultsNull) => {});
+                    resolve({
+                        message: "Token has been invalidated successfully.",
+                        success: true
+                    });
+                } catch(err) {
+                    resolve({
+                        message: "Token has been invalidated successfully.",
+                        success: true
+                    });
+                }
+            }).catch((err) => {
+                resolve({
+                    message: "Token has been invalidated successfully.",
+                    success: true
+                });
+            });
+        });
+    });
+};
 module.exports.checkLogin = function(loginInfo) {
     return new Promise((resolve, reject) => {
-        if (objUtil.isNullOrUndefined(loginInfo) || objUtil.isNullOrUndefined(loginInfo.loginToken) || loginInfo.loginToken.length == 0 || loginInfo.loginToken != appConstants.testLoginToken) {
+        if (objUtil.isNullOrUndefined(loginInfo) || objUtil.isNullOrUndefined(loginInfo.loginToken) || loginInfo.loginToken.length == 0) {
             reject({
-                message: "Token is invalid Please re-login.",
+                message: "Malformed request. Trying to hack the server?",
                 success: false
             });
             return;
         }
-        resolve({
-            message: "Your session is still valid.",
-            success: true
+        dbConnectionPool.getConnection((err, connection) => {
+            try {
+                var decodedToken = jsonWebToken.verify(loginInfo.loginToken, appConstants.jwtSecretKey);
+                database.selectFromTable("Invalid_Token", "token='" + JSON.stringify(decodedToken) + "'", connection).then((results) => {
+                    if (results.length == 0) {
+                        resolve({
+                            message: "Your login token is still valid.",
+                            success: true
+                        });
+                    } else {
+                        reject({
+                            message: "Token is invalid. Please re-login.",
+                            success: false
+                        });
+                    }
+                }).catch((resultsNull) => {
+                    reject({
+                        message: "Failed to query the database for invalid tokens.",
+                        success: false
+                    });
+                });
+            } catch(err) {
+                reject({
+                    message: "Token is invalid. Please re-login.",
+                    success: false
+                });
+            }
         });
     });
 };
@@ -187,10 +244,16 @@ module.exports.login = function(reqData) {
         dbConnectionPool.getConnection((err, connection) => {
             database.selectFromTable("Account", "email='" + accountObj.email + "'", connection).then((results) => {
                 if (results.length != 0 && bcrypt.compareSync(accountObj.password, results[0].password_hash)) {
+                    var theLoginToken = jsonWebToken.sign({
+                        accountId: results[0].account_id,
+                        email: results[0].email
+                    }, appConstants.jwtSecretKey, {
+                        expiresIn: appConstants.jwtTokenExpiresIn
+                    });
                     resolve({
                         message: "Logged in successfully.",
                         success: true,
-                        loginToken: appConstants.testLoginToken
+                        loginToken: theLoginToken
                     });
                 } else {
                     reject({
