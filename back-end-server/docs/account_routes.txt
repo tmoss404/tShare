@@ -81,6 +81,7 @@ xhttp.send(JSON.stringify({
 
 This route checks a user's login token for validity. It takes one parameter: loginToken wrapped in an Object. The loginToken returned is a JWT web token containing. For now, multiple sessions are allowed. If the login token is invalid, the request is considered rejected and a message with a success status of false is returned:
 - loginToken: String
+
 Decoded JWT token format:
 {
     accountId: <number>,  // This corresponds with the actual primary key in the Account table.
