@@ -26,7 +26,7 @@ module.exports.getSignedUrl = function(signUrlData) {
                 var decodedToken = jsonWebToken.verify(signUrlData.loginToken, appConstants.jwtSecretKey);
                 var s3Params = {
                     Bucket: appConstants.awsBucketName,
-                    Key: signUrlData.filePath,
+                    Key: decodedToken.accountId + "/" + signUrlData.filePath,
                     Expires: appConstants.awsSignedUrlSeconds,
                     ContentType: signUrlData.fileType,
                     ACL: "public-read"  // TODO Maybe change this ACL type.
