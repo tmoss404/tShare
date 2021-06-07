@@ -7,7 +7,7 @@ const awsSdk = require("aws-sdk");
 var s3  = new awsSdk.S3({
     accessKeyId: appConstants.awsAccessKeyId,
     secretAccessKey: appConstants.awsAccessSecretKey,
-    region: "us-east-1",
+    region: appConstants.awsRegion
 });
 
 module.exports.getSignedUrl = function(signUrlData) {
