@@ -1,0 +1,45 @@
+All file-related routes are prefixed with /file/ and follow-this-naming-convention-with-hyphens. Data validation is done by this server.
+Also, all requests have the fields listed wrapped in an Object. All routes should return at least a message and a success status wrapped in an Object.
+
+
+
+/file/get-signed-url:
+
+This route retrieves a "signed S3 URL" that you can send a PUT request to upload a file directly to our S3 bucket. It prefixes the path with the user's account ID to ensure that they can only upload to their directory. It takes three parameters: loginToken, filePath, and fileType all wrapped in an Object. If the request is malformed or the provided login token is invalid, the request will be rejected and a success status of false is returned along with an error message.
+Otherwise, an Object containing: message, success, signedUrl, and signedUrlData is returned. Please note that you must use the URL returned in signedUrlData when you are sending the PUT request (the signedUrl parameter is for *viewing* the file).
+- loginToken: String
+- filePath: String
+- fileType: String
+
+Returns an Object containing: message, success, signedUrl, and signedUrlData (or just message and success if the request was rejected):
+{"message":"Successfully retrieved a signed S3 URL.","success":true,"signedUrl":"https://bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b.s3.amazonaws.com/294/your%2Ffile.txt","signedUrlData":"https://bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b.s3.amazonaws.com/your/file.txt?AWSAccessKeyId=AKIARVGPJVYVDSNAKJLB&Content-Type=text%2Fplain&Expires=1623134024&Signature=1t%2BbfbARppnAqTjkIcenpWiMOGI%3D&x-amz-acl=public-read"}
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://tshare-back-end.herokuapp.com/file/get-signed-url", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
+filePath: "your/file.txt",
+fileType: "text/plain"
+}));
+
+Example *upload* request *after* you receive the signed URL data:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        console.log(this.response);
+    }
+};
+// The URL here should be the one from signedUrlData:
+xhttp.open("PUT", "https://bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b.s3.amazonaws.com/your/file.txt?AWSAccessKeyId=AKIARVGPJVYVDSNAKJLB&Content-Type=text%2Fplain&Expires=1623132431&Signature=VlUbriGrzmcXQNVrKY1HTnybQ1I%3D&x-amz-acl=public-read", true);
+xhttp.setRequestHeader("Content-Type", "text/plain");  // This header MUST match up with the fileType you provided in the sign URL request.
+xhttp.setRequestHeader("x-amz-acl", "public-read");  // You MUST have this header set, otherwise AWS will give you error 403.
+xhttp.send("This is the contents of my file!");

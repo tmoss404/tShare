@@ -39,8 +39,8 @@ module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
                 const dbConnection = connection;
                 database.selectFromTable("Password_Reset_Link", "sub_link='" + info.resetPwdId + "'", connection).then((results) => {
                     var currentTime = Date.now();
-                    if (results.length == 0 || currentTime - results[0].creation_date.getTime() >= 1000 * 60 * 60 * 24) {
-                        if (results.length != 0 && currentTime - results[0].creation_date.getTime() >= 1000 * 60 * 60 * 24) {
+                    if (results.length == 0 || currentTime - results[0].creation_date.getTime() >= appConstants.pwdRecoveryLinkExp) {
+                        if (results.length != 0 && currentTime - results[0].creation_date.getTime() >= appConstants.pwdRecoveryLinkExp) {
                             database.deleteFromTable("Password_Reset_Link", "email='" + pwdResetResult.email + "'", dbConnection).then((result) => {}).catch((result) => {});
                         }
                         reject({

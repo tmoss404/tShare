@@ -18,3 +18,5 @@ module.exports.jwtTokenExpiresInAsMillis = 1000 * 60 * 60 * 1;  // This should b
 module.exports.thisServerUrl = "http://tshare-back-end.herokuapp.com";
 module.exports.frontEndUrl = "TODO Tanner, please add your hosted Heroku app link here.";  // Make sure it is prefixed with http:// NOT https://
 module.exports.testLoginToken = "test_token";
+module.exports.awsSignedUrlSeconds = 60 * 60 * 24;
+module.exports.pwdRecoveryLinkExp = 1000 * 60 * 60 * 24;
