@@ -46,7 +46,7 @@
                 <div class="form-group">  
                     <label class="check-label">
                         <input type="checkbox" class="check" formControlName="termsOfService" required>
-                        I Agree to the Terms and Conditions
+                        I Agree to the <a [routerLink]="['/terms-of-service']" class="TOS-link">Terms and Conditions</a>
                     </label>
                     <div *ngIf="form.termsOfService.invalid && (form.termsOfService.dirty || form.termsOfService.touched)">   
                         <div *ngIf="form.termsOfService.errors?.required" class="form-control alert">
