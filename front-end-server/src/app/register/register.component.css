@@ -2,11 +2,17 @@
     border: 2px solid #1ab9d1;
 }
 
-.ng-touched.ng-invalid:not(form), .ng-dirty.ng-invalid:not(form){
+.ng-touched.ng-invalid:not(form), .ng-dirty.ng-invalid:not(form) {
     border: 2px solid #a94442; /* red */
 }
 
-.alert{
+.ng-touched.ng-invalid:not(form):focus, .ng-dirty.ng-invalid:not(form):focus {
+    border-color: #a94442;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(169, 68, 66, 0.25);
+}
+
+.alert {
     background-color: #fed3d3;
     color: #820000;
     padding: .2rem;
@@ -16,4 +22,17 @@
 
 .form-group {
     margin-bottom: 1rem;
+}
+
+.TOS-link {
+    font-weight: 400;
+    color: #1ab9d1;
+    background-color: transparent;
+  }
+  
+.TOS-link:hover {
+    color: #098a9e;
+    text-decoration: underline;
+    background-color: transparent;
+    border-color: transparent;
 }

@@ -20,7 +20,6 @@ export class RegisterComponent implements OnInit {
   ngOnInit(): void {
     this.accountForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
-      //Minimum 9 characters
       password: ['', [Validators.required]],
       confirm: ['', [Validators.required]],
       termsOfService: [false, [Validators.requiredTrue]]
