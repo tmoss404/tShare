@@ -22,8 +22,6 @@ module.exports.setupRoutes = function(app) {
             res.status(200).send(err);
         });
     });
-
-    // TODO When it is time, Tanner will setup JSON Web Tokens that will be implemented for the following functions:
     app.post("/account/login", (req, res) => {
         accountModel.login(req.body).then((responseData) => {
             res.status(200).send(responseData);
@@ -38,7 +36,13 @@ module.exports.setupRoutes = function(app) {
             res.status(200).send(err);
         });
     });
-    
+    app.post("/account/logout", (req, res) => {
+        accountModel.logout(req.body).then((responseData) => {
+            res.status(200).send(responseData);
+        }).catch((err) => {
+            res.status(200).send(err);
+        });
+    });
     app.get("/account/test", (req, res) => {
         res.status(200).send({
             message: "This account route works!",
