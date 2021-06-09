@@ -15,6 +15,12 @@ export class RegisterComponent implements OnInit {
   accountForm: FormGroup;
   userAccount: User = new User;
 
+  response: {
+    message: string,
+    success: boolean,
+    show: boolean;
+  };
+
   constructor(private accountService: AccountService, private formBuilder: FormBuilder) { }
 
   ngOnInit(): void {
@@ -30,7 +36,18 @@ export class RegisterComponent implements OnInit {
   }
 
   createAccount(){
-    this.accountService.newAccount(this.userAccount).subscribe(data => console.log(data));
+    
+    this.userAccount.email = this.accountForm.controls['email'].value;
+    this.userAccount.password = this.accountForm.controls['password'].value;
+
+    this.accountService.newAccount(this.userAccount)
+      .subscribe(data => {
+        this.response = data;
+        this.response.show = true;
+        //if(this.response.success === true)
+          this.accountForm.reset();
+      });
+
   }
 
   get form() { return this.accountForm.controls }

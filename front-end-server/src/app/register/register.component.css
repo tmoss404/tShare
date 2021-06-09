@@ -20,6 +20,14 @@
     border: #82000083 2px solid;
 }
 
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border: #15572483 2px solid;
+    padding: .2rem;
+    margin-top: .5rem;
+  }
+
 .form-group {
     margin-bottom: 1rem;
 }
