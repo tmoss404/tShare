@@ -15,6 +15,8 @@ import { CompanyComponent } from './company/company.component';
 import { ContactUsComponent } from './contact-us/contact-us.component';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { ReactiveFormsModule } from '@angular/forms';
+import { TermsOfServiceComponent } from './terms-of-service/terms-of-service.component';
 
 @NgModule({
   declarations: [
@@ -28,13 +30,15 @@ import { HttpClientModule } from '@angular/common/http';
     ForgotPasswordComponent,
     ProductComponent,
     CompanyComponent,
-    ContactUsComponent
+    ContactUsComponent,
+    TermsOfServiceComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
+    ReactiveFormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

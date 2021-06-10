@@ -5,8 +5,19 @@ module.exports.mySqlCfg = {
     password: "964b560d",
     database: "heroku_7c63935b5a98fc3"
   };
-  module.exports.trustifiKey = "fff5f53706493bc30ebf6ceb581e4310c663a397cec5ea1b";
-  module.exports.trustifiSecret = "56c9b130c652fd1b7ea93a0faad51f9c";
-  module.exports.thisServerUrl = "http://tshare-back-end.herokuapp.com";
-  module.exports.frontEndUrl = "TODO Tanner, please add your hosted Heroku app link here.";  // Make sure it is prefixed with http:// NOT https://
-  module.exports.testLoginToken = "test_token";
+module.exports.trustifiKey = "fff5f53706493bc30ebf6ceb581e4310c663a397cec5ea1b";
+module.exports.trustifiSecret = "56c9b130c652fd1b7ea93a0faad51f9c";
+module.exports.awsAccessKeyId = "AKIARVGPJVYVDSNAKJLB";
+module.exports.awsAccessSecretKey = "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";
+module.exports.awsBucketName = "bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b";
+module.exports.jwtSecretKey = "Oh man, tShare is so cool. Eric is amazing. This software is so dank bro OMG. This string is also very long and hard-to-guess, yo.";
+
+module.exports.jwtTokenExpiresIn = "1h";
+module.exports.jwtTokenExpiresInAsMillis = 1000 * 60 * 60 * 1;  // This should be the same as jwtTokenExpiresIn, but in milliseconds (TODO I should refactor this. It's bad.)
+
+module.exports.thisServerUrl = "http://tshare-back-end.herokuapp.com";
+module.exports.frontEndUrl = "TODO Tanner, please add your hosted Heroku app link here.";  // Make sure it is prefixed with http:// NOT https://
+module.exports.testLoginToken = "test_token";
+module.exports.awsSignedUrlSeconds = 60 * 60 * 24;
+module.exports.awsRegion = "us-east-1";
+module.exports.pwdRecoveryLinkExp = 1000 * 60 * 60 * 24;

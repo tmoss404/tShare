@@ -1,8 +1,10 @@
 const bcrypt = require("bcryptjs");
+const request = require("request");
+const jsonWebToken = require("jsonwebtoken");
 const objUtil = require("../objectUtil");
 const accountUtil = require("./account_util");
 const appConstants = require("../config/appConstants");
-const request = require("request");
+const database = require("../config/database");
 
 var dbConnectionPool;
 
@@ -35,18 +37,11 @@ module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
             }
             dbConnectionPool.getConnection((err, connection) => {
                 const dbConnection = connection;
-                connection.query("SELECT * FROM Password_Reset_Link WHERE sub_link='" + info.resetPwdId + "'", function (error, results, fields) {
-                    if (error) {
-                        reject({
-                            message: "An internal error has occurred while retrieving a sub-link.",
-                            success: false
-                        });
-                        return;
-                    }
+                database.selectFromTable("Password_Reset_Link", "sub_link='" + info.resetPwdId + "'", connection).then((results) => {
                     var currentTime = Date.now();
-                    if (results.length == 0 || currentTime - results[0].creation_date.getTime() >= 1000 * 60 * 60 * 24) {
-                        if (results.length != 0 && currentTime - results[0].creation_date.getTime() >= 1000 * 60 * 60 * 24) {
-                            dbConnection.query("DELETE FROM Password_Reset_Link WHERE email='" + pwdResetResult.email + "'", function (error, results, fields) {});
+                    if (results.length == 0 || currentTime - results[0].creation_date.getTime() >= appConstants.pwdRecoveryLinkExp) {
+                        if (results.length != 0 && currentTime - results[0].creation_date.getTime() >= appConstants.pwdRecoveryLinkExp) {
+                            database.deleteFromTable("Password_Reset_Link", "email='" + pwdResetResult.email + "'", dbConnection).then((result) => {}).catch((result) => {});
                         }
                         reject({
                             message: "Your password reset link is no longer valid.",
@@ -58,27 +53,28 @@ module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
                     var salt = bcrypt.genSaltSync(10);
                     var hash = bcrypt.hashSync(info.newPassword, salt);
                     info.newPassword = hash;
-                    dbConnection.query("UPDATE Account SET password_hash='" + info.newPassword + "' WHERE email='" + pwdResetResult.email + "'", function (error, results, fields) {
-                        if (error) {
-                            reject({
-                                message: "An internal error has occurred while updating the user's password.",
-                                success: false
-                            });
-                            return;
-                        }
-                        dbConnection.query("DELETE FROM Password_Reset_Link WHERE email='" + pwdResetResult.email + "'", function (error, results, fields) {
-                            if (error) {
-                                reject({
-                                    message: "An internal error has occurred while deleting the password reset sub-link.",
-                                    success: false
-                                });
-                                return;
-                            }
+                    database.updateTable("Account", "password_hash='" + info.newPassword + "'", "email='" + pwdResetResult.email + "'", connection).then((result) => {
+                        database.deleteFromTable("Password_Reset_Link", "email='" + pwdResetResult.email + "'", connection).then((result) => {
                             resolve({
                                 message: "Your password has been reset successfully.",
                                 success: true
                             });
+                        }).catch((resultFalse) => {
+                            reject({
+                                message: "An internal error has occurred while deleting the password reset sub-link.",
+                                success: false
+                            });
                         });
+                    }).catch((resultFalse) => {
+                        reject({
+                            message: "An internal error has occurred while updating the user's password.",
+                            success: false
+                        });
+                    });
+                }).catch((resultsNull) => {
+                    reject({
+                        message: "An internal error has occurred while retrieving a sub-link.",
+                        success: false
                     });
                 });
             });
@@ -96,14 +92,7 @@ module.exports.forgotPassword = function(forgotPwdInfo) {
         }
         dbConnectionPool.getConnection((err, connection) => {
             const dbConnection = connection;
-            connection.query("SELECT * FROM Account WHERE email='" + info.email + "'", function (error, results, fields) {
-                if (error) {
-                    reject({
-                        message: "An error has occurred while sending the password reset email.",
-                        success: false
-                    });
-                    return;
-                }
+            database.selectFromTable("Account", "email='" + info.email + "'", connection).then((results) => {
                 if (results.length == 0) {
                     reject({
                         message: "No account with email \"" + info.email + "\" could be found.",
@@ -149,28 +138,95 @@ module.exports.forgotPassword = function(forgotPwdInfo) {
                         });
                         return;
                     }
-                    dbConnection.query("INSERT INTO Password_Reset_Link (sub_link, email) VALUES ('" + randomId + "', '" + info.email + "')");
-                    resolve({
-                        message: "A password reset email has been sent to " + info.email,
-                        success: true
+                    database.insertIntoTable("Password_Reset_Link", "sub_link, email", "'" + randomId + "', '" + info.email + "'", connection).then((result) => {
+                        resolve({
+                            message: "A password reset email has been sent to " + info.email,
+                            success: true
+                        });
+                    }).catch((result) => {
+                        reject({
+                            message: "Failed to send a password reset email to " + info.email,
+                            success: false
+                        });
                     });
+                });
+            }).catch((resultsNull) => {
+                reject({
+                    message: "An error has occurred while sending the password reset email.",
+                    success: false
                 });
             });
         });
     });
 }
+module.exports.logout = function(loginInfo) {
+    return new Promise((resolve, reject) => {
+        dbConnectionPool.getConnection((err, connection) => {
+            database.deleteFromTable("Invalid_Token", Date.now() + " - UNIX_TIMESTAMP(invalidated_date)*1000 > " + appConstants.jwtTokenExpiresInAsMillis, connection).then((results) => {}).catch((resultsNull) => {});
+            module.exports.checkLogin(loginInfo).then((responseData) => {
+                try {
+                    var decodedToken = jsonWebToken.verify(loginInfo.loginToken, appConstants.jwtSecretKey);
+                    var whereClause = "'" + JSON.stringify(decodedToken) + "'";
+                    database.selectFromTable("Invalid_Token", whereClause, connection).then((results) => {
+                        if (results.length == 0) {
+                            database.insertIntoTable("Invalid_Token", "token", whereClause, connection).then((results) => {}).catch((results) => {});
+                        }
+                    }).catch((resultsNull) => {});
+                    resolve({
+                        message: "Token has been invalidated successfully.",
+                        success: true
+                    });
+                } catch(err) {
+                    resolve({
+                        message: "Token has been invalidated successfully.",
+                        success: true
+                    });
+                }
+            }).catch((err) => {
+                resolve({
+                    message: "Token has been invalidated successfully.",
+                    success: true
+                });
+            });
+        });
+    });
+};
 module.exports.checkLogin = function(loginInfo) {
     return new Promise((resolve, reject) => {
-        if (objUtil.isNullOrUndefined(loginInfo) || objUtil.isNullOrUndefined(loginInfo.loginToken) || loginInfo.loginToken.length == 0 || loginInfo.loginToken != appConstants.testLoginToken) {
+        if (objUtil.isNullOrUndefined(loginInfo) || objUtil.isNullOrUndefined(loginInfo.loginToken) || loginInfo.loginToken.length == 0) {
             reject({
-                message: "Token is invalid Please re-login.",
+                message: "Malformed request. Trying to hack the server?",
                 success: false
             });
             return;
         }
-        resolve({
-            message: "Your session is still valid.",
-            success: true
+        dbConnectionPool.getConnection((err, connection) => {
+            try {
+                var decodedToken = jsonWebToken.verify(loginInfo.loginToken, appConstants.jwtSecretKey);
+                database.selectFromTable("Invalid_Token", "token='" + JSON.stringify(decodedToken) + "'", connection).then((results) => {
+                    if (results.length == 0) {
+                        resolve({
+                            message: "Your login token is still valid.",
+                            success: true
+                        });
+                    } else {
+                        reject({
+                            message: "Token is invalid. Please re-login.",
+                            success: false
+                        });
+                    }
+                }).catch((resultsNull) => {
+                    reject({
+                        message: "Failed to query the database for invalid tokens.",
+                        success: false
+                    });
+                });
+            } catch(err) {
+                reject({
+                    message: "Token is invalid. Please re-login.",
+                    success: false
+                });
+            }
         });
     });
 };
@@ -186,28 +242,32 @@ module.exports.login = function(reqData) {
             return;
         }
         dbConnectionPool.getConnection((err, connection) => {
-            connection.query("SELECT * FROM Account WHERE email='" + accountObj.email + "'", function (error, results, fields) {
-                if (error) {
-                    reject({
-                        message: "An error has occurred while logging in.",
-                        success: false,
-                        loginToken: null
-                    });
-                    return;
-                }
+            database.selectFromTable("Account", "email='" + accountObj.email + "'", connection).then((results) => {
                 if (results.length != 0 && bcrypt.compareSync(accountObj.password, results[0].password_hash)) {
+                    var theLoginToken = jsonWebToken.sign({
+                        accountId: results[0].account_id,
+                        email: results[0].email
+                    }, appConstants.jwtSecretKey, {
+                        expiresIn: appConstants.jwtTokenExpiresIn
+                    });
                     resolve({
                         message: "Logged in successfully.",
                         success: true,
-                        loginToken: appConstants.testLoginToken
+                        loginToken: theLoginToken
                     });
                 } else {
                     reject({
                         message: "The specified email/password combination is invalid.",
                         success: false,
                         loginToken: null
-                });
+                    });
                 }
+            }).catch((resultsNull) => {
+                reject({
+                    message: "An error has occurred while logging in.",
+                    success: false,
+                    loginToken: null
+                });
             });
         });
     });
@@ -244,14 +304,7 @@ module.exports.registerAccount = function(account) {
                 });
                 return;
             }
-            connection.query("SELECT * FROM Account WHERE email='" + accountObj.email + "'", function (error, results, fields) {
-                if (error) {
-                    reject({
-                        message: "An error occurred while creating the account: " + error,
-                        success: false
-                    });
-                    return;
-                }
+            database.selectFromTable("Account", "email='" + accountObj.email + "'", connection).then((results) => {
                 if (results.length != 0) {
                     reject({
                         message: "Account already exists.",
@@ -261,13 +314,23 @@ module.exports.registerAccount = function(account) {
                     var salt = bcrypt.genSaltSync(10);
                     var hash = bcrypt.hashSync(accountObj.password, salt);
                     accountObj.password = hash;
-                    var sqlQuery = "INSERT INTO Account (email, password_hash, permissions_lvl) VALUES('" + accountObj.email + "', '" + accountObj.password + "', 0)";
-                    connection.query(sqlQuery);
-                    resolve({
-                        message: "Created your account successfully.",
-                        success: true
+                    database.insertIntoTable("Account", "email, password_hash, permissions_lvl", "'" + accountObj.email + "', '" + accountObj.password + "', 0", connection).then((result) => {
+                        resolve({
+                            message: "Created your account successfully.",
+                            success: true
+                        });
+                    }).catch((result) => {
+                        reject({
+                            message: "Failed to create your account.",
+                            success: false
+                        })
                     });
                 }
+            }).catch((results) => {
+                reject({
+                    message: "An error occurred while creating the account: " + error,
+                    success: false
+                });
             });
         });
     });
