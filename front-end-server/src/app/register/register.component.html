@@ -46,15 +46,15 @@
                 <div class="form-group">  
                     <label class="check-label">
                         <input type="checkbox" class="check" formControlName="termsOfService" required>
-                        I Agree to the Terms and Conditions
+                        I Agree to the <a [routerLink]="['/terms-of-service']" class="TOS-link">Terms and Conditions</a>
                     </label>
                     <div *ngIf="form.termsOfService.invalid && (form.termsOfService.dirty || form.termsOfService.touched)">   
                         <div *ngIf="form.termsOfService.errors?.required" class="form-control alert">
                             You must accept the Terms and Conditons.
                         </div> 
                     </div>
-
                     <button type="submit" class="form-control btn-custom btn-custom-center" [disabled]="!accountForm.valid">Create Account</button>
+                    <div class="form-control" *ngIf="response?.show" [ngClass]="response?.success ? 'alert-success' : 'alert'">{{response?.message}}</div>
                 </div>
             </form>        
             </div>  

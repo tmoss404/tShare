@@ -16,6 +16,7 @@ import { ContactUsComponent } from './contact-us/contact-us.component';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
+import { TermsOfServiceComponent } from './terms-of-service/terms-of-service.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { ReactiveFormsModule } from '@angular/forms';
     ForgotPasswordComponent,
     ProductComponent,
     CompanyComponent,
-    ContactUsComponent
+    ContactUsComponent,
+    TermsOfServiceComponent
   ],
   imports: [
     BrowserModule,
