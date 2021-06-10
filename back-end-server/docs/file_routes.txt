@@ -3,7 +3,15 @@ Also, all requests have the fields listed wrapped in an Object. All routes shoul
 
 
 
-/file/get-signed-url:
+// Add this function to your web browser's console before running the example scripts:
+// Hey, don't blame me! Tanner wanted the HTTP statuses to work like this for the Angular side of things.
+function statusReturnsResponse(status) {
+    return status == 200 || status == 400;
+}
+
+
+
+/file/upload:
 
 This route retrieves a "signed S3 URL" that you can send a PUT request to upload a file directly to our S3 bucket. It prefixes the path with the user's account ID to ensure that they can only upload to their directory. It takes three parameters: loginToken, filePath, and fileType all wrapped in an Object. If the request is malformed or the provided login token is invalid, the request will be rejected and a success status of false is returned along with an error message.
 Otherwise, an Object containing: message, success, signedUrl, and signedUrlData is returned. Please note that you must use the URL returned in signedUrlData when you are sending the PUT request (the signedUrl parameter is for *viewing* the file).
@@ -18,11 +26,11 @@ Example request:
 
 var xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
         console.log(this.response);
     }
 };
-xhttp.open("POST", "http://tshare-back-end.herokuapp.com/file/get-signed-url", true);
+xhttp.open("POST", "http://tshare-back-end.herokuapp.com/file/upload", true);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
 loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
@@ -34,7 +42,7 @@ Example *upload* request *after* you receive the signed URL data:
 
 var xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
         console.log(this.response);
     }
 };
