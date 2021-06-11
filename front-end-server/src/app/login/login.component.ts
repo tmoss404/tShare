@@ -42,7 +42,7 @@ export class LoginComponent implements OnInit {
 
         localStorage.setItem( 'access_token',success.loginToken );
         localStorage.setItem( "expires_at", JSON.stringify(expiresAt.valueOf()) );
-        this.response = success;
+        this.router.navigate(['/my-files']);
       },
       error: (err) => {
         this.response = err.error;
