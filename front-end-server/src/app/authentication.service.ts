@@ -42,7 +42,6 @@ export class AuthenticationService {
   }  
 
   logout() {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("expires_at");
+    return this.http.post<any>('http://tshare-back-end.herokuapp.com/account/logout', localStorage.getItem("access_token"));
   }
 }
