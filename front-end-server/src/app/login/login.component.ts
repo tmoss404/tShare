@@ -40,7 +40,7 @@ export class LoginComponent implements OnInit {
       next: (success) => {
         const expiresAt = moment().add(success.expiresIn,'second');
 
-        localStorage.setItem( 'access_token',success.loginToken );
+        localStorage.setItem( 'access_token', success.loginToken );
         localStorage.setItem( "expires_at", JSON.stringify(expiresAt.valueOf()) );
         this.router.navigate(['/my-files']);
       },

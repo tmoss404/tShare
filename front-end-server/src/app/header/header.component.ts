@@ -20,10 +20,18 @@ export class HeaderComponent implements OnInit {
       }
     });
   }
-
-  logout() {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("expires_at");
-  }
   
+  logout(){
+    this.auth.logout().subscribe({
+      next: (success) => {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("expires_at");
+        console.log(success.message);
+        this.router.navigate(['/login'])
+      },
+      error: (err) => {
+        console.log(err.error.message);
+      }
+    });
+  }
 }
