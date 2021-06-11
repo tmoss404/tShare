@@ -39,14 +39,15 @@ export class RegisterComponent implements OnInit {
     this.userAccount.email = this.accountForm.controls['email'].value;
     this.userAccount.password = this.accountForm.controls['password'].value;
 
-    this.accountService.newAccount(this.userAccount).subscribe(
-      (success) => {
+    this.accountService.newAccount(this.userAccount).subscribe({
+      next: (success) => {
         this.response = success;
         this.accountForm.reset();
       },
-      (err) => {
+      error: (err) => {
         this.response = err.error;
-      });
+      }
+    });
 
   }
 

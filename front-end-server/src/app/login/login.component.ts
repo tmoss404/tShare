@@ -36,18 +36,18 @@ export class LoginComponent implements OnInit {
 
     const user = this.loginForm.value;
     
-    this.auth.login(user).subscribe(
-      (success) => {
+    this.auth.login(user).subscribe({
+      next: (success) => {
         const expiresAt = moment().add(success.expiresIn,'second');
 
         localStorage.setItem( 'access_token',success.loginToken );
         localStorage.setItem( "expires_at", JSON.stringify(expiresAt.valueOf()) );
         this.response = success;
       },
-      (err) => {
+      error: (err) => {
         this.response = err.error;
       }
-    );
+    });
 
   }
 
