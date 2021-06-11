@@ -14,9 +14,10 @@ import { ProductComponent } from './product/product.component';
 import { CompanyComponent } from './company/company.component';
 import { ContactUsComponent } from './contact-us/contact-us.component';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { TermsOfServiceComponent } from './terms-of-service/terms-of-service.component';
+import { AuthInterceptorService } from './auth-interceptor.service';
 
 @NgModule({
   declarations: [
@@ -40,7 +41,11 @@ import { TermsOfServiceComponent } from './terms-of-service/terms-of-service.com
     HttpClientModule,
     ReactiveFormsModule
   ],
-  providers: [],
+  providers: [{
+    provide: HTTP_INTERCEPTORS,
+    useClass: AuthInterceptorService,
+    multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
