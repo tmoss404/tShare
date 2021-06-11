@@ -9,13 +9,17 @@ import { PageNotFoundComponent } from './page-not-found/page-not-found.component
 import { ProductComponent } from './product/product.component';
 import { RegisterComponent } from './register/register.component';
 import { TermsOfServiceComponent } from './terms-of-service/terms-of-service.component';
+import { GuardAuthService } from './guard-auth.service';
+import { UserLoggedInGuardService } from './user-logged-in-guard.service';
+import { MyFilesComponent } from './my-files/my-files.component';
 
 const routes: Routes = [
   {path: "home", component: HomeComponent},
   {path: "company", component: CompanyComponent},
   {path: "product", component: ProductComponent},
   {path: "contact-us", component: ContactUsComponent},
-  {path: "login", component: LoginComponent},
+  {path: "login", component: LoginComponent, canActivate: [UserLoggedInGuardService]},
+  {path: "my-files", component: MyFilesComponent},
   {path: "register", component: RegisterComponent},
   {path: "terms-of-service", component: TermsOfServiceComponent},
   {path: "forgot-password", component: ForgotPasswordComponent},
