@@ -4,10 +4,15 @@ const testAccountValidEmail = "eric.d.mcdonald@gmail.com";
 const testAccountPwd = "myValidPwd123!", testAccountNewPwd = "myNewValidPwd123!";
 var xhttp;
 
+// Hey, don't blame me! Tanner wanted the HTTP statuses to work like this for the Angular side of things.
+function statusReturnsResponse(status) {
+    return status == 200 || status == 400;
+}
+
 // Registering:
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
         console.log(this.response);
     }
 };
@@ -23,7 +28,7 @@ xhttp.send(JSON.stringify({
 var theLoginToken = null;
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
         console.log(this.response);
         theLoginToken = JSON.parse(this.response).loginToken;
     }
@@ -40,7 +45,7 @@ while (theLoginToken == null) {}
 // Checking login:
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
         console.log(this.response);
     }
 };
@@ -53,7 +58,7 @@ xhttp.send(JSON.stringify({
 // Forgot password:
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
 	console.log(xhttp.responseText);
     }
 };
@@ -66,7 +71,7 @@ xhttp.send(JSON.stringify({
 // Resetting password:
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
 	console.log(xhttp.responseText);
     }
 };
@@ -80,13 +85,13 @@ xhttp.send(JSON.stringify({
 var signedUrl = null;
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
         console.log(this.response);
         signedUrl = JSON.parse(this.responseText).signedUrlData;
         console.log(signedUrl);
     }
 };
-xhttp.open("POST", "http://localhost/file/get-signed-url", false);
+xhttp.open("POST", "http://localhost/file/upload", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
 loginToken: theLoginToken,
@@ -98,7 +103,7 @@ while (signedUrl == null) {}
 
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
         console.log(this.response);
     }
 };
@@ -110,7 +115,7 @@ xhttp.send("This is the contents of my file!");
 // Logging out:
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
         console.log(this.response);
     }
 };
@@ -123,7 +128,7 @@ xhttp.send(JSON.stringify({
 // Checking login token after invalidating it:
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
         console.log(this.response);
     }
 };
