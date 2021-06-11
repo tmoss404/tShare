@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { User } from '../User';
 import { AccountService } from '../account.service';
-import { FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { confirmPassword } from './confirmPassword.validator';
 import { passwordFormat } from './passwordFormat.validator';
 
@@ -17,8 +17,7 @@ export class RegisterComponent implements OnInit {
 
   response: {
     message: string,
-    success: boolean,
-    show: boolean;
+    success: boolean
   };
 
   constructor(private accountService: AccountService, private formBuilder: FormBuilder) { }
@@ -40,12 +39,13 @@ export class RegisterComponent implements OnInit {
     this.userAccount.email = this.accountForm.controls['email'].value;
     this.userAccount.password = this.accountForm.controls['password'].value;
 
-    this.accountService.newAccount(this.userAccount)
-      .subscribe(data => {
-        this.response = data;
-        this.response.show = true;
-        //if(this.response.success === true)
-          this.accountForm.reset();
+    this.accountService.newAccount(this.userAccount).subscribe(
+      (success) => {
+        this.response = success;
+        this.accountForm.reset();
+      },
+      (err) => {
+        this.response = err.error;
       });
 
   }
