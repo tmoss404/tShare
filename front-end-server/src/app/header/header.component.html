@@ -12,7 +12,11 @@
             </li>
             <li class="nav-item"><a [routerLink]="['/contact-us']" routerLinkActive="active" class="nav-link">Contact Us</a>
             </li>
-            <li class="nav-item"><a [routerLink]="['/login']" routerLinkActive="active" class="nav-link">Log In</a>
+            <li class="nav-item" *ngIf="!token"><a [routerLink]="['/login']" routerLinkActive="active" class="nav-link">Log In</a>
+            </li>
+            <li class="nav-item" *ngIf="token"><a [routerLink]="['/my-files']" routerLinkActive="active" class="nav-link">My Files</a>
+            </li>
+            <li class="nav-item" *ngIf="token"><a (click)="logout()" [routerLink]="['/login']" class="nav-link">Log Out</a>
             </li>
           </ul>
            <!-- Navbar Brand -->
