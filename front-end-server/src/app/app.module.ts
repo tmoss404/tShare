@@ -18,6 +18,7 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { TermsOfServiceComponent } from './terms-of-service/terms-of-service.component';
 import { AuthInterceptorService } from './auth-interceptor.service';
+import { MyFilesComponent } from './my-files/my-files.component';
 
 @NgModule({
   declarations: [
@@ -32,7 +33,8 @@ import { AuthInterceptorService } from './auth-interceptor.service';
     ProductComponent,
     CompanyComponent,
     ContactUsComponent,
-    TermsOfServiceComponent
+    TermsOfServiceComponent,
+    MyFilesComponent
   ],
   imports: [
     BrowserModule,
