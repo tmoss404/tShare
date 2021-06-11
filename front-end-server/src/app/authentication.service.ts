@@ -39,5 +39,10 @@ export class AuthenticationService {
 
   login(user: User): Observable<any> {
     return this.http.post<any>('http://tshare-back-end.herokuapp.com/account/login', user);
+  }  
+
+  logout() {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("expires_at");
   }
 }
