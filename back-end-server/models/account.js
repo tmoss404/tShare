@@ -41,7 +41,7 @@ module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
                     var currentTime = Date.now();
                     if (results.length == 0 || currentTime - results[0].creation_date.getTime() >= appConstants.pwdRecoveryLinkExp) {
                         if (results.length != 0 && currentTime - results[0].creation_date.getTime() >= appConstants.pwdRecoveryLinkExp) {
-                            database.deleteFromTable("Password_Reset_Link", "email='" + pwdResetResult.email + "'", dbConnection).then((result) => {}).catch((result) => {});
+                            database.deleteFromTableSync("Password_Reset_Link", "email='" + pwdResetResult.email + "'", dbConnection);
                         }
                         reject({
                             message: "Your password reset link is no longer valid.",
@@ -162,14 +162,14 @@ module.exports.forgotPassword = function(forgotPwdInfo) {
 module.exports.logout = function(loginInfo) {
     return new Promise((resolve, reject) => {
         dbConnectionPool.getConnection((err, connection) => {
-            database.deleteFromTable("Invalid_Token", Date.now() + " - UNIX_TIMESTAMP(invalidated_date)*1000 > " + appConstants.jwtTokenExpiresInAsMillis, connection).then((results) => {}).catch((resultsNull) => {});
+            database.deleteFromTableSync("Invalid_Token", Date.now() + " - UNIX_TIMESTAMP(invalidated_date)*1000 > " + appConstants.jwtTokenExpiresInAsMillis, connection);
             module.exports.checkLogin(loginInfo).then((responseData) => {
                 try {
                     var decodedToken = jsonWebToken.verify(loginInfo.loginToken, appConstants.jwtSecretKey);
                     var whereClause = "'" + JSON.stringify(decodedToken) + "'";
                     database.selectFromTable("Invalid_Token", whereClause, connection).then((results) => {
                         if (results.length == 0) {
-                            database.insertIntoTable("Invalid_Token", "token", whereClause, connection).then((results) => {}).catch((results) => {});
+                            database.insertIntoTableSync("Invalid_Token", "token", whereClause, connection);
                         }
                     }).catch((resultsNull) => {});
                     resolve({
