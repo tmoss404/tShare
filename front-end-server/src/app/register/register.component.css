@@ -1,4 +1,4 @@
-.ng-valid[required], .ng-valid.required  {
+.ng-valid:not(form), .ng-valid.required  {
     border: 2px solid #1ab9d1;
 }
 

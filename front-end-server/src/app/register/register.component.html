@@ -4,7 +4,7 @@
             <div class="col-md-12">
             <form (ngSubmit)="createAccount()" [formGroup]="accountForm">
                 <div class="form-group">
-                    <input class="form-control" type="text" formControlName="email" placeholder="Email" required/>
+                    <input class="form-control" type="text" formControlName="email" placeholder="Email"/>
                     <div *ngIf="form.email.dirty || form.email.touched">
                         <div *ngIf="form.email.errors?.required" class="form-control alert">
                             Email is required.
@@ -14,7 +14,7 @@
                         </div>
                     </div>     
                 
-                    <input class="form-control" type="password" formControlName="password" placeholder="Password" required/>
+                    <input class="form-control" type="password" formControlName="password" placeholder="Password"/>
                     <div *ngIf="form.password.invalid && (form.password.dirty || form.password.touched)">
                         <div *ngIf="form.password.errors?.required" class="form-control alert">
                             Password is required.
@@ -33,7 +33,7 @@
                         </div>           
                     </div>
                       
-                    <input class="form-control" type="password" formControlName="confirm" placeholder="Confirm Password" required/>
+                    <input class="form-control" type="password" formControlName="confirm" placeholder="Confirm Password" />
                     <div *ngIf="form.confirm.invalid && (form.confirm.dirty || form.confirm.touched)">   
                         <div *ngIf="form.confirm.errors?.required" class="form-control alert">
                             You must confirm your password.
@@ -45,7 +45,7 @@
                 </div>
                 <div class="form-group">  
                     <label class="check-label">
-                        <input type="checkbox" class="check" formControlName="termsOfService" required>
+                        <input type="checkbox" class="check" formControlName="termsOfService" >
                         I Agree to the <a [routerLink]="['/terms-of-service']" class="TOS-link">Terms and Conditions</a>
                     </label>
                     <div *ngIf="form.termsOfService.invalid && (form.termsOfService.dirty || form.termsOfService.touched)">   
