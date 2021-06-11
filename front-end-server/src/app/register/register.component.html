@@ -54,8 +54,8 @@
                         </div> 
                     </div>
                     <button type="submit" class="form-control btn-custom btn-custom-center" [disabled]="!accountForm.valid">Create Account</button>
-                    <div class="form-control" *ngIf="response?.show" [ngClass]="response?.success ? 'alert-success' : 'alert'">{{response?.message}}</div>
                 </div>
+                <div class="form-control" *ngIf="response" [ngClass]="response?.success ? 'alert-success' : 'alert'">{{response?.message}}</div>
             </form>        
             </div>  
         </div>    
