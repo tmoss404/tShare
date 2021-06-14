@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { User } from '../User';
-import { AccountService } from '../account.service';
+import { AccountService } from '../services/account.service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { confirmPassword } from './confirmPassword.validator';
 import { passwordFormat } from './passwordFormat.validator';
