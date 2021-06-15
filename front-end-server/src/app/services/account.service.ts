@@ -15,4 +15,10 @@ export class AccountService {
     return this.http.post<any>(`http://tshare-back-end.herokuapp.com/account/register`, data);
 
   }
+
+  recoverPassword(data: any){
+
+    return this.http.post<any>(`http://tshare-back-end.herokuapp.com/account/forgot-password`, data);
+  
+  }
 }

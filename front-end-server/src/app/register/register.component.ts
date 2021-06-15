@@ -14,11 +14,7 @@ export class RegisterComponent implements OnInit {
 
   accountForm: FormGroup;
   userAccount: User = new User;
-
-  response: {
-    message: string,
-    success: boolean
-  };
+  response: any;
 
   constructor(private accountService: AccountService, private formBuilder: FormBuilder) { }
 
