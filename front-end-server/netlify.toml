@@ -1,6 +1,6 @@
 
 [build]
-  publish = "/dist/tShare"
+  publish = "/dist/"
   command = "ng build --configuration production"
 
 [[redirects]]
