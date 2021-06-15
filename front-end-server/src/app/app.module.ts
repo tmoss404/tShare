@@ -19,6 +19,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { TermsOfServiceComponent } from './terms-of-service/terms-of-service.component';
 import { AuthInterceptorService } from './services/auth-interceptor.service';
 import { MyFilesComponent } from './my-files/my-files.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +35,8 @@ import { MyFilesComponent } from './my-files/my-files.component';
     CompanyComponent,
     ContactUsComponent,
     TermsOfServiceComponent,
-    MyFilesComponent
+    MyFilesComponent,
+    ResetPasswordComponent
   ],
   imports: [
     BrowserModule,

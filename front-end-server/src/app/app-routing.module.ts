@@ -12,6 +12,7 @@ import { TermsOfServiceComponent } from './terms-of-service/terms-of-service.com
 import { GuardAuthService } from './guards/guard-auth.service';
 import { UserLoggedInGuardService } from './guards/user-logged-in-guard.service';
 import { MyFilesComponent } from './my-files/my-files.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
 
 const routes: Routes = [
   {path: "home", component: HomeComponent},
@@ -23,6 +24,7 @@ const routes: Routes = [
   {path: "register", component: RegisterComponent},
   {path: "terms-of-service", component: TermsOfServiceComponent},
   {path: "forgot-password", component: ForgotPasswordComponent},
+  {path: "reset-password/:resetId", component: ResetPasswordComponent},
   {path: "", redirectTo: "/home", pathMatch: "full"},
   {path: "**", component: PageNotFoundComponent}
 ];
