@@ -12,6 +12,10 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+app.set("forceSSLOptions", {
+    httpsPort: appConstants.serverPort
+});
+
 // Setting up various systems:
 database.init();
 routes.init(app);
