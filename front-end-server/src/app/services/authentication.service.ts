@@ -42,6 +42,7 @@ export class AuthenticationService {
   }  
 
   logout() {
-    return this.http.post<any>('https://tshare-back-end.herokuapp.com/account/logout', localStorage.getItem("access_token"));
+    const token = { loginToken: localStorage.getItem("access_token") }
+    return this.http.post<any>('https://tshare-back-end.herokuapp.com/account/logout', token);
   }
 }
