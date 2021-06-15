@@ -1,0 +1,9 @@
+
+[build]
+  publish = "front-end-server/dist/tShare"
+  command = "ng build --configuration production"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
