@@ -8,18 +8,6 @@ const database = require("../config/database");
 
 var dbConnectionPool;
 
-function areLoginInputsValid(email, password) {
-    if (objUtil.isNullOrUndefined(email) || objUtil.isNullOrUndefined(password) || email.length == 0 || password.length == 0) {
-        return false;
-    }
-    if (!accountUtil.isEmailValid(email)) {
-        return false;
-    }
-    if (!accountUtil.isPasswordValid(password)) {
-        return false;
-    }
-    return true;
-}
 module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
     var info = resetPwdInfo;
     return new Promise((resolve, reject) => {
@@ -41,10 +29,11 @@ module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
                     var currentTime = Date.now();
                     if (results.length == 0 || currentTime - results[0].creation_date.getTime() >= appConstants.pwdRecoveryLinkExp) {
                         if (results.length != 0 && currentTime - results[0].creation_date.getTime() >= appConstants.pwdRecoveryLinkExp) {
-                            database.deleteFromTableSync("Password_Reset_Link", "email='" + pwdResetResult.email + "'", dbConnection);
+                            database.deleteFromTable("Password_Reset_Link", "email='" + pwdResetResult.email + "'", dbConnection).then((success) => {});
                         }
                         reject({
                             message: "Your password reset link is no longer valid.",
+                            httpStatus: 401,
                             success: false
                         });
                         return;
@@ -57,6 +46,7 @@ module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
                         database.deleteFromTable("Password_Reset_Link", "email='" + pwdResetResult.email + "'", connection).then((result) => {
                             resolve({
                                 message: "Your password has been reset successfully.",
+                                httpStatus: 200,
                                 success: true
                             });
                         }).catch((resultFalse) => {
@@ -100,8 +90,8 @@ module.exports.forgotPassword = function(forgotPwdInfo) {
                     });
                     return;
                 }
-                var randomId = accountUtil.getRandomInt(1, 99999);
-                var resetLink = appConstants.frontEndUrl + "/reset-password/" + randomId;  // TODO Ask Tanner to create an Angular route that forwards to this URL?
+                var randomId = objUtil.getRandomInt(1, 99999);
+                var resetLink = appConstants.frontEndUrl + "/reset-password/" + randomId;
                 var trustifiOpts = {
                     'method': 'POST',
                     'url': 'https://be.trustifi.com/api/i/v1/email',
@@ -141,6 +131,7 @@ module.exports.forgotPassword = function(forgotPwdInfo) {
                     database.insertIntoTable("Password_Reset_Link", "sub_link, email", "'" + randomId + "', '" + info.email + "'", connection).then((result) => {
                         resolve({
                             message: "A password reset email has been sent to " + info.email,
+                            httpStatus: 200,
                             success: true
                         });
                     }).catch((result) => {
@@ -161,32 +152,28 @@ module.exports.forgotPassword = function(forgotPwdInfo) {
 }
 module.exports.logout = function(loginInfo) {
     return new Promise((resolve, reject) => {
+        var successResponse = {
+            message: "Token has been invalidated successfully.",
+            httpStatus: 200,
+            success: true
+        };
         dbConnectionPool.getConnection((err, connection) => {
-            database.deleteFromTableSync("Invalid_Token", Date.now() + " - UNIX_TIMESTAMP(invalidated_date)*1000 > " + appConstants.jwtTokenExpiresInAsMillis, connection);
-            module.exports.checkLogin(loginInfo).then((responseData) => {
+            database.deleteFromTable("Invalid_Token", Date.now() + " - UNIX_TIMESTAMP(invalidated_date)*1000 > " + appConstants.jwtTokenExpiresInAsMillis, connection).then((success) => {
                 try {
                     var decodedToken = jsonWebToken.verify(loginInfo.loginToken, appConstants.jwtSecretKey);
                     var whereClause = "'" + JSON.stringify(decodedToken) + "'";
                     database.selectFromTable("Invalid_Token", whereClause, connection).then((results) => {
                         if (results.length == 0) {
-                            database.insertIntoTableSync("Invalid_Token", "token", whereClause, connection);
+                            database.insertIntoTable("Invalid_Token", "token", whereClause, connection).then((success) => {
+                                resolve(successResponse);
+                            });
+                        } else {
+                            resolve(successResponse);
                         }
-                    }).catch((resultsNull) => {});
-                    resolve({
-                        message: "Token has been invalidated successfully.",
-                        success: true
                     });
                 } catch(err) {
-                    resolve({
-                        message: "Token has been invalidated successfully.",
-                        success: true
-                    });
+                    resolve(successResponse);
                 }
-            }).catch((err) => {
-                resolve({
-                    message: "Token has been invalidated successfully.",
-                    success: true
-                });
             });
         });
     });
@@ -196,10 +183,16 @@ module.exports.checkLogin = function(loginInfo) {
         if (objUtil.isNullOrUndefined(loginInfo) || objUtil.isNullOrUndefined(loginInfo.loginToken) || loginInfo.loginToken.length == 0) {
             reject({
                 message: "Malformed request. Trying to hack the server?",
+                httpStatus: 400,
                 success: false
             });
             return;
         }
+        var invalidTokenResponse = {
+            message: "Token is invalid. Please re-login.",
+            httpStatus: 401,
+            success: false
+        };
         dbConnectionPool.getConnection((err, connection) => {
             try {
                 var decodedToken = jsonWebToken.verify(loginInfo.loginToken, appConstants.jwtSecretKey);
@@ -207,25 +200,21 @@ module.exports.checkLogin = function(loginInfo) {
                     if (results.length == 0) {
                         resolve({
                             message: "Your login token is still valid.",
+                            httpStatus: 200,
                             success: true
                         });
                     } else {
-                        reject({
-                            message: "Token is invalid. Please re-login.",
-                            success: false
-                        });
+                        reject(invalidTokenResponse);
                     }
                 }).catch((resultsNull) => {
                     reject({
                         message: "Failed to query the database for invalid tokens.",
+                        httpStatus: 500,
                         success: false
                     });
                 });
             } catch(err) {
-                reject({
-                    message: "Token is invalid. Please re-login.",
-                    success: false
-                });
+                reject(invalidTokenResponse);
             }
         });
     });
@@ -233,10 +222,11 @@ module.exports.checkLogin = function(loginInfo) {
 module.exports.login = function(reqData) {
     const accountObj = reqData;
     return new Promise((resolve, reject) => {
-        if (objUtil.isNullOrUndefined(accountObj) || !areLoginInputsValid(accountObj.email, accountObj.password)) {
+        if (objUtil.isNullOrUndefined(accountObj) || !accountUtil.areLoginInputsValid(accountObj.email, accountObj.password)) {
             reject({
                 message: "Invalid email/password combination.",
                 success: false,
+                httpStatus: 400,
                 loginToken: null
             });
             return;
@@ -253,18 +243,21 @@ module.exports.login = function(reqData) {
                     resolve({
                         message: "Logged in successfully.",
                         success: true,
+                        httpStatus: 200,
                         loginToken: theLoginToken
                     });
                 } else {
                     reject({
                         message: "The specified email/password combination is invalid.",
                         success: false,
+                        httpStatus: 401,
                         loginToken: null
                     });
                 }
             }).catch((resultsNull) => {
                 reject({
                     message: "An error has occurred while logging in.",
+                    httpStatus: 500,
                     success: false,
                     loginToken: null
                 });
@@ -275,9 +268,10 @@ module.exports.login = function(reqData) {
 module.exports.registerAccount = function(account) {
     const accountObj = account;
     return new Promise((resolve, reject) => {
-        if (objUtil.isNullOrUndefined(account) || !areLoginInputsValid(account.email, account.password)) {
+        if (objUtil.isNullOrUndefined(account) || !accountUtil.areLoginInputsValid(account.email, account.password)) {
             reject({
                 message: "Invalid email/password combination.",
+                httpStatus: 400,
                 success: false
             });
             return;
@@ -285,6 +279,7 @@ module.exports.registerAccount = function(account) {
         if (!accountUtil.isEmailValid(account.email)) {
             reject({
                 message: "Email is invalid.",
+                httpStatus: 400,
                 success: false
             });
             return;
@@ -292,6 +287,7 @@ module.exports.registerAccount = function(account) {
         if (!accountUtil.isPasswordValid(account.password)) {
             reject({
                 message: "Password is invalid.",
+                httpStatus: 400,
                 success: false
             });
             return;
@@ -300,6 +296,7 @@ module.exports.registerAccount = function(account) {
             if (err) {
                 reject({
                     message: "An error occurred while creating the account: " + err,
+                    httpStatus: 500,
                     success: false
                 });
                 return;
@@ -308,6 +305,7 @@ module.exports.registerAccount = function(account) {
                 if (results.length != 0) {
                     reject({
                         message: "Account already exists.",
+                        httpStatus: 400,
                         success: false
                     });
                 } else {
@@ -317,18 +315,21 @@ module.exports.registerAccount = function(account) {
                     database.insertIntoTable("Account", "email, password_hash, permissions_lvl", "'" + accountObj.email + "', '" + accountObj.password + "', 0", connection).then((result) => {
                         resolve({
                             message: "Created your account successfully.",
+                            httpStatus: 200,
                             success: true
                         });
                     }).catch((result) => {
                         reject({
                             message: "Failed to create your account.",
+                            httpStatus: 500,
                             success: false
                         })
                     });
                 }
             }).catch((results) => {
                 reject({
-                    message: "An error occurred while creating the account: " + error,
+                    message: "An error occurred while creating an account.",
+                    httpStatus: 500,
                     success: false
                 });
             });

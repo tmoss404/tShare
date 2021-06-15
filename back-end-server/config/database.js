@@ -30,28 +30,6 @@ module.exports.insertIntoTable = function(tableName, columnsClause, valuesClause
         });
     });
 };
-module.exports.insertIntoTableSync = function(tableName, columnsClause, valuesClause, connection) {
-    var success;
-    connection.query("INSERT INTO " + tableName + " (" + columnsClause + ") VALUES (" + valuesClause + ")", function(err, results, fields) {
-        if (err) {
-            success = false;
-        } else {
-            success = true;
-        }
-    });
-    return success;
-};
-module.exports.deleteFromTableSync = function(tableName, whereClause, connection) {
-    var success;
-    connection.query("DELETE FROM " + tableName + " WHERE " + whereClause, function(err, results, fields) {
-        if (err) {
-            success = false;
-        } else {
-            success = true;
-        }
-    });
-    return success;
-}
 module.exports.deleteFromTable = function(tableName, whereClause, connection) {
     return new Promise((resolve, reject) => {
         connection.query("DELETE FROM " + tableName + " WHERE " + whereClause, function(err, results, fields) {

@@ -1,11 +1,12 @@
 const fileModel = require("../models/file");
+const routes = require("../routes");
 
 module.exports.setupRoutes = function(app) {
     app.post("/file/upload", (req, res) => {
         fileModel.getSignedUrl(req.body).then((msg) => {
-            res.status(200).send(msg);
+            routes.sendResponse(res, msg);
         }).catch((err) => {
-            res.status(400).send(err);
+            routes.sendResponse(res, err);
         });
     });
 };

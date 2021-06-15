@@ -6,7 +6,7 @@ var xhttp;
 
 // Hey, don't blame me! Tanner wanted the HTTP statuses to work like this for the Angular side of things.
 function statusReturnsResponse(status) {
-    return status == 200 || status == 400;
+    return true;
 }
 
 // Registering:

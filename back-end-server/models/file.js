@@ -17,6 +17,7 @@ module.exports.getSignedUrl = function(signUrlData) {
             signUrlData.fileType.length == 0) {
                 reject({
                     message: "Malformed request. Trying to hack the server?",
+                    httpStatus: 400,
                     success: false
                 });
                 return;
@@ -29,18 +30,20 @@ module.exports.getSignedUrl = function(signUrlData) {
                     Key: decodedToken.accountId + "/" + signUrlData.filePath,
                     Expires: appConstants.awsSignedUrlSeconds,
                     ContentType: signUrlData.fileType,
-                    ACL: "public-read"  // TODO Maybe change this ACL type.
+                    ACL: "public-read"
                 };
                 s3.getSignedUrl("putObject", s3Params, (err, data) => {
                     if (err) {
                         reject({
                             message: "An error has occurred while retrieving a signed S3 URL.",
+                            httpStatus: 500,
                             success: false
                         });
                         return;
                     }
                     resolve({
                         message: "Successfully retrieved a signed S3 URL.",
+                        httpStatus: 200,
                         success: true,
                         signedUrl: "https://" + appConstants.awsBucketName + ".s3.amazonaws.com/" + decodedToken.accountId + "/" + encodeURIComponent(signUrlData.filePath),
                         signedUrlData: data
@@ -49,6 +52,7 @@ module.exports.getSignedUrl = function(signUrlData) {
             } catch (err) {
                 reject({
                     message: "Login token is invalid.",
+                    httpStatus: 401,
                     success: false
                 });
             }

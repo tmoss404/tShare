@@ -10,3 +10,8 @@ module.exports.init = function(app) {
         res.send("The requested API route could not be found.");
     });
 };
+module.exports.sendResponse = function(res, message) {
+    var response = res.status(message.httpStatus);
+    delete message.httpStatus;
+    response.send(message);
+};

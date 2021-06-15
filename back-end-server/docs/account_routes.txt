@@ -6,7 +6,7 @@ Also, all requests have the fields listed wrapped in an Object. All routes shoul
 // Add this function to your web browser's console before running the example scripts:
 // Hey, don't blame me! Tanner wanted the HTTP statuses to work like this for the Angular side of things.
 function statusReturnsResponse(status) {
-    return status == 200 || status == 400;
+    return true;
 }
 
 
@@ -39,7 +39,7 @@ xhttp.send(JSON.stringify({
 
 /account/logout:
 
-This route will logout the user by adding their JWT token to the Invalid_Token table in the database. It takes the same parameter as check-login, which is one parameter: loginToken wrapped in an Object. This request will basically always return a status of success with a message, even if the login token is totally invalid:
+This route will logout the user by adding their JWT token to the Invalid_Token table in the database. It takes the same parameter as check-login, which is one parameter: loginToken wrapped in an Object. This request will fail if the token is already considered invalid:
 - loginToken: String
 
 Returns a message and a success status such as:

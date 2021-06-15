@@ -6,7 +6,7 @@ Also, all requests have the fields listed wrapped in an Object. All routes shoul
 // Add this function to your web browser's console before running the example scripts:
 // Hey, don't blame me! Tanner wanted the HTTP statuses to work like this for the Angular side of things.
 function statusReturnsResponse(status) {
-    return status == 200 || status == 400;
+    return true;
 }
 
 
