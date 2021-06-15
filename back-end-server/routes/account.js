@@ -1,5 +1,5 @@
 const accountModel = require("../models/account");
-const accountMiddleware = require("../models/account_middleware");
+const accountMiddleware = require("../models/accountMiddleware");
 const routes = require("../routes");
 
 module.exports.setupRoutes = function(app) {

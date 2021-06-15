@@ -22,42 +22,38 @@ module.exports.getSignedUrl = function(signUrlData) {
                 });
                 return;
         }
-        accountModel.checkLogin(signUrlData).then((message) => {
-            try {
-                var decodedToken = jsonWebToken.verify(signUrlData.loginToken, appConstants.jwtSecretKey);
-                var s3Params = {
-                    Bucket: appConstants.awsBucketName,
-                    Key: decodedToken.accountId + "/" + signUrlData.filePath,
-                    Expires: appConstants.awsSignedUrlSeconds,
-                    ContentType: signUrlData.fileType,
-                    ACL: "public-read"
-                };
-                s3.getSignedUrl("putObject", s3Params, (err, data) => {
-                    if (err) {
-                        reject({
-                            message: "An error has occurred while retrieving a signed S3 URL.",
-                            httpStatus: 500,
-                            success: false
-                        });
-                        return;
-                    }
-                    resolve({
-                        message: "Successfully retrieved a signed S3 URL.",
-                        httpStatus: 200,
-                        success: true,
-                        signedUrl: "https://" + appConstants.awsBucketName + ".s3.amazonaws.com/" + decodedToken.accountId + "/" + encodeURIComponent(signUrlData.filePath),
-                        signedUrlData: data
+        try {
+            var decodedToken = jsonWebToken.verify(signUrlData.loginToken, appConstants.jwtSecretKey);
+            var s3Params = {
+                Bucket: appConstants.awsBucketName,
+                Key: decodedToken.accountId + "/" + signUrlData.filePath,
+                Expires: appConstants.awsSignedUrlSeconds,
+                ContentType: signUrlData.fileType,
+                ACL: "public-read"
+            };
+            s3.getSignedUrl("putObject", s3Params, (err, data) => {
+                if (err) {
+                    reject({
+                        message: "An error has occurred while retrieving a signed S3 URL.",
+                        httpStatus: 500,
+                        success: false
                     });
+                    return;
+                }
+                resolve({
+                    message: "Successfully retrieved a signed S3 URL.",
+                    httpStatus: 200,
+                    success: true,
+                    signedUrl: "https://" + appConstants.awsBucketName + ".s3.amazonaws.com/" + decodedToken.accountId + "/" + encodeURIComponent(signUrlData.filePath),
+                    signedUrlData: data
                 });
-            } catch (err) {
-                reject({
-                    message: "Login token is invalid.",
-                    httpStatus: 401,
-                    success: false
-                });
-            }
-        }).catch((err) => {
-            reject(err);
-        });
+            });
+        } catch (err) {
+            reject({
+                message: "Login token is invalid.",
+                httpStatus: 401,
+                success: false
+            });
+        }
     });
 };

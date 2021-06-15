@@ -2,7 +2,7 @@ const bcrypt = require("bcryptjs");
 const request = require("request");
 const jsonWebToken = require("jsonwebtoken");
 const objUtil = require("../objectUtil");
-const accountUtil = require("./account_util");
+const accountUtil = require("./accountUtil");
 const appConstants = require("../config/appConstants");
 const database = require("../config/database");
 
