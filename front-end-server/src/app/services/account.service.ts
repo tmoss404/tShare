@@ -12,13 +12,13 @@ export class AccountService {
 
   newAccount(data: User): Observable<any>{
 
-    return this.http.post<any>(`http://tshare-back-end.herokuapp.com/account/register`, data);
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/account/register`, data);
 
   }
 
   recoverPassword(data: any){
 
-    return this.http.post<any>(`http://tshare-back-end.herokuapp.com/account/forgot-password`, data);
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/account/forgot-password`, data);
   
   }
 
