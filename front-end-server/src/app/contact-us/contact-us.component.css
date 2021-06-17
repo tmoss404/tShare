@@ -92,14 +92,10 @@
     bottom: 4em;
 }
 
-#itemImg {
-    float: left;
-    width: 25%;
-    height: auto;
-}
+
 
 #space {
-    margin-top: -2%;
+    margin-top: -5%;
     margin-bottom: -8%;
 }
 
