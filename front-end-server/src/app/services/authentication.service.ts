@@ -5,7 +5,7 @@ import { JwtHelperService } from '@auth0/angular-jwt';
 
 const helper = new JwtHelperService();
 
-import { User } from './User';
+import { User } from '../User';
 
 @Injectable({
   providedIn: 'root'
@@ -38,10 +38,11 @@ export class AuthenticationService {
   }
 
   login(user: User): Observable<any> {
-    return this.http.post<any>('http://tshare-back-end.herokuapp.com/account/login', user);
+    return this.http.post<any>('https://tshare-back-end.herokuapp.com/account/login', user);
   }  
 
   logout() {
-    return this.http.post<any>('http://tshare-back-end.herokuapp.com/account/logout', localStorage.getItem("access_token"));
+    const token = { loginToken: localStorage.getItem("access_token") }
+    return this.http.post<any>('https://tshare-back-end.herokuapp.com/account/logout', token);
   }
 }

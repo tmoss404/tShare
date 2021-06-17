@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Router, CanActivate } from '@angular/router';
-import { AuthenticationService } from './authentication.service';
+import { AuthenticationService } from '../services/authentication.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class UserLoggedInGuardService implements CanActivate {
+export class GuardAuthService implements CanActivate {
 
   constructor(
     private auth: AuthenticationService,
@@ -14,11 +14,12 @@ export class UserLoggedInGuardService implements CanActivate {
 
   canActivate(): boolean {
 
-    if (this.auth.isAuthenticated()) {
-      this.router.navigate(['/my-files']);
+    if (!this.auth.isAuthenticated()) {
+      this.router.navigate(['/login']);
       return false;
     }
     return true;
   }
 
 }
+

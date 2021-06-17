@@ -1,3 +1,5 @@
+const objUtil = require("../objectUtil");
+
 module.exports.isEmailValid = function(email) {
     var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     return email.match(emailRegex);
@@ -21,8 +23,15 @@ module.exports.isPasswordValid = function(password) {
     }
     return password.length > 8 && strContainsCharIn(password, validSymbols) && strContainsCharIn(password, validNums);
 };
-module.exports.getRandomInt = function(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+module.exports.areLoginInputsValid = function(email, password) {
+    if (objUtil.isNullOrUndefined(email) || objUtil.isNullOrUndefined(password) || email.length == 0 || password.length == 0) {
+        return false;
+    }
+    if (!module.exports.isEmailValid(email)) {
+        return false;
+    }
+    if (!module.exports.isPasswordValid(password)) {
+        return false;
+    }
+    return true;
 };

@@ -16,7 +16,7 @@ module.exports.jwtTokenExpiresIn = "1h";
 module.exports.jwtTokenExpiresInAsMillis = 1000 * 60 * 60 * 1;  // This should be the same as jwtTokenExpiresIn, but in milliseconds (TODO I should refactor this. It's bad.)
 
 module.exports.thisServerUrl = "http://tshare-back-end.herokuapp.com";
-module.exports.frontEndUrl = "TODO Tanner, please add your hosted Heroku app link here.";  // Make sure it is prefixed with http:// NOT https://
+module.exports.frontEndUrl = "http://t-share.netlify.app";
 module.exports.testLoginToken = "test_token";
 module.exports.awsSignedUrlSeconds = 60 * 60 * 24;
 module.exports.awsRegion = "us-east-1";

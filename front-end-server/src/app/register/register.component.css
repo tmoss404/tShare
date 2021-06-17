@@ -15,7 +15,7 @@
 .alert {
     background-color: #fed3d3;
     color: #820000;
-    padding: .2rem;
+    padding: .5rem;
     margin-top: .5rem;
     border: #82000083 2px solid;
 }
@@ -24,9 +24,9 @@
     color: #155724;
     background-color: #d4edda;
     border: #15572483 2px solid;
-    padding: .2rem;
+    padding: .5rem;
     margin-top: .5rem;
-  }
+}
 
 .form-group {
     margin-bottom: 1rem;

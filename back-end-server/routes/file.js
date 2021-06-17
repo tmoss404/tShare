@@ -1,11 +1,13 @@
 const fileModel = require("../models/file");
+const routes = require("../routes");
+const accountMiddleware = require("../models/accountMiddleware");
 
 module.exports.setupRoutes = function(app) {
-    app.post("/file/upload", (req, res) => {
+    app.post("/file/upload", accountMiddleware.checkAuth, (req, res) => {
         fileModel.getSignedUrl(req.body).then((msg) => {
-            res.status(200).send(msg);
+            routes.sendResponse(res, msg);
         }).catch((err) => {
-            res.status(400).send(err);
+            routes.sendResponse(res, err);
         });
     });
 };
