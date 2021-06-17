@@ -1,7 +1,6 @@
 // Run these every time you refactor the routing code:
 const testAccountEmail = "test.backend@gmail.com";  // Should be unique each time you run this.
-const testAccountValidEmail = "eric.d.mcdonald@gmail.com";
-const testAccountPwd = "myValidPwd123!", testAccountNewPwd = "myNewValidPwd123!";
+const testAccountPwd = "myValidPwd123!";
 var xhttp;
 
 // Hey, don't blame me! Tanner wanted the HTTP statuses to work like this for the Angular side of things.
@@ -55,32 +54,6 @@ xhttp.send(JSON.stringify({
     loginToken: theLoginToken
 }));
 
-// Forgot password:
-xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
-	console.log(xhttp.responseText);
-    }
-};
-xhttp.open("POST", "http://localhost/account/forgot-password", false);
-xhttp.setRequestHeader("Content-Type", "application/json");
-xhttp.send(JSON.stringify({
-	email: testAccountValidEmail
-}));
-
-// Resetting password:
-xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
-	console.log(xhttp.responseText);
-    }
-};
-xhttp.open("POST", "http://localhost/account/reset-password/38806", false);
-xhttp.setRequestHeader("Content-Type", "application/json");
-xhttp.send(JSON.stringify({
-	newPassword: testAccountNewPwd
-}));
-
 // Uploading a file:
 var signedUrl = null;
 xhttp = new XMLHttpRequest();
@@ -95,7 +68,7 @@ xhttp.open("POST", "http://localhost/file/upload", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
 loginToken: theLoginToken,
-filePath: "your/file.txt",
+filePath: "yourother/file.txt",
 fileType: "text/plain"
 }));
 
