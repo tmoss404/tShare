@@ -1,0 +1,16 @@
+.btn-primary:hover {
+    color: #fff;
+    background-color: #1ab9d1;
+    border-color: #1ab9d1;
+}
+
+.btn-primary{
+    color: rgb(32, 19, 219);
+    background-color: #fff;
+    border-color: #fff;
+}
+
+#space {
+    margin-top: -5%;
+    margin-bottom: -8%;
+}
