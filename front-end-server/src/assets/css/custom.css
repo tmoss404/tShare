@@ -84,3 +84,7 @@
 .check-label{
     color: #495057;
 }
+
+#round-image{
+    border-radius: .3rem;
+}
