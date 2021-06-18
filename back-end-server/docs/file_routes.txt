@@ -13,7 +13,7 @@ function statusReturnsResponse(status) {
 
 /file/upload:
 
-This route retrieves a "signed S3 URL" that you can send a PUT request to upload a file directly to our S3 bucket. It prefixes the path with the user's account ID to ensure that they can only upload to their directory. It takes three parameters: loginToken, filePath, and fileType all wrapped in an Object. If the request is malformed or the provided login token is invalid, the request will be rejected and a success status of false is returned along with an error message.
+This route retrieves a "signed S3 URL" that you can send a PUT request to upload a file directly to our S3 bucket. If the filePath parameter contains backwards-slashes (\), they will be converted into forwards-slashes (/). It prefixes the path with the user's account ID to ensure that they can only upload to their directory. It takes three parameters: loginToken, filePath, and fileType all wrapped in an Object. If the request is malformed or the provided login token is invalid, the request will be rejected and a success status of false is returned along with an error message.
 Otherwise, an Object containing: message, success, signedUrl, and signedUrlData is returned. Please note that you must use the URL returned in signedUrlData when you are sending the PUT request (the signedUrl parameter is for *viewing* the file).
 - loginToken: String
 - filePath: String
@@ -51,3 +51,33 @@ xhttp.open("PUT", "https://bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b.s3.ama
 xhttp.setRequestHeader("Content-Type", "text/plain");  // This header MUST match up with the fileType you provided in the sign URL request.
 xhttp.setRequestHeader("x-amz-acl", "public-read");  // You MUST have this header set, otherwise AWS will give you error 403.
 xhttp.send("This is the contents of my file!");
+
+
+/file/list:
+
+This route allows you to retrieve a list of file paths and file metadata that are prefixed with the specified directory path. The data it returns in s3Data is specified by AWS S3. See https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html for more documentation on the s3Data return variable specifically. 
+Please note that backwards-slashes (\) will be converted to forwards-slashes (/). Having trailing or prefixed /'s in dirPath will cause undefined behavior. Also, each file path returned is prefixed with the user's directory in our S3 bucket. Make sure that it is not exposed on the client-side!
+It takes three parameters wrapped in an Object:
+- loginToken: String
+- dirPath: String, or null to retrieve all of the user's files
+- maxFiles: int, non-zero and non-negative, up to 1000
+
+Returns an Object containing at least message, and success. Optionally, s3Data is returned as well if the request was successful:
+{"message":"Successfully retrieved the user's files.","success":true,"s3Data":{"IsTruncated":false,"Contents":[{"Key":"294/your/file.txt","LastModified":"2021-06-18T00:03:35.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":32,"StorageClass":"STANDARD"},{"Key":"294/your/other/file.txt","LastModified":"2021-06-17T23:19:54.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":32,"StorageClass":"STANDARD"},{"Key":"294/your/other2/file.txt","LastModified":"2021-06-17T23:30:27.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":32,"StorageClass":"STANDARD"},{"Key":"294/yourother/file.txt","LastModified":"2021-06-18T00:24:06.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":32,"StorageClass":"STANDARD"}],"Name":"bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b","Prefix":"294/","MaxKeys":1000,"CommonPrefixes":[],"KeyCount":4}}
+
+Example request:
+
+// Listing files:
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://tshare-back-end.herokuapp.com/file/list", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
+    dirPath: "your/existing/file/path",  // Optional, can be null or undefined
+    maxFiles: 1000  // Optional, can be undefined
+}));
