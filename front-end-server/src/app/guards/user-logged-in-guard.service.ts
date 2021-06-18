@@ -15,7 +15,7 @@ export class UserLoggedInGuardService implements CanActivate {
   canActivate(): boolean {
 
     if (this.auth.isAuthenticated()) {
-      this.router.navigate(['/my-files']);
+      this.router.navigate(['/file-dashboard/my-files']);
       return false;
     }
     return true;

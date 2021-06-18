@@ -38,7 +38,7 @@ export class LoginComponent implements OnInit {
       next: (success) => {
 
         localStorage.setItem( 'access_token', success.loginToken );
-        this.router.navigate(['/file-dashboard']);
+        this.router.navigate(['/file-dashboard/my-files']);
       },
       error: (err) => {
         this.response = err.error;
