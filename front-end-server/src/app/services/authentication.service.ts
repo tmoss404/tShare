@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { JwtHelperService } from '@auth0/angular-jwt';
+import { Router } from '@angular/router';
 
 const helper = new JwtHelperService();
 
@@ -13,7 +14,7 @@ import { User } from '../User';
 
 export class AuthenticationService {
 
-  constructor( private http: HttpClient) { }
+  constructor( private http: HttpClient, private router: Router) { }
 
   public getToken(): string {
     return localStorage.getItem('access_token');
@@ -41,8 +42,13 @@ export class AuthenticationService {
     return this.http.post<any>('https://tshare-back-end.herokuapp.com/account/login', user);
   }  
 
-  logout() {
+  logout(): Observable<any> {
     const token = { loginToken: localStorage.getItem("access_token") }
     return this.http.post<any>('https://tshare-back-end.herokuapp.com/account/logout', token);
+  }
+
+  clearToken(){
+    localStorage.removeItem("access_token");
+    this.router.navigate(['/login']);
   }
 }
