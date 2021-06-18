@@ -15,6 +15,7 @@ module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
             info.newPassword.length == 0 || !accountUtil.isPasswordValid(info.newPassword)) {
                 reject({
                     message: "Password is invalid.",
+                    httpStatus: 400,
                     success: false
                 });
                 return;
@@ -24,6 +25,15 @@ module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
                 resetPwdId: resetPwdId_
             }
             dbConnectionPool.getConnection((err, connection) => {
+                if (err) {
+                    reject({
+                        message: "Failed to establish a connection to the database.",
+                        httpStatus: 500,
+                        success: false,
+                        connectionToDrop: connection
+                    });
+                    return;
+                }
                 const dbConnection = connection;
                 database.selectFromTable("Password_Reset_Link", "sub_link='" + info.resetPwdId + "'", connection).then((results) => {
                     var currentTime = Date.now();
@@ -34,7 +44,8 @@ module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
                         reject({
                             message: "Your password reset link is no longer valid.",
                             httpStatus: 401,
-                            success: false
+                            success: false,
+                            connectionToDrop: dbConnection
                         });
                         return;
                     }
@@ -47,24 +58,31 @@ module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
                             resolve({
                                 message: "Your password has been reset successfully.",
                                 httpStatus: 200,
-                                success: true
+                                success: true,
+                                connectionToDrop: dbConnection
                             });
                         }).catch((resultFalse) => {
                             reject({
                                 message: "An internal error has occurred while deleting the password reset sub-link.",
-                                success: false
+                                success: false,
+                                httpStatus: 500,
+                                connectionToDrop: dbConnection
                             });
                         });
                     }).catch((resultFalse) => {
                         reject({
                             message: "An internal error has occurred while updating the user's password.",
-                            success: false
+                            success: false,
+                            httpStatus: 500,
+                            connectionToDrop: dbConnection
                         });
                     });
                 }).catch((resultsNull) => {
                     reject({
                         message: "An internal error has occurred while retrieving a sub-link.",
-                        success: false
+                        success: false,
+                        httpStatus: 500,
+                        connectionToDrop: dbConnection
                     });
                 });
             });
@@ -76,17 +94,28 @@ module.exports.forgotPassword = function(forgotPwdInfo) {
         if (objUtil.isNullOrUndefined(info) || objUtil.isNullOrUndefined(info.email) || info.email.length == 0 || !accountUtil.isEmailValid(info.email)) {
             reject({
                 message: "Email is invalid.",
-                success: false
+                success: false,
+                httpStatus: 400
             });
             return;
         }
         dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject({
+                    message: "Failed to establish a connection to the database.",
+                    httpStatus: 500,
+                    success: false
+                });
+                return;
+            }
             const dbConnection = connection;
             database.selectFromTable("Account", "email='" + info.email + "'", connection).then((results) => {
                 if (results.length == 0) {
                     reject({
                         message: "No account with email \"" + info.email + "\" could be found.",
-                        success: false
+                        httpStatus: 401,
+                        success: false,
+                        connectionToDrop: dbConnection
                     });
                     return;
                 }
@@ -124,6 +153,8 @@ module.exports.forgotPassword = function(forgotPwdInfo) {
                     if (error) {
                         reject({
                             message: "An internal error has occurred while trying to send the password reset email.",
+                            httpStatus: 500,
+                            connectionToDrop: dbConnection,
                             success: false
                         });
                         return;
@@ -132,19 +163,24 @@ module.exports.forgotPassword = function(forgotPwdInfo) {
                         resolve({
                             message: "A password reset email has been sent to " + info.email,
                             httpStatus: 200,
-                            success: true
+                            success: true,
+                            connectionToDrop: dbConnection
                         });
                     }).catch((result) => {
                         reject({
                             message: "Failed to send a password reset email to " + info.email,
-                            success: false
+                            success: false,
+                            httpStatus: 500,
+                            connectionToDrop: dbConnection
                         });
                     });
                 });
             }).catch((resultsNull) => {
                 reject({
                     message: "An error has occurred while sending the password reset email.",
-                    success: false
+                    success: false,
+                    httpStatus: 500,
+                    connectionToDrop: dbConnection
                 });
             });
         });
@@ -152,12 +188,21 @@ module.exports.forgotPassword = function(forgotPwdInfo) {
 }
 module.exports.logout = function(loginInfo) {
     return new Promise((resolve, reject) => {
-        var successResponse = {
-            message: "Token has been invalidated successfully.",
-            httpStatus: 200,
-            success: true
-        };
         dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject({
+                    message: "Failed to establish a connection to the database.",
+                    httpStatus: 500,
+                    success: false
+                });
+                return;
+            }
+            var successResponse = {
+                message: "Token has been invalidated successfully.",
+                httpStatus: 200,
+                success: true,
+                connectionToDrop: connection
+            };
             database.deleteFromTable("Invalid_Token", Date.now() + " - UNIX_TIMESTAMP(invalidated_date)*1000 > " + appConstants.jwtTokenExpiresInAsMillis, connection).then((success) => {
                 try {
                     var decodedToken = jsonWebToken.verify(loginInfo.loginToken, appConstants.jwtSecretKey);
@@ -188,12 +233,21 @@ module.exports.checkLogin = function(loginInfo) {
             });
             return;
         }
-        var invalidTokenResponse = {
-            message: "Token is invalid. Please re-login.",
-            httpStatus: 401,
-            success: false
-        };
         dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject({
+                    message: "Failed to establish a connection to the database.",
+                    httpStatus: 500,
+                    success: false
+                });
+                return;
+            }
+            var invalidTokenResponse = {
+                message: "Token is invalid. Please re-login.",
+                httpStatus: 401,
+                success: false,
+                connectionToDrop: connection
+            };
             try {
                 var decodedToken = jsonWebToken.verify(loginInfo.loginToken, appConstants.jwtSecretKey);
                 database.selectFromTable("Invalid_Token", "token='" + JSON.stringify(decodedToken) + "'", connection).then((results) => {
@@ -201,7 +255,8 @@ module.exports.checkLogin = function(loginInfo) {
                         resolve({
                             message: "Your login token is still valid.",
                             httpStatus: 200,
-                            success: true
+                            success: true,
+                            connectionToDrop: connection
                         });
                     } else {
                         reject(invalidTokenResponse);
@@ -210,7 +265,8 @@ module.exports.checkLogin = function(loginInfo) {
                     reject({
                         message: "Failed to query the database for invalid tokens.",
                         httpStatus: 500,
-                        success: false
+                        success: false,
+                        connectionToDrop: connection
                     });
                 });
             } catch(err) {
@@ -231,32 +287,53 @@ module.exports.login = function(reqData) {
             return;
         }
         dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject({
+                    message: "Failed to establish a connection to the database.",
+                    httpStatus: 500,
+                    success: false
+                });
+                return;
+            }
             database.selectFromTable("Account", "email='" + accountObj.email + "'", connection).then((results) => {
                 if (results.length != 0 && bcrypt.compareSync(accountObj.password, results[0].password_hash)) {
-                    var theLoginToken = jsonWebToken.sign({
-                        accountId: results[0].account_id,
-                        email: results[0].email
-                    }, appConstants.jwtSecretKey, {
-                        expiresIn: appConstants.jwtTokenExpiresIn
-                    });
-                    resolve({
-                        message: "Logged in successfully.",
-                        success: true,
-                        httpStatus: 200,
-                        loginToken: theLoginToken
-                    });
+                    try {
+                        var theLoginToken = jsonWebToken.sign({
+                            accountId: results[0].account_id,
+                            email: results[0].email
+                        }, appConstants.jwtSecretKey, {
+                            expiresIn: appConstants.jwtTokenExpiresIn
+                        });
+                        resolve({
+                            message: "Logged in successfully.",
+                            success: true,
+                            httpStatus: 200,
+                            loginToken: theLoginToken,
+                            connectionToDrop: connection
+                        });
+                    } catch (theError) {
+                        console.log(theError);
+                        reject({
+                            message: "Failed to sign your web token.",
+                            success: false,
+                            httpStatus: 500,
+                            connectionToDrop: connection
+                        });
+                    }
                 } else {
                     reject({
                         message: "The specified email/password combination is invalid.",
                         success: false,
-                        httpStatus: 401
+                        httpStatus: 401,
+                        connectionToDrop: connection
                     });
                 }
             }).catch((resultsNull) => {
                 reject({
                     message: "An error has occurred while logging in.",
                     httpStatus: 500,
-                    success: false
+                    success: false,
+                    connectionToDrop: connection
                 });
             });
         });
@@ -292,7 +369,7 @@ module.exports.registerAccount = function(account) {
         dbConnectionPool.getConnection((err, connection) => {
             if (err) {
                 reject({
-                    message: "An error occurred while creating the account: " + err,
+                    message: "Failed to establish a connection to the database.",
                     httpStatus: 500,
                     success: false
                 });
@@ -302,8 +379,9 @@ module.exports.registerAccount = function(account) {
                 if (results.length != 0) {
                     reject({
                         message: "Account already exists.",
-                        httpStatus: 400,
-                        success: false
+                        httpStatus: 401,
+                        success: false,
+                        connectionToDrop: connection
                     });
                 } else {
                     var salt = bcrypt.genSaltSync(10);
@@ -313,13 +391,15 @@ module.exports.registerAccount = function(account) {
                         resolve({
                             message: "Created your account successfully.",
                             httpStatus: 200,
-                            success: true
+                            success: true,
+                            connectionToDrop: connection
                         });
                     }).catch((result) => {
                         reject({
                             message: "Failed to create your account.",
                             httpStatus: 500,
-                            success: false
+                            success: false,
+                            connectionToDrop: connection
                         })
                     });
                 }
@@ -327,7 +407,8 @@ module.exports.registerAccount = function(account) {
                 reject({
                     message: "An error occurred while creating an account.",
                     httpStatus: 500,
-                    success: false
+                    success: false,
+                    connectionToDrop: connection
                 });
             });
         });

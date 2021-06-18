@@ -13,5 +13,9 @@ module.exports.init = function(app) {
 module.exports.sendResponse = function(res, message) {
     var response = res.status(message.httpStatus);
     delete message.httpStatus;
+    if (message.connectionToDrop) {
+        message.connectionToDrop.release();
+        delete message.connectionToDrop;
+    }
     response.send(message);
 };
