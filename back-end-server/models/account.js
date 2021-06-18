@@ -312,7 +312,6 @@ module.exports.login = function(reqData) {
                             connectionToDrop: connection
                         });
                     } catch (theError) {
-                        console.log(theError);
                         reject({
                             message: "Failed to sign your web token.",
                             success: false,
