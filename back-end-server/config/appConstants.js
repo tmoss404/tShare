@@ -12,8 +12,8 @@ module.exports.awsAccessSecretKey = "OPOk4l329NyW/WYtg8xM5hiJWRFP4JM5J++VYoia";
 module.exports.awsBucketName = "bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b";
 module.exports.jwtSecretKey = "Oh man, tShare is so cool. Eric is amazing. This software is so dank bro OMG. This string is also very long and hard-to-guess, yo.";
 
-module.exports.jwtTokenExpiresIn = "1h";
-module.exports.jwtTokenExpiresInAsMillis = 1000 * 60 * 60 * 1;  // This should be the same as jwtTokenExpiresIn, but in milliseconds (TODO I should refactor this. It's bad.)
+module.exports.jwtTokenExpiresIn = 60 * 60 * 24;  // 60 seconds x 60 minutes x 24 hours
+module.exports.jwtTokenExpiresInAsMillis = 1000 * module.exports.jwtTokenExpiresIn;
 
 module.exports.thisServerUrl = "http://tshare-back-end.herokuapp.com";
 module.exports.frontEndUrl = "http://t-share.netlify.app";
