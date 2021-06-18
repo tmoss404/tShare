@@ -15,23 +15,25 @@ export class HeaderComponent implements OnInit {
   
   ngOnInit() {
     this.router.events.subscribe((event: Event) => {
-      if (event instanceof NavigationStart || event instanceof NavigationEnd) { // only read the token on "NavigationStart"
+      if (event instanceof NavigationStart || event instanceof NavigationEnd) { // read the token on "NavigationStart / NavigationEnd"
         this.token = this.auth.readToken();
       }
     });
   }
   
   logout(){
-    this.auth.logout().subscribe({
-      next: (success) => {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("expires_at");
-        console.log(success.message);
-        this.router.navigate(['/login'])
-      },
-      error: (err) => {
-        console.log(err.error.message);
-      }
-    });
+    if(this.auth.isAuthenticated){
+      this.auth.logout().subscribe({
+        next: (success) => {
+          this.auth.clearToken();
+          console.log(success.message);
+        },
+        error: (err) => {
+          console.log(err.error.message);
+        }
+      });
+    }else {
+      this.router.navigate['/login'];
+    }
   }
 }
