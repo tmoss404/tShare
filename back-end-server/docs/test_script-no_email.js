@@ -29,7 +29,10 @@ xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && statusReturnsResponse(this.status)) {
         console.log(this.response);
-        theLoginToken = JSON.parse(this.response).loginToken;
+        var responseJson = JSON.parse(this.response);
+        if (responseJson.loginToken) {
+            theLoginToken = responseJson.loginToken;
+        }
     }
 };
 xhttp.open("POST", "http://localhost/account/login", false);

@@ -226,8 +226,7 @@ module.exports.login = function(reqData) {
             reject({
                 message: "Invalid email/password combination.",
                 success: false,
-                httpStatus: 400,
-                loginToken: null
+                httpStatus: 400
             });
             return;
         }
@@ -250,16 +249,14 @@ module.exports.login = function(reqData) {
                     reject({
                         message: "The specified email/password combination is invalid.",
                         success: false,
-                        httpStatus: 401,
-                        loginToken: null
+                        httpStatus: 401
                     });
                 }
             }).catch((resultsNull) => {
                 reject({
                     message: "An error has occurred while logging in.",
                     httpStatus: 500,
-                    success: false,
-                    loginToken: null
+                    success: false
                 });
             });
         });

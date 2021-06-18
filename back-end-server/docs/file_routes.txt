@@ -77,7 +77,7 @@ xhttp.onreadystatechange = function() {
 xhttp.open("POST", "http://tshare-back-end.herokuapp.com/file/list", true);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
-    loginToken: theLoginToken,
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
     dirPath: "your/existing/file/path",  // Optional, can be null
     maxFiles: 1000  // Optional, can be undefined
 }));
