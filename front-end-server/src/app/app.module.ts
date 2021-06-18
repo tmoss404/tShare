@@ -20,6 +20,12 @@ import { TermsOfServiceComponent } from './terms-of-service/terms-of-service.com
 import { AuthInterceptorService } from './services/auth-interceptor.service';
 import { MyFilesComponent } from './my-files/my-files.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { FileDashboardComponent } from './file-dashboard/file-dashboard.component';
+import { SharedContentComponent } from './shared-content/shared-content.component';
+import { RequestAccessComponent } from './request-access/request-access.component';
+import { RequestsComponent } from './requests/requests.component';
+import { QuickAccessComponent } from './quick-access/quick-access.component';
+import { DeletedFilesComponent } from './deleted-files/deleted-files.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +42,13 @@ import { ResetPasswordComponent } from './reset-password/reset-password.componen
     ContactUsComponent,
     TermsOfServiceComponent,
     MyFilesComponent,
-    ResetPasswordComponent
+    ResetPasswordComponent,
+    FileDashboardComponent,
+    SharedContentComponent,
+    RequestAccessComponent,
+    RequestsComponent,
+    QuickAccessComponent,
+    DeletedFilesComponent
   ],
   imports: [
     BrowserModule,

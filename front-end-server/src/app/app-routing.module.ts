@@ -13,6 +13,12 @@ import { GuardAuthService } from './guards/guard-auth.service';
 import { UserLoggedInGuardService } from './guards/user-logged-in-guard.service';
 import { MyFilesComponent } from './my-files/my-files.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { FileDashboardComponent } from './file-dashboard/file-dashboard.component';
+import { SharedContentComponent } from './shared-content/shared-content.component';
+import { RequestAccessComponent } from './request-access/request-access.component';
+import { RequestsComponent } from './requests/requests.component';
+import { QuickAccessComponent } from './quick-access/quick-access.component';
+import { DeletedFilesComponent } from './deleted-files/deleted-files.component';
 
 const routes: Routes = [
   {path: "home", component: HomeComponent},
@@ -20,7 +26,17 @@ const routes: Routes = [
   {path: "product", component: ProductComponent},
   {path: "contact-us", component: ContactUsComponent},
   {path: "login", component: LoginComponent, canActivate: [UserLoggedInGuardService]},
-  {path: "my-files", component: MyFilesComponent},
+  {path: "file-dashboard", component: FileDashboardComponent,
+    children: [
+      {path: "my-files", component: MyFilesComponent},
+      {path: "shared-content", component: SharedContentComponent},
+      {path: "request-access", component: RequestAccessComponent},
+      {path: "requests", component: RequestsComponent},
+      {path: "quick-access", component: QuickAccessComponent},
+      {path: "deleted-files", component: DeletedFilesComponent}
+    ], 
+    canActivate: [GuardAuthService]
+  },
   {path: "register", component: RegisterComponent},
   {path: "terms-of-service", component: TermsOfServiceComponent},
   {path: "forgot-password", component: ForgotPasswordComponent},
