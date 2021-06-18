@@ -14,9 +14,9 @@
             </li>
             <li class="nav-item" *ngIf="!token"><a [routerLink]="['/login']" routerLinkActive="active" class="nav-link">Log In</a>
             </li>
-            <li class="nav-item" *ngIf="token"><a [routerLink]="['/my-files']" routerLinkActive="active" class="nav-link">My Files</a>
+            <li class="nav-item" *ngIf="token"><a [routerLink]="['/file-dashboard']" routerLinkActive="active" class="nav-link">Dashboard</a>
             </li>
-            <li class="nav-item" *ngIf="token"><a (click)="logout()" [routerLink]="['/login']" class="nav-link">Log Out</a>
+            <li class="nav-item" *ngIf="token"><a (click)="logout()" [routerLink]="" class="nav-link">Log Out</a>
             </li>
           </ul>
            <!-- Navbar Brand -->
