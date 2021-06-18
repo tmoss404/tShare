@@ -13,7 +13,11 @@ var s3  = new awsSdk.S3({
 
 module.exports.listFiles = function(listFilesData) {
     return new Promise((resolve, reject) => {
-        if (objectUtil.isNullOrUndefined(listFilesData) || objectUtil.isUndefined(listFilesData.dirPath) || listFilesData.dirPath != null && listFilesData.dirPath.length == 0) {
+        var reqObjInvalid = objectUtil.isNullOrUndefined(listFilesData);
+        if (!reqObjInvalid && objectUtil.isUndefined(listFilesData.dirPath)) {
+            listFilesData.dirPath = null;
+        }
+        if (reqObjInvalid || listFilesData.dirPath != null && listFilesData.dirPath.length == 0) {
             reject({
                 message: "Malformed request. Trying to hack the server?",
                 httpStatus: 400,
@@ -29,9 +33,14 @@ module.exports.listFiles = function(listFilesData) {
         }
         try {
             var decodedToken = jsonWebToken.verify(listFilesData.loginToken, appConstants.jwtSecretKey);
+            var pathPrefix = "" + decodedToken.accountId + "/";
+            if (listFilesData.dirPath != null) {
+                pathPrefix += listFilesData.dirPath + "/";
+            }
             var s3Params = {
                 Bucket: appConstants.awsBucketName,
-                MaxKeys: appConstants.awsMaxKeys
+                MaxKeys: appConstants.awsMaxKeys,
+                Prefix: pathPrefix
             };
             s3.listObjectsV2(s3Params, (err, data) => {
                 if (err) {
@@ -41,20 +50,11 @@ module.exports.listFiles = function(listFilesData) {
                         success: false
                     });
                 } else {
-                    var files = [];
-                    for (var i = 0; i < data.Contents.length && files.length < listFilesData.maxFiles; i++) {
-                        var s3File = data.Contents[i];
-                        var accountDir = "" + decodedToken.accountId + "/";
-                        if (!s3File.Key.startsWith(accountDir) || listFilesData.dirPath != null && !s3File.Key.startsWith(accountDir + listFilesData.dirPath + "/")) {
-                            continue;
-                        }
-                        files.push(s3File);
-                    }
                     resolve({
                         message: "Successfully retrieved the user's files.",
                         httpStatus: 200,
                         success: true,
-                        s3Data: files
+                        s3Data: data
                     });
                 }
             });

@@ -99,7 +99,7 @@ xhttp.open("POST", "http://localhost/file/list", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
-    dirPath: "your"
+    dirPath: "your\\other2"
 }));
 
 // Listing files (no directory path):
@@ -113,7 +113,6 @@ xhttp.open("POST", "http://localhost/file/list", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
-    dirPath: null,
     maxFiles: 1000
 }));
 
