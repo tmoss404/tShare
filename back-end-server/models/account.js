@@ -29,8 +29,7 @@ module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
                     reject({
                         message: "Failed to establish a connection to the database.",
                         httpStatus: 500,
-                        success: false,
-                        connectionToDrop: connection
+                        success: false
                     });
                     return;
                 }
