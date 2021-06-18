@@ -1,0 +1,20 @@
+{
+    "IsTruncated":false,
+    "Contents":[
+       {
+          "Key":"294/your/file.txt",
+          "LastModified":"2021-06-15T17:04:24.000Z",
+          "ETag":"\"38e08468daab0c0900839d05afbea3da\"",
+          "Size":32,
+          "StorageClass":"STANDARD"
+       }
+    ],
+    "Name":"bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b",
+    "Prefix":"",
+    "MaxKeys":1000,
+    "CommonPrefixes":[
+       
+    ],
+    "KeyCount":1
+ }
+ 

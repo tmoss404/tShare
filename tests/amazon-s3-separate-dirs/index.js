@@ -22,8 +22,7 @@ app.get("/", (req, res) => {
 });
 app.get("/file/list", (req, res) => {
     var params = {
-        Bucket: "bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b",
-        MaxKeys: 1000
+        Bucket: "bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b"
     };
     s3.listObjectsV2(params, (err, data) => {
         if (err) {
