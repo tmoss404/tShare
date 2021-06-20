@@ -26,6 +26,7 @@ import { RequestAccessComponent } from './request-access/request-access.componen
 import { RequestsComponent } from './requests/requests.component';
 import { QuickAccessComponent } from './quick-access/quick-access.component';
 import { DeletedFilesComponent } from './deleted-files/deleted-files.component';
+import { ComingSoonComponent } from './coming-soon/coming-soon.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +49,8 @@ import { DeletedFilesComponent } from './deleted-files/deleted-files.component';
     RequestAccessComponent,
     RequestsComponent,
     QuickAccessComponent,
-    DeletedFilesComponent
+    DeletedFilesComponent,
+    ComingSoonComponent
   ],
   imports: [
     BrowserModule,

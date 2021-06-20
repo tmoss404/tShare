@@ -1,0 +1,44 @@
+/*VIDEO*/
+
+#theVideo {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+}
+
+
+/* Centered text */
+
+.center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    text-align: center;
+    width: 100%;
+}
+
+#coming {
+    font-size: 8em;
+    font-weight: 500;
+}
+
+#text {
+    font-size: 2em;
+    font-weight: 200;
+    text-align: center;
+    width: 100%;
+}
+
+.bottomright {
+    position: absolute;
+    bottom: 2%;
+    right: 5%;
+    transform: translate(-50%, -50%);
+    font-size: 2em;
+    color: white;
+    opacity: 10%;
+}

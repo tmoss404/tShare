@@ -4,6 +4,7 @@ import { CompanyComponent } from './company/company.component';
 import { ContactUsComponent } from './contact-us/contact-us.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { HomeComponent } from './home/home.component';
+import { ComingSoonComponent } from './coming-soon/coming-soon.component';
 import { LoginComponent } from './login/login.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { ProductComponent } from './product/product.component';
@@ -22,6 +23,7 @@ import { DeletedFilesComponent } from './deleted-files/deleted-files.component';
 
 const routes: Routes = [
   {path: "home", component: HomeComponent},
+  {path: "coming-soon", component: ComingSoonComponent},
   {path: "company", component: CompanyComponent},
   {path: "product", component: ProductComponent},
   {path: "contact-us", component: ContactUsComponent},
