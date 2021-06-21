@@ -1,25 +1,25 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { CompanyComponent } from './company/company.component';
-import { ContactUsComponent } from './contact-us/contact-us.component';
-import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
-import { HomeComponent } from './home/home.component';
-import { ComingSoonComponent } from './coming-soon/coming-soon.component';
-import { LoginComponent } from './login/login.component';
-import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
-import { ProductComponent } from './product/product.component';
-import { RegisterComponent } from './register/register.component';
-import { TermsOfServiceComponent } from './terms-of-service/terms-of-service.component';
+import { CompanyComponent } from './components/company/company.component';
+import { ContactUsComponent } from './components/contact-us/contact-us.component';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { HomeComponent } from './components/home/home.component';
+import { ComingSoonComponent } from './components/coming-soon/coming-soon.component';
+import { LoginComponent } from './components/login/login.component';
+import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
+import { ProductComponent } from './components/product/product.component';
+import { RegisterComponent } from './components/register/register.component';
+import { TermsOfServiceComponent } from './components/terms-of-service/terms-of-service.component';
 import { GuardAuthService } from './guards/guard-auth.service';
 import { UserLoggedInGuardService } from './guards/user-logged-in-guard.service';
-import { MyFilesComponent } from './my-files/my-files.component';
-import { ResetPasswordComponent } from './reset-password/reset-password.component';
-import { FileDashboardComponent } from './file-dashboard/file-dashboard.component';
-import { SharedContentComponent } from './shared-content/shared-content.component';
-import { RequestAccessComponent } from './request-access/request-access.component';
-import { RequestsComponent } from './requests/requests.component';
-import { QuickAccessComponent } from './quick-access/quick-access.component';
-import { DeletedFilesComponent } from './deleted-files/deleted-files.component';
+import { MyFilesComponent } from './components/my-files/my-files.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { FileDashboardComponent } from './components/file-dashboard/file-dashboard.component';
+import { SharedContentComponent } from './components/shared-content/shared-content.component';
+import { RequestAccessComponent } from './components/request-access/request-access.component';
+import { RequestsComponent } from './components/requests/requests.component';
+import { QuickAccessComponent } from './components/quick-access/quick-access.component';
+import { DeletedFilesComponent } from './components/deleted-files/deleted-files.component';
 
 const routes: Routes = [
   {path: "home", component: HomeComponent},

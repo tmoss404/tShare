@@ -1,0 +1,22 @@
+<div class="container form-container">
+    <div class="row">
+        <div class="center">
+            <div class="col-md-12">
+                <form (ngSubmit)="login()" [formGroup]="loginForm">
+                    <div class="form-group">
+                        <input class="form-control" type="text" formControlName="email" placeholder="Email" />          
+
+                        <input class="form-control" type="password" formControlName='password' placeholder="Password" />     
+                        
+                        <button type="button" class="form-control btn-custom" [routerLink]="['/register']">Register</button>
+                        
+                        <button type="button" class="form-control btn-custom" [routerLink]="['/forgot-password']">Forgot Password</button>
+
+                        <button type="submit" class="form-control btn-custom btn-custom-center" [disabled]="!loginForm.valid">Login</button>
+                    </div>
+                    <div class="form-control" *ngIf="response" [ngClass]="response?.success ? 'alert-success' : 'alert'">{{response?.message}}</div>
+                </form>        
+            </div>  
+        </div>    
+    </div>
+</div>

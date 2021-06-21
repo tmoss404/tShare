@@ -1,0 +1,16 @@
+.btn-primary:hover {
+    color: rgb(12, 11, 11);
+    background-color: #1ab9d1;
+    border-color: #1ab9d1;
+}
+
+.btn-primary {
+    color: rgb(20, 20, 20);
+    background-color: #fff;
+    border-color: rgb(226, 29, 29);
+}
+
+.jumbotron {
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #fff;
+}
