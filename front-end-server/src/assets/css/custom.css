@@ -88,3 +88,9 @@
 #round-image {
     border-radius: .3rem;
 }
+
+/* Added to create responsive images in the app, wrap your images with a div with the sizing you want your image to be */
+img {
+    width: 100%;
+    height: auto;
+}

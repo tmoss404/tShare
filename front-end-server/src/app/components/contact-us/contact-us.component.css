@@ -2,6 +2,11 @@
     box-sizing: border-box;
 }
 
+.avatar-container {
+    width: 100px;
+    display: inline-block;
+}
+
 .menu {
     font-family: "Lucida Sans", sans-serif;
     font-size: medium;
