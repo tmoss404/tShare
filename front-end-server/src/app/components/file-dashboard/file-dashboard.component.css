@@ -1,5 +1,5 @@
 * {
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
 
@@ -9,6 +9,7 @@
   width: 12%;
   height: 100%;
   margin-top: 2rem;
+  margin-left: 4rem;
 }
 
 /* Style the buttons that are used to open the tab content */
@@ -22,6 +23,7 @@
   margin-bottom: .4rem;
   padding: 6px 8px;
   width: 100%;
+  height: auto;
   outline: none;
   text-align: center;
   cursor: pointer;
@@ -47,9 +49,20 @@
 /* Style the tab content */
 .tabcontent {
     float: left;
-    padding: 0px 12px;
     border: 4px solid black;
     border-radius: 1rem;
-    width: 86%;
-    height: 740px;
+    width: 80vw;
+    height: 78vh;
+    background-color: #323232;
+}
+
+.router-box {
+  margin: 1rem 1rem;
+  position: relative;
+  height: 96%;
+  width: 98%;
+  padding: 10px;
+  background-color: white;
+  border: 4px solid black;
+  border-radius: 1rem;
 }

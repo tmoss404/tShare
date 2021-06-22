@@ -1,13 +1,15 @@
-<div>
+<div class="container">
     <div class="tab">
         <button class="tablinks" [routerLink]="['./my-files']" routerLinkActive="active">My Files</button>
-        <button class="tablinks" [routerLink]="['./shared-content']" routerLinkActive="active">View Shared Content</button>
+        <button class="tablinks" [routerLink]="['./shared-content']" routerLinkActive="active">Shared Content</button>
         <button class="tablinks" [routerLink]="['./request-access']" routerLinkActive="active">Request Access</button>
         <button class="tablinks" [routerLink]="['./requests']" routerLinkActive="active">Requests</button>
         <button class="tablinks" [routerLink]="['./quick-access']" routerLinkActive="active">Quick Access</button>
         <button class="tablinks" [routerLink]="['./deleted-files']" routerLinkActive="active">Delete Files</button>
     </div>
     <div class="tabcontent">
-        <router-outlet></router-outlet>
+        <div class="router-box">
+            <router-outlet></router-outlet>
+        </div>
     </div>
 </div>
