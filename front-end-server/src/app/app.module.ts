@@ -27,6 +27,8 @@ import { RequestsComponent } from './components/requests/requests.component';
 import { QuickAccessComponent } from './components/quick-access/quick-access.component';
 import { DeletedFilesComponent } from './components/deleted-files/deleted-files.component';
 import { ComingSoonComponent } from './components/coming-soon/coming-soon.component';
+import { AccountPreferencesComponent } from './components/account-preferences/account-preferences.component';
+import { ChangePasswordComponent } from './components/change-password/change-password.component';
 
 @NgModule({
   declarations: [
@@ -50,7 +52,9 @@ import { ComingSoonComponent } from './components/coming-soon/coming-soon.compon
     RequestsComponent,
     QuickAccessComponent,
     DeletedFilesComponent,
-    ComingSoonComponent
+    ComingSoonComponent,
+    AccountPreferencesComponent,
+    ChangePasswordComponent
   ],
   imports: [
     BrowserModule,
