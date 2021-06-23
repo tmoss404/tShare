@@ -1,8 +1,14 @@
 <button>New Folder</button>
-<button>Upload File</button>
+<button (click)="uploader.click()">Upload File</button>
+<input 
+    hidden 
+    type="file" 
+    #uploader
+    (change)="uploadFile($event.target.files)"
+/>
 <button>Delete Selected</button>
 <button>Grant Access</button>
-
+<button (click)="getFiles()">Get Files</button>
 <form action="">
     <input type="search" placeholder="What are you looking for?">
     <button type="submit" class="submit"><i class="icon-search"></i></button>
