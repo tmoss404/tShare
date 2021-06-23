@@ -14,14 +14,18 @@ export class AuthInterceptorService implements HttpInterceptor {
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     
-    // Clone the existing request, and add the authorization header
-    request = request.clone({
-      setHeaders: {
-        Authorization: `JWT ${this.a.getToken()}`
-      }
-    });
-    // Pass the request on to the next handler
-    return next.handle(request);
+    if(request.url.match(/t-share-front-end/)){
+      request = request.clone({
+        setHeaders: {
+          Authorization: `JWT ${this.a.getToken()}`
+        }
+      });
+      
+      return next.handle(request);
+    }
+    else{
+      return next.handle(request);
+    }
   }
 
 }
