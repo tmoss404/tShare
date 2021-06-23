@@ -20,6 +20,8 @@ import { RequestAccessComponent } from './components/request-access/request-acce
 import { RequestsComponent } from './components/requests/requests.component';
 import { QuickAccessComponent } from './components/quick-access/quick-access.component';
 import { DeletedFilesComponent } from './components/deleted-files/deleted-files.component';
+import { AccountPreferencesComponent } from './components/account-preferences/account-preferences.component';
+import { ChangePasswordComponent } from './components/change-password/change-password.component';
 
 const routes: Routes = [
   {path: "home", component: HomeComponent},
@@ -37,6 +39,12 @@ const routes: Routes = [
       {path: "quick-access", component: QuickAccessComponent},
       {path: "deleted-files", component: DeletedFilesComponent}
     ], 
+    canActivate: [GuardAuthService]
+  },
+  {path: "account-preferences", component: AccountPreferencesComponent, 
+    children: [
+      {path: "change-password", component: ChangePasswordComponent}
+    ],
     canActivate: [GuardAuthService]
   },
   {path: "register", component: RegisterComponent},
