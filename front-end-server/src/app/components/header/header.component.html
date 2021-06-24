@@ -14,7 +14,7 @@
           </li>
           <li class="nav-item" *ngIf="!token"><a [routerLink]="['/login']" routerLinkActive="active" class="nav-link">Log In</a>
           </li>
-          <li class="nav-item" *ngIf="token"><a [routerLink]="['/file-dashboard']" routerLinkActive="active" class="nav-link">Dashboard</a>
+          <li class="nav-item" *ngIf="token"><a [routerLink]="['/file-dashboard/my-files']" routerLinkActive="active" class="nav-link">Dashboard</a>
           </li>
           <li class="nav-item" *ngIf="token"><a (click)="logout()" [routerLink]="" class="nav-link">Log Out</a>
           </li>
