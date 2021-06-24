@@ -16,7 +16,7 @@ export class FileService {
   public getSignedUrl(fileToUpload: File) : Observable<any> {
     let signUrlData = {
       loginToken: this.auth.getToken(),
-      filePath: this.auth.readToken().accountId + "/" + fileToUpload.name,
+      filePath: fileToUpload.name,
       fileType: fileToUpload.type
     }
     console.log(signUrlData)
