@@ -29,6 +29,7 @@ import { DeletedFilesComponent } from './components/deleted-files/deleted-files.
 import { ComingSoonComponent } from './components/coming-soon/coming-soon.component';
 import { AccountPreferencesComponent } from './components/account-preferences/account-preferences.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
+import { FileCardComponent } from './components/file-card/file-card.component';
 
 @NgModule({
   declarations: [
@@ -54,7 +55,8 @@ import { ChangePasswordComponent } from './components/change-password/change-pas
     DeletedFilesComponent,
     ComingSoonComponent,
     AccountPreferencesComponent,
-    ChangePasswordComponent
+    ChangePasswordComponent,
+    FileCardComponent
   ],
   imports: [
     BrowserModule,
