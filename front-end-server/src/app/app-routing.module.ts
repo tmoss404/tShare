@@ -37,7 +37,8 @@ const routes: Routes = [
       {path: "request-access", component: RequestAccessComponent},
       {path: "requests", component: RequestsComponent},
       {path: "quick-access", component: QuickAccessComponent},
-      {path: "deleted-files", component: DeletedFilesComponent}
+      {path: "deleted-files", component: DeletedFilesComponent},
+      {path: '',   redirectTo: '/file-dashboard/my-files', pathMatch: 'full'},
     ], 
     canActivate: [GuardAuthService]
   },
