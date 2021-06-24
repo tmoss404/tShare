@@ -13,3 +13,6 @@
     <input type="search" placeholder="What are you looking for?">
     <button type="submit" class="submit"><i class="icon-search"></i></button>
 </form>
+<div>
+    <app-file-card *ngFor="let file of files" [file]="file"></app-file-card>
+</div>
