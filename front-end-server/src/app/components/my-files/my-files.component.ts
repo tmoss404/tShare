@@ -8,7 +8,7 @@ import { FileService } from 'src/app/services/file.service';
 })
 export class MyFilesComponent implements OnInit {
 
-  myFiles: Array<File> = [];
+  files: Array<any> = [];
   fileToUpload: File;
 
   constructor(
@@ -16,13 +16,13 @@ export class MyFilesComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.getFiles();
   }
 
   getFiles(){
     this.fileService.getFiles().subscribe({
       next: (success) => {
-        this.myFiles = success.s3Data.Contents;
-        console.log(this.myFiles);
+        this.files = success.s3Data.Contents;
       },
       error: (err) => {
         console.log(err.error);
@@ -34,7 +34,7 @@ export class MyFilesComponent implements OnInit {
     this.fileToUpload = files.item(0);
     this.fileService.getSignedUrl(this.fileToUpload).subscribe({
       next: (success) => {
-        this.fileService.uploadFile(success.signedUrlData, this.fileToUpload).subscribe((data)=>console.log(data));
+        this.fileService.uploadFile(success.signedUrlData, this.fileToUpload).subscribe(() => this.getFiles());
       },
       error: (err) => {
         console.log(err.error);
