@@ -1,1 +1,40 @@
-<p>account-preferences works!</p>
+<div class="center">
+    <h1>
+        Personal Information
+    </h1>
+    <div class="row">
+        <div class="column">
+            <h3>Email:</h3>
+        </div>
+        <div class="column">
+            <h3>eric.mcdonald@gmail.com</h3>
+        </div>
+    </div>
+    <h1>
+        Preferences
+    </h1>
+    <div class="row">
+        <div class="column">
+            <h3>Date Format:</h3>
+        </div>
+        <div class="column">
+            <select id="dateFormats" name="formats">
+                <option value="volvo">DD/MM/YY</option>
+                <option value="saab">YY/MM/DD</option>
+                <option value="mercedes">M/D/YY</option>
+                <option value="audi">YYYY, Mon DD</option>
+              </select>
+        </div>
+    </div>
+    <h1>
+        Security
+    </h1>
+    <div class="row">
+        <div class="column">
+            <h3>Password:</h3>
+        </div>
+        <div class="column">
+            <a style="color: white;" [routerLink]="['../change-password']" fragment="changePassword">Edit</a>
+        </div>
+    </div>
+</div>
