@@ -19,7 +19,7 @@ section.notFound {
     justify-content: center;
     align-items: center;
     margin: 0 5%;
-    height: 100vh;
+    height: 82.8vh;
 }
 
 section.notFound h1 {
@@ -70,7 +70,11 @@ div.text a:hover {
   }
 }
 
-#space {
-    margin-top: -5%;
-    margin-bottom: -8%;
+.img {
+    height: 80%;
+}
+
+.resize-img {
+    height: 50%;
+    width: 62%;
 }

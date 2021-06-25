@@ -25,6 +25,10 @@
     padding: 2rem;
 }
 
+.container {
+    margin-top: 2%;
+}
+
 p {
     margin-top: 1.2rem;
 }

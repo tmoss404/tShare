@@ -79,6 +79,10 @@
     text-align: center;
 }
 
+.container {
+    margin-top: 1.2%;
+}
+
 .jumbotron {
     color: #fff;
     background-color: rgba(0, 0, 0, .9);
