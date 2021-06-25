@@ -1,7 +1,7 @@
 // Run these every time you refactor the routing code:
 const testAccountEmail = "test.backend@gmail.com";  // Should be unique each time you run this.
 const testAccountValidEmail = "eric.d.mcdonald@gmail.com";
-const testAccountPwd = "myValidPwd123!", testAccountNewPwd = "myNewValidPwd123!";
+const testAccountPwd = "myValidPwd123!", testAccountNewPwd = "myNewValidPwd123!", testAccountNewPwd2 = "MyNewerValidPwd123!";
 var xhttp;
 
 // Hey, don't blame me! Tanner wanted the HTTP statuses to work like this for the Angular side of things.
@@ -56,6 +56,20 @@ xhttp.open("POST", "http://localhost/account/check-login", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken
+}));
+
+// Resetting the password while logged in:
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/account/change-password", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    newPassword: testAccountNewPwd2
 }));
 
 // Forgot password:
