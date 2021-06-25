@@ -45,4 +45,11 @@ module.exports.setupRoutes = function(app) {
             routes.sendResponse(res, err);
         });
     });
+    app.post("/account/change-password", accountMiddleware.checkAuth, (req, res) => {
+        accountModel.changePassword(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
 };

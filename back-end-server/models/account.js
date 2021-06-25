@@ -8,6 +8,62 @@ const database = require("../config/database");
 
 var dbConnectionPool;
 
+module.exports.changePassword = function(changePwdInfo) {
+    return new Promise((resolve, reject) => {
+        if (objUtil.isNullOrUndefined(changePwdInfo) || objUtil.isNullOrUndefined(changePwdInfo.newPassword)) {
+            reject({
+                message: "Malformed request. Trying to hack the server?",
+                httpStatus: 400,
+                success: false
+            });
+            return;
+        }
+        if (!accountUtil.isPasswordValid(changePwdInfo.newPassword)) {
+            reject({
+                message: "Password is invalid.",
+                httpStatus: 400,
+                success: false
+            });
+            return;
+        }
+        try {
+            var decodedToken = jsonWebToken.verify(changePwdInfo.loginToken, appConstants.jwtSecretKey);
+            dbConnectionPool.getConnection((err, connection) => {
+                if (err) {
+                    reject({
+                        message: "Failed to establish a connection to the database.",
+                        httpStatus: 500,
+                        success: false
+                    });
+                    return;
+                }
+                var salt = bcrypt.genSaltSync(10);
+                var hash = bcrypt.hashSync(changePwdInfo.newPassword, salt);
+                database.updateTable("Account", "password_hash='" + hash + "'", "email='" + decodedToken.email + "'", connection).then((results) => {
+                    resolve({
+                        message: "Updated your password in the database successfully.",
+                        httpStatus: 200,
+                        success: true,
+                        connectionToDrop: connection
+                    });
+                }).catch((results) => {
+                    reject({
+                        message: "Failed to update your new password in the database.",
+                        httpStatus: 500,
+                        success: false,
+                        connectionToDrop: connection
+                    });
+                });
+            });
+        } catch(err) {
+            reject({
+                message: "Failed to decode the login token.",
+                httpStatus: 500,
+                success: false
+            });
+        }
+    });
+};
 module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
     var info = resetPwdInfo;
     return new Promise((resolve, reject) => {
