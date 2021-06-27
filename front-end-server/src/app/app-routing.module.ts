@@ -42,9 +42,10 @@ const routes: Routes = [
     ], 
     canActivate: [GuardAuthService]
   },
-  {path: "account-preferences", component: AccountPreferencesComponent, 
+  {path: "account-preferences", 
     children: [
-      {path: "change-password", component: ChangePasswordComponent}
+      {path: "change-password", component: ChangePasswordComponent},
+      {path: "", component: AccountPreferencesComponent}
     ],
     canActivate: [GuardAuthService]
   },
