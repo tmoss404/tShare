@@ -137,7 +137,7 @@ module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
                 }
                 const dbConnection = connection;
                 database.selectFromTable("Password_Reset_Link", "sub_link='" + info.resetPwdId + "'", connection).then((results) => {
-                    if (results.length == 0 || !accountUtil.isPwdResetSubLinkValid(pwdResetId, results[0], database)) {
+                    if (results.length == 0 || !accountUtil.isPwdResetSubLinkValid(info.pwdResetId, results[0], database)) {
                         reject({
                             message: "Your password reset link is no longer valid.",
                             httpStatus: 401,

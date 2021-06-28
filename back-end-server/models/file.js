@@ -136,7 +136,7 @@ module.exports.listFiles = function(listFilesData) {
 module.exports.getSignedUrl = function(signUrlData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(signUrlData) || objectUtil.isNullOrUndefined(signUrlData.filePath) || signUrlData.filePath.length == 0 || 
-            objectUtil.isNullOrUndefined(signUrlData.fileType) || signUrlData.fileType.length == 0) {
+            objectUtil.isNullOrUndefined(signUrlData.fileType)) {
                 reject({
                     message: "Malformed request. Trying to hack the server?",
                     httpStatus: 400,
