@@ -85,7 +85,7 @@ xhttp.send(JSON.stringify({
 
 /file/make-directory:
 
-This route allows you to create an empty directory in AWS S3. It does this by creating an empty file inside dirPath called "__tshare-meta__". The request will be rejected if the specified dirPath is not already empty. It takes one parameter wrapped in an Object - dirPath
+This route allows you to create an empty directory in AWS S3. It does this by creating an empty file inside dirPath called "__tshare-meta__". The request will be rejected if the specified dirPath is not already empty. It takes one parameter wrapped in an Object - dirPath.
 Trailing and prefixed backwards/forwards slashes in dirPath will cause undefined behavior. Backslashes are automatically converted into forwards slashes:
 - loginToken: String
 - dirPath: String
