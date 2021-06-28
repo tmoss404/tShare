@@ -71,6 +71,17 @@ xhttp.send(JSON.stringify({
     newPassword: testAccountNewPwd2
 }));
 
+// Checking the reset password ID:
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+	console.log(xhttp.responseText);
+    }
+};
+xhttp.open("GET", "http://localhost/account/check-password-reset/38806", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send();
+
 // Uploading a file:
 var signedUrl = null;
 xhttp = new XMLHttpRequest();

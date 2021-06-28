@@ -1,5 +1,5 @@
 // Run these every time you refactor the routing code:
-const testAccountEmail = "test.backend@gmail.com";  // Should be unique each time you run this.
+const testAccountEmail = "test.backend420@gmail.com";  // Should be unique each time you run this.
 const testAccountValidEmail = "eric.d.mcdonald@gmail.com";
 const testAccountPwd = "myValidPwd123!", testAccountNewPwd = "myNewValidPwd123!", testAccountNewPwd2 = "MyNewerValidPwd123!";
 var xhttp;
@@ -84,6 +84,17 @@ xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
 	email: testAccountValidEmail
 }));
+
+// Checking the reset password ID:
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+	console.log(xhttp.responseText);
+    }
+};
+xhttp.open("GET", "http://localhost/account/check-password-reset/38806", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send();
 
 // Resetting password:
 xhttp = new XMLHttpRequest();

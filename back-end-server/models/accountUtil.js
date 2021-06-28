@@ -12,6 +12,16 @@ function strContainsCharIn(str, characterList) {
     }
     return false;
 }
+module.exports.isPwdResetSubLinkValid = function(pwdSubLink, dbResult, database) {
+    var currentTime = Date.now();
+    if (results.length == 0 || currentTime - dbResult.creation_date.getTime() >= appConstants.pwdRecoveryLinkExp) {
+        if (results.length != 0 && currentTime - dbResult.creation_date.getTime() >= appConstants.pwdRecoveryLinkExp) {
+            database.deleteFromTable("Password_Reset_Link", "email='" + pwdResetResult.email + "'", dbConnection).then((success) => {});
+        }
+        return false;
+    }
+    return true;
+}
 module.exports.isPasswordValid = function(password) {
     var validSymbols = "-_!@#$%^&*()=+";
     var validNums = "0123456789";

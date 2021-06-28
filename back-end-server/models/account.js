@@ -8,6 +8,52 @@ const database = require("../config/database");
 
 var dbConnectionPool;
 
+module.exports.checkPwdResetId = function(pwdResetId) {
+    return new Promise((resolve, reject) => {
+        if (objUtil.isNullOrUndefined(pwdResetId)) {
+            reject({
+                message: "Malformed request. Trying to hack the server?",
+                httpStatus: 400,
+                success: false
+            });
+            return;
+        }
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject({
+                    message: "Failed to establish a connection to the database.",
+                    httpStatus: 500,
+                    success: false
+                });
+                return;
+            }
+            database.selectFromTable("Password_Reset_Link", "sub_link='" + pwdResetId + "'", connection).then((results) => {
+                if (results.length == 0 || !accountUtil.isPwdResetSubLinkValid(pwdResetId, results[0], database)) {
+                    reject({
+                        message: "Your password reset link is not valid.",
+                        httpStatus: 401,
+                        success: false,
+                        connectionToDrop: connection
+                    });
+                } else {
+                    resolve({
+                        message: "Your password reset link is still valid.",
+                        httpStatus: 200,
+                        success: true,
+                        connectionToDrop: connection
+                    });
+                }
+            }).catch((results) => {
+                reject({
+                    message: "Failed to retrieve the list of sub-links from the database.",
+                    httpStatus: 500,
+                    success: false,
+                    connectionToDrop: connection
+                });
+            });
+        });
+    });
+};
 module.exports.changePassword = function(changePwdInfo) {
     return new Promise((resolve, reject) => {
         if (objUtil.isNullOrUndefined(changePwdInfo) || objUtil.isNullOrUndefined(changePwdInfo.newPassword)) {
@@ -67,7 +113,7 @@ module.exports.changePassword = function(changePwdInfo) {
 module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
     var info = resetPwdInfo;
     return new Promise((resolve, reject) => {
-        if (objUtil.isNullOrUndefined(info) || objUtil.isNullOrUndefined(resetPwdId_) || resetPwdId_.length == 0 || objUtil.isNullOrUndefined(info.newPassword) || 
+        if (objUtil.isNullOrUndefined(info) || objUtil.isNullOrUndefined(info.newPassword) || 
             info.newPassword.length == 0 || !accountUtil.isPasswordValid(info.newPassword)) {
                 reject({
                     message: "Password is invalid.",
@@ -91,11 +137,7 @@ module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
                 }
                 const dbConnection = connection;
                 database.selectFromTable("Password_Reset_Link", "sub_link='" + info.resetPwdId + "'", connection).then((results) => {
-                    var currentTime = Date.now();
-                    if (results.length == 0 || currentTime - results[0].creation_date.getTime() >= appConstants.pwdRecoveryLinkExp) {
-                        if (results.length != 0 && currentTime - results[0].creation_date.getTime() >= appConstants.pwdRecoveryLinkExp) {
-                            database.deleteFromTable("Password_Reset_Link", "email='" + pwdResetResult.email + "'", dbConnection).then((success) => {});
-                        }
+                    if (results.length == 0 || !accountUtil.isPwdResetSubLinkValid(pwdResetId, results[0], database)) {
                         reject({
                             message: "Your password reset link is no longer valid.",
                             httpStatus: 401,
