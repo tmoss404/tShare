@@ -145,6 +145,14 @@ module.exports.getSignedUrl = function(signUrlData) {
                 return;
         }
         signUrlData.filePath = fileUtil.formatFilePath(signUrlData.filePath);
+        if (signUrlData.filePath.endsWith("/" + appConstants.dirPlaceholderFile)) {
+            reject({
+                message: "Invalid filename specified.",
+                httpStatus: 401,
+                success: false
+            });
+            return;
+        }
         try {
             var decodedToken = jsonWebToken.verify(signUrlData.loginToken, appConstants.jwtSecretKey);
             var s3Params = {
@@ -163,12 +171,27 @@ module.exports.getSignedUrl = function(signUrlData) {
                     });
                     return;
                 }
-                resolve({
-                    message: "Successfully retrieved a signed S3 URL.",
-                    httpStatus: 200,
-                    success: true,
-                    signedUrl: "https://" + appConstants.awsBucketName + ".s3.amazonaws.com/" + decodedToken.accountId + "/" + encodeURIComponent(signUrlData.filePath),
-                    signedUrlData: data
+                s3Params = {
+                    Bucket: appConstants.awsBucketName,
+                    Key: !signUrlData.filePath.includes("/") ? decodedToken.accountId + "/" + signUrlData.filePath : 
+                        decodedToken.accountId + "/" + signUrlData.filePath.substring(0, signUrlData.filePath.lastIndexOf("/")) + "/" + appConstants.dirPlaceholderFile
+                };
+                s3.deleteObject(s3Params, (s3Err2, s3Data2) => {
+                    if (s3Err2) {
+                        reject({
+                            message: "An error has occurred while trying to delete the placeholder file.",
+                            httpStatus: 500,
+                            success: false
+                        });
+                    } else {
+                        resolve({
+                            message: "Successfully retrieved a signed S3 URL.",
+                            httpStatus: 200,
+                            success: true,
+                            signedUrl: "https://" + appConstants.awsBucketName + ".s3.amazonaws.com/" + decodedToken.accountId + "/" + encodeURIComponent(signUrlData.filePath),
+                            signedUrlData: data
+                        });
+                    }
                 });
             });
         } catch (err) {
