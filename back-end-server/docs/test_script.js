@@ -140,6 +140,20 @@ xhttp.setRequestHeader("Content-Type", "text/plain");  // This header MUST match
 xhttp.setRequestHeader("x-amz-acl", "public-read");  // You MUST have this header set, otherwise AWS will give you error 403.
 xhttp.send("This is the contents of my file!");
 
+// Creating an empty directory:
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/make-directory", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    dirPath: "your new\\directory/path"
+}));
+
 // Listing files:
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {

@@ -10,6 +10,13 @@ module.exports.setupRoutes = function(app) {
             routes.sendResponse(res, err);
         });
     });
+    app.post("/file/make-directory", accountMiddleware.checkAuth, (req, res) => {
+        fileModel.makeDir(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
     app.post("/file/list", accountMiddleware.checkAuth, (req, res) => {
         fileModel.listFiles(req.body).then((msg) => {
             routes.sendResponse(res, msg);

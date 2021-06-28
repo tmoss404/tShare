@@ -186,3 +186,27 @@ xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
 	newPassword: "myNewValidPassword123!"
 }));
+
+
+/account/check-password-reset/:resetPwdId:
+
+This route is for verifying that a password reset sub-link (the ID that gets generated for a password reset) exists. Please note that this is a GET request this time instead of the usual POST requests. It takes one parameter: the password reset sub-link (in the URL).
+- resetPwdId: String
+
+Returns an Object containing at least message and success:
+If the sub-link is invalid, a success status of false is returned with HTTP error code 401:
+{"message":"Your password reset link is not valid.","success":false}
+If the sub-link is valid, a success status of true is returned with HTTP error code 200:
+{"message":"Your password reset link is still valid.","success":true}
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+	console.log(xhttp.responseText);
+    }
+};
+xhttp.open("GET", "http://tshare-back-end.herokuapp.com/account/check-password-reset/38806", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send();

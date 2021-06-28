@@ -81,3 +81,26 @@ xhttp.send(JSON.stringify({
     dirPath: "your/existing/file/path",  // Optional, can be null or undefined
     maxFiles: 1000  // Optional, can be undefined
 }));
+
+
+/file/make-directory:
+
+This route allows you to create an empty directory in AWS S3. It does this by creating an empty file inside dirPath called "__tshare-meta__". The request will be rejected if the specified dirPath is not already empty. It takes one parameter wrapped in an Object - dirPath
+Trailing and prefixed backwards/forwards slashes in dirPath will cause undefined behavior. Backslashes are automatically converted into forwards slashes:
+- loginToken: String
+- dirPath: String
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://tshare-back-end.herokuapp.com/file/make-directory", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
+    dirPath: "your new\\directory/path\\can-contain-all-sorts-of-chars"
+}));

@@ -22,3 +22,4 @@ module.exports.awsSignedUrlSeconds = 60 * 60 * 24;
 module.exports.awsRegion = "us-east-1";
 module.exports.awsMaxKeys = 1000;  // AWS S3 doesn't actually support retrieving more than 1000 keys at once.
 module.exports.pwdRecoveryLinkExp = 1000 * 60 * 60 * 24;
+module.exports.dirPlaceholderFile = "__tshare-meta__";

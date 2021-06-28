@@ -11,6 +11,70 @@ var s3  = new awsSdk.S3({
     region: appConstants.awsRegion
 });
 
+module.exports.makeDir = function(makeDirData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(makeDirData) || objectUtil.isNullOrUndefined(makeDirData.dirPath)) {
+            reject({
+                message: "Malformed request. Trying to hack the server?",
+                httpStatus: 400,
+                success: false
+            });
+            return;
+        }
+        try {
+            var decodedToken = jsonWebToken.verify(makeDirData.loginToken, appConstants.jwtSecretKey);
+            makeDirData.dirPath = fileUtil.formatFilePath(makeDirData.dirPath);
+            var s3Params = {
+                Bucket: appConstants.awsBucketName,
+                Prefix: decodedToken.accountId + "/" + makeDirData.dirPath + "/",
+                MaxKeys: 1
+            };
+            s3.listObjectsV2(s3Params, (err, data) => {
+                if (err) {
+                    reject({
+                        message: "Failed to check if the S3 directory is empty or not.",
+                        httpStatus: 500,
+                        success: false
+                    });
+                    return;
+                }
+                if (data.KeyCount > 0) {
+                    reject({
+                        message: "The specified S3 directory must be empty beforehand to be created.",
+                        httpStatus: 401,
+                        success: false
+                    });
+                    return;
+                }
+                s3Params = {
+                    Bucket: appConstants.awsBucketName,
+                    Key: decodedToken.accountId + "/" + makeDirData.dirPath + "/" + appConstants.dirPlaceholderFile
+                };
+                s3.putObject(s3Params, (s3Err2, s3Data2) => {
+                    if (s3Err2) {
+                        reject({
+                            message: "Failed to create the empty directory.",
+                            httpStatus: 500,
+                            success: false
+                        });
+                        return;
+                    }
+                    resolve({
+                        message: "Successfully created the empty directory.",
+                        httpStatus: 200,
+                        success: true
+                    });
+                });
+            });
+        } catch (err) {
+            reject({
+                message: "Login token is invalid.",
+                httpStatus: 401,
+                success: false
+            });
+        }
+    });
+};
 module.exports.listFiles = function(listFilesData) {
     return new Promise((resolve, reject) => {
         var reqObjInvalid = objectUtil.isNullOrUndefined(listFilesData);
@@ -34,6 +98,7 @@ module.exports.listFiles = function(listFilesData) {
         try {
             var decodedToken = jsonWebToken.verify(listFilesData.loginToken, appConstants.jwtSecretKey);
             var pathPrefix = "" + decodedToken.accountId + "/";
+            var accountIdPrefix = pathPrefix;
             if (listFilesData.dirPath != null) {
                 pathPrefix += listFilesData.dirPath + "/";
             }
@@ -50,6 +115,7 @@ module.exports.listFiles = function(listFilesData) {
                         success: false
                     });
                 } else {
+                    data = fileUtil.filterSensitiveData(data, accountIdPrefix);
                     resolve({
                         message: "Successfully retrieved the user's files.",
                         httpStatus: 200,
