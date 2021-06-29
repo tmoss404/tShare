@@ -56,7 +56,7 @@ module.exports.checkPwdResetId = function(pwdResetId) {
 };
 module.exports.changePassword = function(changePwdInfo) {
     return new Promise((resolve, reject) => {
-        if (objUtil.isNullOrUndefined(changePwdInfo) || objUtil.isNullOrUndefined(changePwdInfo.newPassword)) {
+        if (objUtil.isNullOrUndefined(changePwdInfo) || objUtil.isNullOrUndefined(changePwdInfo.newPassword) || objUtil.isNullOrUndefined(changePwdInfo.currentPassword)) {
             reject({
                 message: "Malformed request. Trying to hack the server?",
                 httpStatus: 400,
@@ -66,7 +66,15 @@ module.exports.changePassword = function(changePwdInfo) {
         }
         if (!accountUtil.isPasswordValid(changePwdInfo.newPassword)) {
             reject({
-                message: "Password is invalid.",
+                message: "The new password is invalid.",
+                httpStatus: 400,
+                success: false
+            });
+            return;
+        }
+        if (!accountUtil.isPasswordValid(changePwdInfo.currentPassword)) {
+            reject({
+                message: "The current password is invalid.",
                 httpStatus: 400,
                 success: false
             });
@@ -85,16 +93,34 @@ module.exports.changePassword = function(changePwdInfo) {
                 }
                 var salt = bcrypt.genSaltSync(10);
                 var hash = bcrypt.hashSync(changePwdInfo.newPassword, salt);
-                database.updateTable("Account", "password_hash='" + hash + "'", "email='" + decodedToken.email + "'", connection).then((results) => {
-                    resolve({
-                        message: "Updated your password in the database successfully.",
-                        httpStatus: 200,
-                        success: true,
-                        connectionToDrop: connection
+                database.selectFromTable("Account", "email='" + decodedToken.email + "'", connection).then((results) => {
+                    if (results.length == 0 || !bcrypt.compareSync(changePwdInfo.currentPassword, results[0].password_hash)) {
+                        reject({
+                            message: "Your current password is incorrect.",
+                            httpStatus: 401,
+                            success: false,
+                            connectionToDrop: connection
+                        });
+                        return;
+                    }
+                    database.updateTable("Account", "password_hash='" + hash + "'", "email='" + decodedToken.email + "'", connection).then((results) => {
+                        resolve({
+                            message: "Updated your password in the database successfully.",
+                            httpStatus: 200,
+                            success: true,
+                            connectionToDrop: connection
+                        });
+                    }).catch((results) => {
+                        reject({
+                            message: "Failed to update your new password in the database.",
+                            httpStatus: 500,
+                            success: false,
+                            connectionToDrop: connection
+                        });
                     });
                 }).catch((results) => {
                     reject({
-                        message: "Failed to update your new password in the database.",
+                        message: "Failed to query your current password in the database.",
                         httpStatus: 500,
                         success: false,
                         connectionToDrop: connection

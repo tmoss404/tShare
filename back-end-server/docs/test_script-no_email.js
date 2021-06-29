@@ -68,7 +68,8 @@ xhttp.open("POST", "http://localhost/account/change-password", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
-    newPassword: testAccountNewPwd2
+    newPassword: testAccountNewPwd2,
+    currentPassword: testAccountPwd
 }));
 
 // Checking the reset password ID:
