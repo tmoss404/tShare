@@ -98,7 +98,7 @@ xhttp.send(JSON.stringify({
 This route is for changing your password while you're logged in. It takes three parameters: loginToken, newPassword, and currentPassword all wrapped in an Object. If the login token is invalid, the request is considered rejected and a message with a success status of false is returned. This route will return success even if the user's password is the same as before:
 - loginToken: String
 - newPassword: String
-- currentPassword: string
+- currentPassword: String
 
 Returns a message and a success status wrapped in an Object:
 {"message":"Updated your password in the database successfully.","success":true}
