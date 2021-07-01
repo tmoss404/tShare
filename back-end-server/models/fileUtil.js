@@ -7,7 +7,7 @@ module.exports.formatFilePath = function(filePath) {
     }
     return filePath.replace("\\", "/");
 };
-module.exports.filterSensitiveData = function(data, accountIdPrefix) {
+module.exports.processS3Data = function(data, accountIdPrefix) {
     var toDelete = [];
     for (var i = 0; i < data.Contents.length; i++) {
         if (data.Contents[i].Key.startsWith(accountIdPrefix)) {
@@ -17,6 +17,9 @@ module.exports.filterSensitiveData = function(data, accountIdPrefix) {
         if (data.Contents[i].Key.endsWith(metadataSuffix)) {
             data.Contents[i].Key = data.Contents[i].Key.substring(0, data.Contents[i].Key.length - metadataSuffix.length);
             data.Contents[i].Size = 0;
+            data.Contents[i].isDirectory = true;
+        } else {
+            data.Contents[i].isDirectory = false;
         }
     }
     if (data.Prefix.includes(accountIdPrefix)) {

@@ -103,3 +103,135 @@ xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
     maxFiles: 1000
 }));
+
+// Deleting a file:
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/delete", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    path: "your new\\directory/path/file.txt",
+    isDirectory: false
+}));
+
+// Listing files again (no directory path):
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/list", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    maxFiles: 1000
+}));
+
+// Uploading a file again:
+var signedUrl = null;
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+        signedUrl = JSON.parse(this.responseText).signedUrlData;
+        console.log(signedUrl);
+    }
+};
+xhttp.open("POST", "http://localhost/file/upload", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+loginToken: theLoginToken,
+filePath: "your new\\directory/path/file.txt",
+fileType: "text/plain"
+}));
+
+while (signedUrl == null) {}
+
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("PUT", signedUrl, false);
+xhttp.setRequestHeader("Content-Type", "text/plain");  // This header MUST match up with the fileType you provided in the sign URL request.
+xhttp.setRequestHeader("x-amz-acl", "public-read");  // You MUST have this header set, otherwise AWS will give you error 403.
+xhttp.send("This is the contents of my file!");
+
+// Listing files again (no directory path):
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/list", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    maxFiles: 1000
+}));
+
+// Listing files in the recycle bin (no directory path):
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/recycle/list", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    maxFiles: 1000
+}));
+
+
+// Deleting a directory:
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/delete", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    path: "your new\\directory",
+    isDirectory: true
+}));
+
+// Listing files again (no directory path):
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/list", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    maxFiles: 1000
+}));
+
+// Listing files in the recycle bin (no directory path):
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/recycle/list", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    maxFiles: 1000
+}));
