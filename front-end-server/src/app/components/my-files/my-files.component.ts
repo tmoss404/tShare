@@ -22,7 +22,7 @@ export class MyFilesComponent implements OnInit {
   getFiles(){
     this.fileService.getFiles().subscribe({
       next: (success) => {
-        this.files = success.s3Data.Contents;
+        this.files = success.data.Contents;
       },
       error: (err) => {
         console.log(err.error);
