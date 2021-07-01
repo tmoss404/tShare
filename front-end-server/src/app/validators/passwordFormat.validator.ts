@@ -3,39 +3,28 @@ import { AbstractControl, FormGroup, ValidationErrors, ValidatorFn} from "@angul
 
 export function passwordFormat() : ValidatorFn {
 
-    return (formGroup: AbstractControl) : ValidationErrors => {
+    return (passwordControl: AbstractControl) => {
 
         const validSymbols = "-_!@#$%^&*()=+";
         const validNums = "0123456789";
         const validPwdChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + validNums + validSymbols;
-
-        const passwordControl = formGroup.get("password");
         
-        if(!passwordControl.errors?.required){
-            for (var i = 0; i < passwordControl.value.length; i++) {
-                if (!validPwdChars.includes(("" + passwordControl.value[i]).toUpperCase())) {
-                    passwordControl.setErrors({ invalidChars : true });
-                    return { invalidChars : true };
-                }
-            }
-
-            if(passwordControl.value.length < 9){
-                passwordControl.setErrors({ invalidLength : true });
-                return { invalidLength : true };
-            }
-
-            if(!strContainsCharIn(passwordControl.value, validNums)){
-                passwordControl.setErrors({ noNumbers : true });
-                return { noNumbers : true };
-            }
-
-            if(!strContainsCharIn(passwordControl.value, validSymbols)){
-                passwordControl.setErrors({ noSymbols : true });
-                return { noSymbols : true };
-            }
-        }else{
+        if(passwordControl.value == null || passwordControl.value.length === 0)
             return null;
-        }
+
+        for (var i = 0; i < passwordControl.value.length; i++)
+            if (!validPwdChars.includes(passwordControl.value[i].toUpperCase()))
+                return { 'invalidChars' : true };
+
+        if(passwordControl.value.length < 9)
+            return { 'invalidLength' : true };
+
+        if(!strContainsCharIn(passwordControl.value, validNums))
+            return { 'noNumbers' : true };
+
+        if(!strContainsCharIn(passwordControl.value, validSymbols))
+            return { 'noSymbols' : true };
+      
     };
 }
 

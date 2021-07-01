@@ -24,11 +24,11 @@ export class ResetPasswordComponent implements OnInit {
 
   ngOnInit(): void {
     this.resetForm = this.formBuilder.group({
-      password: ['', [Validators.required]],
+      password: ['', [Validators.required, passwordFormat()]],
       confirm: ['', [Validators.required]]
     },
     {
-      validators: [confirmPassword("password", "confirm"), passwordFormat()]
+      validators: [confirmPassword("password", "confirm")]
     });
   }
 
