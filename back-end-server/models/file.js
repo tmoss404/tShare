@@ -250,7 +250,7 @@ module.exports.getSignedUrl = function(signUrlData) {
                     }
                     s3Params = {
                         Bucket: appConstants.awsBucketName,
-                        Key: !signUrlData.filePath.includes("/") ? decodedToken.accountId + "/" + signUrlData.filePath : 
+                        Key: !signUrlData.filePath.includes("/") ? duplicateKeyId : 
                             decodedToken.accountId + "/" + signUrlData.filePath.substring(0, signUrlData.filePath.lastIndexOf("/")) + "/" + appConstants.dirPlaceholderFile
                     };
                     s3.deleteObject(s3Params, (s3Err2, s3Data2) => {
