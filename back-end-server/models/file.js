@@ -4,8 +4,6 @@ const appConstants = require("../config/appConstants");
 const accountModel = require("../models/account");
 const awsSdk = require("aws-sdk");
 const fileUtil = require("./fileUtil");
-const https = require("https");
-const request = require("request");
 const s3Helper = require("./s3Helper");
 
 var s3  = new awsSdk.S3({
@@ -45,8 +43,10 @@ module.exports.deleteFile = function(deleteFileData) {
                     } else {
                         var s3Promises = [];
                         for (var i = 0; i < data_.Contents.length; i++) {
-                            s3Promises.push(s3Helper.moveObject(decodedToken.accountId + "_recycle/" + 
-                                data_.Contents[i].Key.substring(("" + decodedToken.accountId + "/").length), data_.Contents[i].Key, s3));
+                            if (data_.Contents[i].Key != s3Params.Prefix) {
+                                s3Promises.push(s3Helper.moveObject(decodedToken.accountId + "_recycle/" + 
+                                    data_.Contents[i].Key.substring(("" + decodedToken.accountId + "/").length), data_.Contents[i].Key, s3));
+                            }
                         }
                         Promise.all(s3Promises).then((successful) => {
                             resolve({
@@ -55,7 +55,6 @@ module.exports.deleteFile = function(deleteFileData) {
                                 success: true
                             });
                         }).catch((successful) => {
-                            console.log(successful);
                             reject({
                                 message: "An error has occurred while moving an S3 object.",
                                 httpStatus: 500,
@@ -72,7 +71,6 @@ module.exports.deleteFile = function(deleteFileData) {
                         success: true
                     });
                 }).catch((successful) => {
-                    console.log(successful);
                     reject({
                         message: "An error has occurred while moving an S3 object.",
                         httpStatus: 500,
@@ -233,44 +231,52 @@ module.exports.getSignedUrl = function(signUrlData) {
         }
         try {
             var decodedToken = jsonWebToken.verify(signUrlData.loginToken, appConstants.jwtSecretKey);
-            var s3Params = {
-                Bucket: appConstants.awsBucketName,
-                Key: decodedToken.accountId + "/" + signUrlData.filePath,
-                Expires: appConstants.awsSignedUrlSeconds,
-                ContentType: signUrlData.fileType,
-                ACL: "public-read"
-            };
-            s3.getSignedUrl("putObject", s3Params, (err, data) => {
-                if (err) {
-                    reject({
-                        message: "An error has occurred while retrieving a signed S3 URL.",
-                        httpStatus: 500,
-                        success: false
-                    });
-                    return;
-                }
-                s3Params = {
+            s3Helper.getNewDuplicateKeyName(decodedToken.accountId + "/" + signUrlData.filePath, 0, s3).then((duplicateKeyId) => {
+                var s3Params = {
                     Bucket: appConstants.awsBucketName,
-                    Key: !signUrlData.filePath.includes("/") ? decodedToken.accountId + "/" + signUrlData.filePath : 
-                        decodedToken.accountId + "/" + signUrlData.filePath.substring(0, signUrlData.filePath.lastIndexOf("/")) + "/" + appConstants.dirPlaceholderFile
+                    Key: duplicateKeyId,
+                    Expires: appConstants.awsSignedUrlSeconds,
+                    ContentType: signUrlData.fileType,
+                    ACL: "public-read"
                 };
-                s3.deleteObject(s3Params, (s3Err2, s3Data2) => {
-                    if (s3Err2) {
+                s3.getSignedUrl("putObject", s3Params, (err, data) => {
+                    if (err) {
                         reject({
-                            message: "An error has occurred while trying to delete the placeholder file.",
+                            message: "An error has occurred while retrieving a signed S3 URL.",
                             httpStatus: 500,
                             success: false
                         });
-                    } else {
-                        resolve({
-                            message: "Successfully retrieved a signed S3 URL.",
-                            httpStatus: 200,
-                            success: true,
-                            signedUrl: "https://" + appConstants.awsBucketName + ".s3.amazonaws.com/" + decodedToken.accountId + "/" + encodeURIComponent(signUrlData.filePath),
-                            signedUrlData: data
-                        });
+                        return;
                     }
+                    s3Params = {
+                        Bucket: appConstants.awsBucketName,
+                        Key: !signUrlData.filePath.includes("/") ? decodedToken.accountId + "/" + signUrlData.filePath : 
+                            decodedToken.accountId + "/" + signUrlData.filePath.substring(0, signUrlData.filePath.lastIndexOf("/")) + "/" + appConstants.dirPlaceholderFile
+                    };
+                    s3.deleteObject(s3Params, (s3Err2, s3Data2) => {
+                        if (s3Err2) {
+                            reject({
+                                message: "An error has occurred while trying to delete the placeholder file.",
+                                httpStatus: 500,
+                                success: false
+                            });
+                        } else {
+                            resolve({
+                                message: "Successfully retrieved a signed S3 URL.",
+                                httpStatus: 200,
+                                success: true,
+                                signedUrl: "https://" + appConstants.awsBucketName + ".s3.amazonaws.com/" + decodedToken.accountId + "/" + encodeURIComponent(signUrlData.filePath),
+                                signedUrlData: data
+                            });
+                        }
+                    });
                 });
+            }).catch((err) => {
+                reject({
+                    message: "An error has occurred while trying to retrieve a unique S3 bucket key name.",
+                    httpStatus: 500,
+                    success: false
+                })
             });
         } catch (err) {
             reject({
