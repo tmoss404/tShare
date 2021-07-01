@@ -4,6 +4,9 @@ const appConstants = require("../config/appConstants");
 const accountModel = require("../models/account");
 const awsSdk = require("aws-sdk");
 const fileUtil = require("./fileUtil");
+const https = require("https");
+const request = require("request");
+const s3Helper = require("./s3Helper");
 
 var s3  = new awsSdk.S3({
     accessKeyId: appConstants.awsAccessKeyId,
@@ -11,6 +14,81 @@ var s3  = new awsSdk.S3({
     region: appConstants.awsRegion
 });
 
+module.exports.deleteFile = function(deleteFileData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(deleteFileData) || objectUtil.isNullOrUndefined(deleteFileData.path) || objectUtil.isNullOrUndefined(deleteFileData.isDirectory)
+        || deleteFileData.isDirectory != true && deleteFileData.isDirectory != false) {
+            reject({
+                message: "Malformed request. Trying to hack the server?",
+                httpStatus: 400,
+                success: false
+            });
+            return;
+        }
+        try {
+            var decodedToken = jsonWebToken.verify(deleteFileData.loginToken, appConstants.jwtSecretKey);
+            var recyclePath = decodedToken.accountId + "_recycle/" + fileUtil.formatFilePath(deleteFileData.path);
+            deleteFileData.path = decodedToken.accountId + "/" + fileUtil.formatFilePath(deleteFileData.path);
+            if (deleteFileData.isDirectory) {
+                var s3Params = {
+                    Bucket: appConstants.awsBucketName,
+                    MaxKeys: appConstants.awsMaxKeys,
+                    Prefix: deleteFileData.path
+                };
+                s3.listObjectsV2(s3Params, (err, data_) => {
+                    if (err) {
+                        reject({
+                            message: "Failed to query S3 for the user's files.",
+                            httpStatus: 500,
+                            success: false
+                        });
+                    } else {
+                        var s3Promises = [];
+                        for (var i = 0; i < data_.Contents.length; i++) {
+                            s3Promises.push(s3Helper.moveObject(decodedToken.accountId + "_recycle/" + 
+                                data_.Contents[i].Key.substring(("" + decodedToken.accountId + "/").length), data_.Contents[i].Key, s3));
+                        }
+                        Promise.all(s3Promises).then((successful) => {
+                            resolve({
+                                message: "Successfully deleted all files from the specified directory into the recycle bin.",
+                                httpStatus: 200,
+                                success: true
+                            });
+                        }).catch((successful) => {
+                            console.log(successful);
+                            reject({
+                                message: "An error has occurred while moving an S3 object.",
+                                httpStatus: 500,
+                                success: false
+                            });
+                        });
+                    }
+                });
+            } else {
+                s3Helper.moveObject(recyclePath, deleteFileData.path, s3).then((successful) => {
+                    resolve({
+                        message: "Successfully deleted a file into the recycle bin.",
+                        httpStatus: 200,
+                        success: true
+                    });
+                }).catch((successful) => {
+                    console.log(successful);
+                    reject({
+                        message: "An error has occurred while moving an S3 object.",
+                        httpStatus: 500,
+                        success: false
+                    });
+                });
+            }
+        } catch (err) {
+            reject({
+                message: "Login token is invalid.",
+                httpStatus: 401,
+                success: false
+            });
+        }
+    });
+};
 module.exports.makeDir = function(makeDirData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(makeDirData) || objectUtil.isNullOrUndefined(makeDirData.dirPath)) {
@@ -75,7 +153,7 @@ module.exports.makeDir = function(makeDirData) {
         }
     });
 };
-module.exports.listFiles = function(listFilesData) {
+module.exports.listFiles = function(listFilesData, isRecycleBin) {
     return new Promise((resolve, reject) => {
         var reqObjInvalid = objectUtil.isNullOrUndefined(listFilesData);
         if (!reqObjInvalid && objectUtil.isUndefined(listFilesData.dirPath)) {
@@ -97,7 +175,7 @@ module.exports.listFiles = function(listFilesData) {
         }
         try {
             var decodedToken = jsonWebToken.verify(listFilesData.loginToken, appConstants.jwtSecretKey);
-            var pathPrefix = "" + decodedToken.accountId + "/";
+            var pathPrefix = "" + decodedToken.accountId + (isRecycleBin ? "_recycle/" : "/");
             var accountIdPrefix = pathPrefix;
             if (listFilesData.dirPath != null) {
                 pathPrefix += listFilesData.dirPath + "/";
@@ -107,7 +185,7 @@ module.exports.listFiles = function(listFilesData) {
                 MaxKeys: appConstants.awsMaxKeys,
                 Prefix: pathPrefix
             };
-            s3.listObjectsV2(s3Params, (err, data) => {
+            s3.listObjectsV2(s3Params, (err, data_) => {
                 if (err) {
                     reject({
                         message: "Failed to query S3 for the user's files.",
@@ -115,12 +193,12 @@ module.exports.listFiles = function(listFilesData) {
                         success: false
                     });
                 } else {
-                    data = fileUtil.filterSensitiveData(data, accountIdPrefix);
+                    data_ = fileUtil.processS3Data(data_, accountIdPrefix);
                     resolve({
-                        message: "Successfully retrieved the user's files.",
+                        message: isRecycleBin ? "Successfully retrieved the user's deleted files." : "Successfully retrieved the user's files.",
                         httpStatus: 200,
                         success: true,
-                        s3Data: data
+                        data: data_
                     });
                 }
             });
