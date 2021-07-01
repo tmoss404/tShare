@@ -13,8 +13,7 @@ module.exports.getNewDuplicateKeyName = function(s3Key, duplicateId, s3) {
         }
         var s3Params = {
             Bucket: appConstants.awsBucketName,
-            Key: duplicateKeyId,
-            Range: "bytes=0-1"
+            Key: duplicateKeyId
         };
         s3.getObject(s3Params, (err, data) => {
             if (err && err.code == "NoSuchKey") {
