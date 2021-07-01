@@ -13,8 +13,6 @@ function statusReturnsResponse(status) {
 
 /file/recycle/list:
 
-/file/list:
-
 This route allows you to retrieve a list of file paths and file metadata that are prefixed with the specified directory path for the recyvle bin. The data it returns in "data" is specified by AWS S3. See https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html for more documentation on the data return variable specifically. 
 Please note that backwards-slashes (\) will be converted to forwards-slashes (/). Having trailing or prefixed /'s in dirPath will cause undefined behavior. Also, sensitive information is removed from data. See back-end-server/models/fileUtil.js#processS3Data for what is being filtered. It also adds an isDirectory variable to each Contents element.
 It takes three parameters wrapped in an Object:
