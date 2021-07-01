@@ -1,0 +1,41 @@
+All file-related routes are prefixed with /file/recycle and follow-this-naming-convention-with-hyphens. Data validation is done by this server.
+Also, all requests have the fields listed wrapped in an Object. All routes should return at least a message and a success status wrapped in an Object.
+
+
+
+// Add this function to your web browser's console before running the example scripts:
+// Hey, don't blame me! Tanner wanted the HTTP statuses to work like this for the Angular side of things.
+function statusReturnsResponse(status) {
+    return true;
+}
+
+
+
+/file/recycle/list:
+
+This route allows you to retrieve a list of file paths and file metadata that are prefixed with the specified directory path for the recyvle bin. The data it returns in "data" is specified by AWS S3. See https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html for more documentation on the data return variable specifically. 
+Please note that backwards-slashes (\) will be converted to forwards-slashes (/). Having trailing or prefixed /'s in dirPath will cause undefined behavior. Also, sensitive information is removed from data. See back-end-server/models/fileUtil.js#processS3Data for what is being filtered. It also adds an isDirectory variable to each Contents element.
+It takes three parameters wrapped in an Object:
+- loginToken: String
+- dirPath: String, or null/undefined to retrieve all of the user's files from the recycle bin
+- maxFiles: int, non-zero and non-negative, up to 1000
+
+Returns an Object containing at least message, and success. Optionally, data is returned as well if the request was successful:
+{"message":"Successfully retrieved the user's deleted files.","success":true,"data":{"IsTruncated":false,"Contents":[{"Key":"your new/directory/path/file.txt","LastModified":"2021-07-01T21:21:29.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":32,"StorageClass":"STANDARD","isDirectory":false},{"Key":"your new/directory/path/file_1.txt","LastModified":"2021-07-01T21:21:52.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":32,"StorageClass":"STANDARD","isDirectory":false},{"Key":"your new/directory/path/file_2.txt","LastModified":"2021-07-01T21:26:34.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":32,"StorageClass":"STANDARD","isDirectory":false}],"Name":"bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b","Prefix":"","MaxKeys":1000,"CommonPrefixes":[],"KeyCount":3}}
+
+Example request:
+
+// Listing files:
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://tshare-back-end.herokuapp.com/file/recycle/list", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
+    dirPath: "your new/directory",  // Optional, can be null or undefined
+    maxFiles: 1000  // Optional, can be undefined
+}));

@@ -63,7 +63,7 @@ It takes three parameters wrapped in an Object:
 - maxFiles: int, non-zero and non-negative, up to 1000
 
 Returns an Object containing at least message, and success. Optionally, data is returned as well if the request was successful:
-{"message":"Successfully retrieved the user's files.","success":true,"s3Data":{"IsTruncated":false,"Contents":[{"Key":"your new/directory/path","LastModified":"2021-06-28T06:05:38.000Z","ETag":"\"d41d8cd98f00b204e9800998ecf8427e\"","Size":0,"StorageClass":"STANDARD"},{"Key":"your/file.txt","LastModified":"2021-06-28T03:42:32.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":32,"StorageClass":"STANDARD"},{"Key":"yourother/file.txt","LastModified":"2021-06-28T04:16:20.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":32,"StorageClass":"STANDARD"}],"Name":"bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b","Prefix":"","MaxKeys":1000,"CommonPrefixes":[],"KeyCount":3}}
+{"message":"Successfully retrieved the user's files.","success":true,"data":{"IsTruncated":false,"Contents":[{"Key":"your new/directory/path/file.txt","LastModified":"2021-07-01T21:26:35.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":32,"StorageClass":"STANDARD","isDirectory":false}],"Name":"bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b","Prefix":"","MaxKeys":1000,"CommonPrefixes":[],"KeyCount":1}}
 
 Example request:
 
@@ -78,11 +78,9 @@ xhttp.open("POST", "http://tshare-back-end.herokuapp.com/file/list", true);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
-    dirPath: "your/existing/file/path",  // Optional, can be null or undefined
+    dirPath: "your new/directory",  // Optional, can be null or undefined
     maxFiles: 1000  // Optional, can be undefined
 }));
-
-* This route will likely change in the near future. *
 
 
 /file/make-directory:
@@ -105,4 +103,29 @@ xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
     dirPath: "your new\\directory/path\\can-contain-all-sorts-of-chars"
+}));
+
+
+/file/delete:
+
+This route allows you to delete a file or directory (and its contents) into their recycle bin. It does this by moving the object into an accountId_recycle root directory. Duplicate files are allowed and will be named such as <filename>_<value>.<extension>.
+Trailing and prefixed backward/forward slashes in the path name will cause undefined behaviour. It takes three parameters wrapped in an Object:
+- loginToken: String
+- path: String
+- isDirectory: boolean, indicates whether or not path specifies a directory
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/delete", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
+    path: "your\\directory/can contain lots of chars",
+    isDirectory: true
 }));
