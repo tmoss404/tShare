@@ -1,5 +1,5 @@
 // Run these every time you refactor the routing code:
-const testAccountEmail = "test.backend@gmail.com";  // Should be unique each time you run this.
+const testAccountEmail = "test.backend420@gmail.com";  // Should be unique each time you run this.
 const testAccountValidEmail = "eric.d.mcdonald@gmail.com";
 const testAccountPwd = "myValidPwd123!", testAccountNewPwd = "myNewValidPwd123!", testAccountNewPwd2 = "MyNewerValidPwd123!";
 var xhttp;
@@ -69,7 +69,8 @@ xhttp.open("POST", "http://localhost/account/change-password", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
-    newPassword: testAccountNewPwd2
+    newPassword: testAccountNewPwd2,
+    currentPassword: testAccountPwd
 }));
 
 // Forgot password:
@@ -84,6 +85,17 @@ xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
 	email: testAccountValidEmail
 }));
+
+// Checking the reset password ID:
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+	console.log(xhttp.responseText);
+    }
+};
+xhttp.open("GET", "http://localhost/account/check-password-reset/38806", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send();
 
 // Resetting password:
 xhttp = new XMLHttpRequest();
@@ -128,6 +140,20 @@ xhttp.open("PUT", signedUrl, false);
 xhttp.setRequestHeader("Content-Type", "text/plain");  // This header MUST match up with the fileType you provided in the sign URL request.
 xhttp.setRequestHeader("x-amz-acl", "public-read");  // You MUST have this header set, otherwise AWS will give you error 403.
 xhttp.send("This is the contents of my file!");
+
+// Creating an empty directory:
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/make-directory", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    dirPath: "your new\\directory/path"
+}));
 
 // Listing files:
 xhttp = new XMLHttpRequest();

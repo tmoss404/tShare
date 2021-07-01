@@ -1,4 +1,5 @@
 const objUtil = require("../objectUtil");
+const appConstants = require("../config/appConstants");
 
 module.exports.isEmailValid = function(email) {
     var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
@@ -11,6 +12,16 @@ function strContainsCharIn(str, characterList) {
         }
     }
     return false;
+}
+module.exports.isPwdResetSubLinkValid = function(pwdSubLink, dbResult, database) {
+    var currentTime = Date.now();
+    if (dbResult.length == 0 || currentTime - dbResult.creation_date.getTime() >= appConstants.pwdRecoveryLinkExp) {
+        if (dbResult.length != 0 && currentTime - dbResult.creation_date.getTime() >= appConstants.pwdRecoveryLinkExp) {
+            database.deleteFromTable("Password_Reset_Link", "email='" + pwdResetResult.email + "'", dbConnection).then((success) => {});
+        }
+        return false;
+    }
+    return true;
 }
 module.exports.isPasswordValid = function(password) {
     var validSymbols = "-_!@#$%^&*()=+";

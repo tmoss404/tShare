@@ -17,6 +17,13 @@ module.exports.setupRoutes = function(app) {
             routes.sendResponse(res, err);
         });
     });
+    app.get("/account/check-password-reset/:resetPwdId", (req, res) => {
+        accountModel.checkPwdResetId(req.params.resetPwdId).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
     app.post("/account/reset-password/:resetPwdId", (req, res) => {
         accountModel.resetPassword(req.body, req.params.resetPwdId).then((msg) => {
             routes.sendResponse(res, msg);
