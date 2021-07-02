@@ -27,4 +27,10 @@ export class AccountService {
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/account/reset-password/` + resetId, data);
 
   }
+
+  changePassword(data: any){
+
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/account/change-password`, data);
+
+  }
 }
