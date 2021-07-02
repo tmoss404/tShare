@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AccountService } from '../../services/account.service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { confirmPassword } from '../../validators/confirmPassword.validator';
 import { passwordFormat } from '../../validators/passwordFormat.validator';
 
@@ -19,26 +19,37 @@ export class ResetPasswordComponent implements OnInit {
   constructor(
     private accountService: AccountService,
     private formBuilder: FormBuilder,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
-    this.resetForm = this.formBuilder.group({
-      password: ['', [Validators.required, passwordFormat()]],
-      confirm: ['', [Validators.required]]
-    },
-    {
-      validators: [confirmPassword("password", "confirm")]
+
+    this.accountService.resetPasswordIdCheck(this.route.snapshot.params['resetId']).subscribe({
+      next: (success) => {
+        this.resetForm = this.formBuilder.group({
+          password: ['', [Validators.required, passwordFormat()]],
+          confirm: ['', [Validators.required]]
+        },
+        {
+          validators: [confirmPassword("password", "confirm")]
+        });
+      },
+      error: (err) => {
+        this.router.navigate(['/home']);
+      }
     });
+    
+   
   }
 
-  submit(){
-
+  submit() {
     this.info = { newPassword: this.resetForm.controls['password'].value };
 
     this.accountService.resetPassword(this.route.snapshot.params['resetId'], this.info).subscribe({
       next: (success) => {
         this.response = success;
+        this.resetForm.reset();
       },
       error: (err) => {
         this.response = err.error;
