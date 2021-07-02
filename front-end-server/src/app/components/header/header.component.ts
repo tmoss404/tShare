@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, Event, NavigationStart, NavigationEnd } from '@angular/router';
 import { AuthenticationService } from '../../services/authentication.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-header',
@@ -11,7 +12,8 @@ export class HeaderComponent implements OnInit {
 
   constructor(
     private router : Router,
-    private auth : AuthenticationService
+    private auth : AuthenticationService,
+    private location: Location
   ) { }
 
   public token: any;
@@ -24,7 +26,7 @@ export class HeaderComponent implements OnInit {
     });
   }
   
-  logout(){
+  logout() {
     if(this.auth.isAuthenticated){
       this.auth.logout().subscribe({
         next: (success) => {
@@ -38,5 +40,12 @@ export class HeaderComponent implements OnInit {
     }else {
       this.router.navigate['/login'];
     }
+  }
+
+  dashboardActive() {
+    let relativePath : string = this.location.path();
+    return relativePath === '/file-dashboard/my-files' || relativePath === '/file-dashboard/shared-content' || 
+            relativePath === '/file-dashboard/request-access' || relativePath === '/file-dashboard/requests' ||
+            relativePath === '/file-dashboard/quick-access' || relativePath === '/file-dashboard/deleted-files';
   }
 }
