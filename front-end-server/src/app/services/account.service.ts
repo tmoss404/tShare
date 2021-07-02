@@ -31,6 +31,12 @@ export class AccountService {
   resetPasswordIdCheck(resetId: number){
 
     return this.http.get<any>(`https://tshare-back-end.herokuapp.com/account/check-password-reset/` + resetId);
+  
+  }
+  
+  changePassword(data: any){
+
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/account/change-password`, data);
 
   }
 }
