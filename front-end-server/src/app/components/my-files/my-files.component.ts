@@ -31,15 +31,22 @@ export class MyFilesComponent implements OnInit {
   }
 
   uploadFile(files: FileList){
-    this.fileToUpload = files.item(0);
-    this.fileService.getSignedUrl(this.fileToUpload).subscribe({
-      next: (success) => {
-        this.fileService.uploadFile(success.signedUrlData, this.fileToUpload).subscribe(() => this.getFiles());
-      },
-      error: (err) => {
-        console.log(err.error);
+    if(files.item(0).name != null){
+      this.fileToUpload = files.item(0);
+
+      let signUrlReq = this.fileService.getSignedUrl(this.fileToUpload);
+      if (signUrlReq != null) {
+        signUrlReq.subscribe({
+          next: (success) => {
+            console.log("getSignedUrl success");
+            this.fileService.uploadFile(success.signedUrlData, this.fileToUpload).subscribe(() => this.getFiles());
+          },
+          error: (err) => {
+            console.log(err.error);
+          }
+        });
       }
-    });
+    }
   }
 
 }

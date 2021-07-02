@@ -14,13 +14,17 @@ export class FileService {
   ) { }
   
   public getSignedUrl(fileToUpload: File) : Observable<any> {
-    let signUrlData = {
-      loginToken: this.auth.getToken(),
-      filePath: fileToUpload.name,
-      fileType: fileToUpload.type
+    if(fileToUpload.name != null){
+      let signUrlData = {
+        loginToken: this.auth.getToken(),
+        filePath: fileToUpload.name,
+        fileType: fileToUpload.type
+      }
+      
+      return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/upload`, signUrlData);
+    } else {
+      return null;
     }
-    console.log(signUrlData)
-    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/upload`, signUrlData);
   }
 
   public uploadFile(signedUrl: string, fileToUpload: File) : Observable<any>{
