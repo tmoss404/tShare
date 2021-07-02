@@ -25,12 +25,12 @@ export class ChangePasswordComponent implements OnInit {
   ngOnInit(): void {
     this.passwordForm = this.formBuilder.group({
       currentPassword: ['', [Validators.required]],
-      newPass: ['', [Validators.required]],
+      newPass: ['', [Validators.required,  passwordFormat()]],
       confirm: ['', [Validators.required]],
     
     },
     {
-      validators: [confirmPassword("newPass", "confirm"), passwordFormat()]
+      validators: [confirmPassword("newPass", "confirm")]
     });
   }
 
@@ -43,6 +43,7 @@ export class ChangePasswordComponent implements OnInit {
     this.accountService.changePassword(this.passwordInfo).subscribe({
       next: (success) => {
         this.response = success;
+        this.passwordForm.reset();
       },
       error: (err) => {
         this.response = err.error;
