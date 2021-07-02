@@ -30,6 +30,7 @@ export class ForgotPasswordComponent implements OnInit {
     this.accountService.recoverPassword(this.info).subscribe({
       next: (success) => {
         this.response = success;
+        this.emailForm.reset();
       },
       error: (err) => {
         this.response = err.error;
