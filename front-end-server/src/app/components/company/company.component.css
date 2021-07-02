@@ -13,5 +13,8 @@
 .jumbotron {
     background-color: rgba(0, 0, 0, 0.9);
     color: #fff;
-    margin-top: 7rem;
+}
+
+.container {
+    margin-top: 7%;
 }
