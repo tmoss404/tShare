@@ -1,7 +1,25 @@
 .header {
-  height: 8vh;
+  height: 60%;
+}
+
+@media (max-width: 768px) {
+  .header {
+    height: auto !important;
+  }
 }
 
 .navbar-header, .navbar {
   height: 100%;
+  background-color: #202020;
+  color: white;
+  border: none;
+}
+
+.navbar .navbar-nav .nav-link {
+  color: white;
+}
+
+.navbar .navbar-nav .nav-link:not(.active):hover {
+  color: #1ab9d1;
+  font-weight: 600;
 }
