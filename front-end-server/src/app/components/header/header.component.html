@@ -2,6 +2,10 @@
   <!-- Main Navbar -->
   <nav class="navbar navbar-expand-lg">
     <div class="container">
+      <!-- Navbar Brand -->
+        <div class="navbar-header d-flex align-items-center justify-content-between">
+          <a class="navbar-brand">tShare</a>
+        </div>
       <!-- Navbar Menu -->
         <ul class="navbar-nav mr-auto">
           <li class="nav-item"><a [routerLink]="['/home']" routerLinkActive="active" class="nav-link">Home</a>
@@ -12,17 +16,18 @@
           </li>
           <li class="nav-item"><a [routerLink]="['/contact-us']" routerLinkActive="active" class="nav-link">Contact Us</a>
           </li>
+          <li class="nav-item" *ngIf="token"><a [routerLink]="['/file-dashboard/my-files']" routerLinkActive="active" class="nav-link">Dashboard</a>
+          </li>
+        </ul>
+
+        <ul class="navbar-nav ml-auto">
           <li class="nav-item" *ngIf="!token"><a [routerLink]="['/login']" routerLinkActive="active" class="nav-link">Log In</a>
           </li>
-          <li class="nav-item" *ngIf="token"><a [routerLink]="['/file-dashboard/my-files']" routerLinkActive="active" class="nav-link">Dashboard</a>
+          <li class="nav-item" *ngIf="token"><a [routerLink]="['/account-preferences']" routerLinkActive="active" class="nav-link">Account</a>
           </li>
           <li class="nav-item" *ngIf="token"><a (click)="logout()" [routerLink]="" class="nav-link">Log Out</a>
           </li>
         </ul>
-          <!-- Navbar Brand -->
-        <div class="navbar-header d-flex align-items-center justify-content-between">
-          <a class="navbar-brand">tShare</a>
-        </div>
     </div>
   </nav>
 </header>
