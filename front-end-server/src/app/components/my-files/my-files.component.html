@@ -3,7 +3,7 @@
         <button class="file-option-btn">New Folder</button>
 
         <button class="file-option-btn" (click)="uploader.click()">Upload File</button>
-            <input hidden type="file" #uploader (change)="uploadFile($event.target.files)"/>
+            <input hidden type="file" #uploader (change)="uploadFile($event.target.files)" onclick="this.value = null" />
 
         <button class="file-option-btn">Delete Selected</button>
 
