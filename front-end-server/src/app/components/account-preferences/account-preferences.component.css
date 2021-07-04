@@ -15,6 +15,11 @@
 .right {
     right: 0;
     background-color: #1ab9d1;
+    color: white;
+}
+
+.right h1 {
+    margin-bottom: 0.3em;
 }
 
 .space {
@@ -23,7 +28,7 @@
 
 .centered {
     position: absolute;
-    top: 45%;
+    top: 40%;
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
@@ -38,7 +43,7 @@
 }
 
 .centered img {
-    width: 50em;
+    width: 60em;
     height: auto;
 }
 

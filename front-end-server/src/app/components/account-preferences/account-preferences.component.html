@@ -2,25 +2,25 @@
     <div class="centered">
         <img src="assets\images\acc_pref.png">
         <div class="space"></div>
-        <h2>Account Preferences &#8594;</h2>
+        <h1>Account Preferences &#8594;</h1>
     </div>
 </div>
 
 <div class="split right">
     <div class="centeredRight">
 
-        <div class="row">
+        <div style="margin-bottom: 2em;" class="row">
             <div class="column">
-                <h3 style="margin-top: 3em;">Email: </h3>
+                <h1>Email: </h1>
             </div>
             <div class="column">
-                <p>eric.mcdonald@gmail.com</p>
+                <h5>eric.mcdonald@gmail.com</h5>
             </div>
         </div>
 
-        <div class="row">
+        <div style="margin-bottom: 1em;" class="row">
             <div class="column">
-                <h3>Date Format:</h3>
+                <h1>Date Format:</h1>
             </div>
             <div class="column">
                 <select id="dateFormats" name="formats">
@@ -34,10 +34,10 @@
         <br>
         <div class="row">
             <div class="column">
-                <h3>Password: </h3>
+                <h1>Password: </h1>
             </div>
             <div class="column">
-                <p>********* <br><a style="color: white;" [routerLink]="['./change-password']">Edit</a></p>
+                <h5><a style="color: white; text-decoration: underline;" [routerLink]="['./change-password']">Edit Password</a></h5>
 
             </div>
         </div>
