@@ -10,31 +10,31 @@ export class AccountService {
 
   constructor(private http: HttpClient) { }
 
-  newAccount(data: User): Observable<any>{
+  newAccount(data: User) : Observable<any> {
 
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/account/register`, data);
 
   }
 
-  recoverPassword(data: any){
+  recoverPassword(data: any) : Observable<any> {
 
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/account/forgot-password`, data);
   
   }
 
-  resetPassword(resetId: number, data: any){
+  resetPassword(resetId: number, data: any) : Observable<any> {
 
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/account/reset-password/` + resetId, data);
 
   }
 
-  resetPasswordIdCheck(resetId: number){
+  resetPasswordIdCheck(resetId: number) : Observable<any> {
 
     return this.http.get<any>(`https://tshare-back-end.herokuapp.com/account/check-password-reset/` + resetId);
   
   }
   
-  changePassword(data: any){
+  changePassword(data: any) : Observable<any> {
 
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/account/change-password`, data);
 

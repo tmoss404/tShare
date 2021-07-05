@@ -22,6 +22,7 @@ import { QuickAccessComponent } from './components/quick-access/quick-access.com
 import { DeletedFilesComponent } from './components/deleted-files/deleted-files.component';
 import { AccountPreferencesComponent } from './components/account-preferences/account-preferences.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
+import { ResetPasswordGuardService } from './guards/reset-password-guard.service';
 
 const routes: Routes = [
   {path: "home", component: HomeComponent},
@@ -52,7 +53,7 @@ const routes: Routes = [
   {path: "register", component: RegisterComponent},
   {path: "terms-of-service", component: TermsOfServiceComponent},
   {path: "forgot-password", component: ForgotPasswordComponent},
-  {path: "reset-password/:resetId", component: ResetPasswordComponent},
+  {path: "reset-password/:resetId", component: ResetPasswordComponent, canActivate: [ResetPasswordGuardService]},
   {path: "", redirectTo: "/home", pathMatch: "full"},
   {path: "**", component: PageNotFoundComponent}
 ];

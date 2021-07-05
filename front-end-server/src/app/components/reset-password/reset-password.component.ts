@@ -25,22 +25,14 @@ export class ResetPasswordComponent implements OnInit {
 
   ngOnInit(): void {
 
-    this.accountService.resetPasswordIdCheck(this.route.snapshot.params['resetId']).subscribe({
-      next: (success) => {
-        this.resetForm = this.formBuilder.group({
-          password: ['', [Validators.required, passwordFormat()]],
-          confirm: ['', [Validators.required]]
-        },
-        {
-          validators: [confirmPassword("password", "confirm")]
-        });
-      },
-      error: (err) => {
-        this.router.navigate(['/home']);
-      }
+    this.resetForm = this.formBuilder.group({
+      password: ['', [Validators.required, passwordFormat()]],
+      confirm: ['', [Validators.required]]
+    },
+    {
+      validators: [confirmPassword("password", "confirm")]
     });
-    
-   
+
   }
 
   submit() {
