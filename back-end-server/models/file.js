@@ -241,7 +241,10 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
                 if (err) {
                     reject(commonErrors.failedToQueryS3Status500);
                 } else {
-                    data_ = fileUtil.processS3Data(data_, accountIdPrefix);
+                    data_ = fileUtil.processS3Data(data_, accountIdPrefix, {
+                        email: decodedToken.email,
+                        accountId: decodedToken.accountId
+                    });
                     resolve({
                         message: isRecycleBin ? "Successfully retrieved the user's deleted files." : "Successfully retrieved the user's files.",
                         httpStatus: 200,
