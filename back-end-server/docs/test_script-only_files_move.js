@@ -151,6 +151,22 @@ xhttp.send(JSON.stringify({
     isDirectory: true
 }));
 
+// Attempting to use the same srcPath and destPath:
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/move", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    srcPath: "your even newer 2/directory/path",
+    destPath: "your even newer 2\\directory/path",
+    isDirectory: true
+}));
+
 // Listing files again (no directory path):
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {

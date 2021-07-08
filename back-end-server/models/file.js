@@ -55,6 +55,14 @@ module.exports.moveFile = function(moveFileData) {
             var decodedToken = jsonWebToken.verify(moveFileData.loginToken, appConstants.jwtSecretKey);
             moveFileData.srcPath = decodedToken.accountId + "/" + fileUtil.formatFilePath(moveFileData.srcPath);
             moveFileData.destPath = decodedToken.accountId + "/" + fileUtil.formatFilePath(moveFileData.destPath);
+            if (moveFileData.srcPath == moveFileData.destPath) {
+                reject({
+                    message: "srcPath and destPath cannot be equal for a move operation.",
+                    httpStatus: 403,
+                    success: false
+                });
+                return;
+            }
             if (moveFileData.isDirectory) {
                 var s3Params = {
                     Bucket: appConstants.awsBucketName,
