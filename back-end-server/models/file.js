@@ -13,6 +13,36 @@ var s3  = new awsSdk.S3({
     region: appConstants.awsRegion
 });
 
+module.exports.downloadFile = function(dlFileData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(dlFileData) || objectUtil.isNullOrUndefined(dlFileData.filePath)) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        try {
+            var decodedToken = jsonWebToken.verify(dlFileData.loginToken, appConstants.jwtSecretKey);
+            dlFileData.filePath = decodedToken.accountId + "/" + fileUtil.formatFilePath(dlFileData.filePath);
+            var s3Params = {
+                Bucket: appConstants.awsBucketName,
+                Key: dlFileData.filePath
+            };
+            s3.getSignedUrl("getObject", s3Params, (err, url) => {
+                if (err) {
+                    reject(commonErrors.failedToQueryS3Status500);
+                } else {
+                    resolve({
+                        message: "Successfully retrieved a signed S3 URL for downloading a file.",
+                        httpStatus: 200,
+                        success: true,
+                        signedUrl: url
+                    });
+                }
+            });
+        } catch (err) {
+            reject(commonErrors.loginTokenInvalidStatus401);
+        }
+    });
+};
 module.exports.moveFile = function(moveFileData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(moveFileData) || objectUtil.isNullOrUndefined(moveFileData.isDirectory) || 

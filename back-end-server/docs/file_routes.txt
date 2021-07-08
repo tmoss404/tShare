@@ -90,6 +90,9 @@ Trailing and prefixed backwards/forwards slashes in dirPath will cause undefined
 - loginToken: String
 - dirPath: String
 
+Returns an Object containing message and success:
+{"message":"Successfully created the empty directory.","success":true}
+
 Example request:
 
 var xhttp = new XMLHttpRequest();
@@ -113,6 +116,9 @@ Trailing and prefixed backward/forward slashes in the path name will cause undef
 - loginToken: String
 - path: String
 - isDirectory: boolean, indicates whether or not path specifies a directory
+
+Returns an Object containing a message and success property:
+{"message":"Successfully deleted a file into the recycle bin.","success":true}
 
 Example request:
 
@@ -140,6 +146,9 @@ If there is already a file that exists in destPath, then it's name is suffixed w
 - destPath: String
 - isDirectory: boolean, indicates whether or not BOTH paths are directories (both so that the srcPath's contents just go into destPath)
 
+Returns an Object containing message and success:
+{"message":"Successfully moved a file to its target path.","success":true}
+
 Example request:
 
 var xhttp = new XMLHttpRequest();
@@ -156,3 +165,46 @@ xhttp.send(JSON.stringify({
     destPath: "your even newer 2\\directory/path",
     isDirectory: true
 }));
+
+
+/file/download:
+
+This route retrieves a "signed S3 URL" for directly downloading the requested file from our S3 bucket. It takes two parameters: loginToken, and filePath. 
+Trailing and prefixed backward/forward slashes in filePath will cause undefined behaviour. Please note that you CANNOT download a directory, as this 
+would result in a multi-download catastrophe. This route will return the signed S3 URL even if the file does not exist (although upon trying to use
+it, it will give you error 404. This shouldn't be a problem since you select the file to download through your UI, and isn't really a security risk):
+- loginToken: String
+- filePath: String
+
+Returns an Object containing at least message, success, and (and only if it was successful), a signedUrl property:
+{"message":"Successfully retrieved a signed S3 URL for downloading a file.","success":true,"signedUrl":"https://bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b.s3.amazonaws.com/1204/your%20new/directory/path/file.txt?AWSAccessKeyId=AKIARVGPJVYVDSNAKJLB&Expires=1625782086&Signature=vLdo54Eh6Q6uL33nqAQUi9EoLhg%3D"}
+
+Example request:
+
+var signedDownload = null;
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+        signedDownload = JSON.parse(this.responseText).signedUrl;
+    }
+};
+xhttp.open("POST", "http://localhost/file/download", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    filePath: "your new/directory/path/file.txt"
+}));
+
+while (signedDownload == null) {}
+
+Example of downloading the file via the returned signedUrl parameter:
+
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("GET", signedDownload, false);
+xhttp.send();
