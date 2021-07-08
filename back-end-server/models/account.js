@@ -5,26 +5,19 @@ const objUtil = require("../objectUtil");
 const accountUtil = require("./accountUtil");
 const appConstants = require("../config/appConstants");
 const database = require("../config/database");
+const commonErrors = require("./commonErrors");
 
 var dbConnectionPool;
 
 module.exports.checkPwdResetId = function(pwdResetId) {
     return new Promise((resolve, reject) => {
         if (objUtil.isNullOrUndefined(pwdResetId)) {
-            reject({
-                message: "Malformed request. Trying to hack the server?",
-                httpStatus: 400,
-                success: false
-            });
+            reject(commonErrors.genericStatus400);
             return;
         }
         dbConnectionPool.getConnection((err, connection) => {
             if (err) {
-                reject({
-                    message: "Failed to establish a connection to the database.",
-                    httpStatus: 500,
-                    success: false
-                });
+                reject(commonErrors.failedToConnectDbStatus500);
                 return;
             }
             database.selectFromTable("Password_Reset_Link", "sub_link='" + pwdResetId + "'", connection).then((results) => {
@@ -57,11 +50,7 @@ module.exports.checkPwdResetId = function(pwdResetId) {
 module.exports.changePassword = function(changePwdInfo) {
     return new Promise((resolve, reject) => {
         if (objUtil.isNullOrUndefined(changePwdInfo) || objUtil.isNullOrUndefined(changePwdInfo.newPassword) || objUtil.isNullOrUndefined(changePwdInfo.currentPassword)) {
-            reject({
-                message: "Malformed request. Trying to hack the server?",
-                httpStatus: 400,
-                success: false
-            });
+            reject(commonErrors.genericStatus400);
             return;
         }
         if (!accountUtil.isPasswordValid(changePwdInfo.newPassword)) {
@@ -84,11 +73,7 @@ module.exports.changePassword = function(changePwdInfo) {
             var decodedToken = jsonWebToken.verify(changePwdInfo.loginToken, appConstants.jwtSecretKey);
             dbConnectionPool.getConnection((err, connection) => {
                 if (err) {
-                    reject({
-                        message: "Failed to establish a connection to the database.",
-                        httpStatus: 500,
-                        success: false
-                    });
+                    reject(commonErrors.failedToConnectDbStatus500);
                     return;
                 }
                 var salt = bcrypt.genSaltSync(10);
@@ -128,11 +113,7 @@ module.exports.changePassword = function(changePwdInfo) {
                 });
             });
         } catch(err) {
-            reject({
-                message: "Failed to decode the login token.",
-                httpStatus: 500,
-                success: false
-            });
+            reject(commonErrors.loginTokenInvalidStatus401);
         }
     });
 };
@@ -154,11 +135,7 @@ module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
             }
             dbConnectionPool.getConnection((err, connection) => {
                 if (err) {
-                    reject({
-                        message: "Failed to establish a connection to the database.",
-                        httpStatus: 500,
-                        success: false
-                    });
+                    reject(commonErrors.failedToConnectDbStatus500);
                     return;
                 }
                 const dbConnection = connection;
@@ -224,11 +201,7 @@ module.exports.forgotPassword = function(forgotPwdInfo) {
         }
         dbConnectionPool.getConnection((err, connection) => {
             if (err) {
-                reject({
-                    message: "Failed to establish a connection to the database.",
-                    httpStatus: 500,
-                    success: false
-                });
+                reject(commonErrors.failedToConnectDbStatus500);
                 return;
             }
             const dbConnection = connection;
@@ -313,11 +286,7 @@ module.exports.logout = function(loginInfo) {
     return new Promise((resolve, reject) => {
         dbConnectionPool.getConnection((err, connection) => {
             if (err) {
-                reject({
-                    message: "Failed to establish a connection to the database.",
-                    httpStatus: 500,
-                    success: false
-                });
+                reject(commonErrors.failedToConnectDbStatus500);
                 return;
             }
             var successResponse = {
@@ -349,20 +318,12 @@ module.exports.logout = function(loginInfo) {
 module.exports.checkLogin = function(loginInfo) {
     return new Promise((resolve, reject) => {
         if (objUtil.isNullOrUndefined(loginInfo) || objUtil.isNullOrUndefined(loginInfo.loginToken) || loginInfo.loginToken.length == 0) {
-            reject({
-                message: "Malformed request. Trying to hack the server?",
-                httpStatus: 400,
-                success: false
-            });
+            reject(commonErrors.genericStatus400);
             return;
         }
         dbConnectionPool.getConnection((err, connection) => {
             if (err) {
-                reject({
-                    message: "Failed to establish a connection to the database.",
-                    httpStatus: 500,
-                    success: false
-                });
+                reject(commonErrors.failedToConnectDbStatus500);
                 return;
             }
             var invalidTokenResponse = {
@@ -411,11 +372,7 @@ module.exports.login = function(reqData) {
         }
         dbConnectionPool.getConnection((err, connection) => {
             if (err) {
-                reject({
-                    message: "Failed to establish a connection to the database.",
-                    httpStatus: 500,
-                    success: false
-                });
+                reject(commonErrors.failedToConnectDbStatus500);
                 return;
             }
             database.selectFromTable("Account", "email='" + accountObj.email + "'", connection).then((results) => {
@@ -490,11 +447,7 @@ module.exports.registerAccount = function(account) {
         }
         dbConnectionPool.getConnection((err, connection) => {
             if (err) {
-                reject({
-                    message: "Failed to establish a connection to the database.",
-                    httpStatus: 500,
-                    success: false
-                });
+                reject(commonErrors.failedToConnectDbStatus500);
                 return;
             }
             database.selectFromTable("Account", "email='" + accountObj.email + "'", connection).then((results) => {

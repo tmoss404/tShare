@@ -129,3 +129,30 @@ xhttp.send(JSON.stringify({
     path: "your\\directory/can contain lots of chars",
     isDirectory: true
 }));
+
+
+/file/move:
+
+This route allows you to move a file or directory to another directory in your S3 root directory. Trailing and prefixed backward/forward slashes in the path names will cause undefined behaviour.
+If there is already a file that exists in destPath, then it's name is suffixed with something like _1.
+- loginToken: String
+- srcPath: String
+- destPath: String
+- isDirectory: boolean, indicates whether or not BOTH paths are directories (both so that the srcPath's contents just go into destPath)
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/move", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
+    srcPath: "your even newer\\directory/path",
+    destPath: "your even newer 2\\directory/path",
+    isDirectory: true
+}));
