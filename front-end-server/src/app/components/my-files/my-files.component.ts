@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FileService } from 'src/app/services/file.service';
 
 @Component({
@@ -6,10 +6,11 @@ import { FileService } from 'src/app/services/file.service';
   templateUrl: './my-files.component.html',
   styleUrls: ['./my-files.component.css']
 })
-export class MyFilesComponent implements OnInit {
+export class MyFilesComponent implements OnInit, OnDestroy {
 
-  files: Array<any> = [];
+  files: Array<any>;
   fileToUpload: File;
+  filesSub: any;
 
   constructor(
     private fileService: FileService
@@ -19,8 +20,13 @@ export class MyFilesComponent implements OnInit {
     this.getFiles();
   }
 
+  ngOnDestroy(): void {
+    if(this.filesSub)
+      this.filesSub.unsubscribe();
+  }
+
   getFiles(){
-    this.fileService.getFiles().subscribe({
+    this.filesSub = this.fileService.getFiles().subscribe({
       next: (success) => {
         this.files = success.data.Contents;
       },
@@ -38,8 +44,14 @@ export class MyFilesComponent implements OnInit {
       if (signUrlReq != null) {
         signUrlReq.subscribe({
           next: (success) => {
-            console.log("getSignedUrl success");
-            this.fileService.uploadFile(success.signedUrlData, this.fileToUpload).subscribe(() => this.getFiles());
+            this.fileService.uploadFile(success.signedUrlData, this.fileToUpload).subscribe({
+              next: (success) => {
+                this.getFiles();
+              },
+              error: (err) => {
+                console.log(err.error);
+              }
+            });
           },
           error: (err) => {
             console.log(err.error);
