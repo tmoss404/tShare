@@ -1,10 +1,14 @@
 .split {
-    height: 92%;
+    height: 94%;
     width: 50%;
     position: fixed;
     z-index: 0;
     top: 0;
     padding-top: 20px;
+}
+
+.row {
+    margin-bottom: 2em;
 }
 
 .left {
@@ -22,10 +26,6 @@
     margin-bottom: 0.3em;
 }
 
-.space {
-    margin-top: -5em;
-}
-
 .centered {
     position: absolute;
     top: 40%;
@@ -40,6 +40,8 @@
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
+    height: 512px;
+    width: 480px;
 }
 
 .centered img {
@@ -50,4 +52,26 @@
 .column {
     float: left;
     width: 1000%;
+}
+
+.btn-custom:hover:not(:disabled):not(.disabled) {
+    background-color: white;
+    color: black;
+    text-shadow: none;
+}
+
+.format-select {
+    width: 60%;
+    margin-left: 20%;
+}
+
+.form-control {
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    position: center;
+}
+
+.center-response {
+    width: 60%;
+    margin: auto;
 }

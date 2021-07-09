@@ -1,37 +1,21 @@
 <div class="split left">
     <div class="centered">
         <img src="assets\images\acc_pref.png">
-        <div class="space"></div>
-        <h1>Account Preferences &#8594;</h1>
+        <h1>Account Preferences</h1>
     </div>
 </div>
 
 <div class="split right">
     <div class="centeredRight">
 
-        <div style="margin-bottom: 2em;" class="row">
+        <div class="row">
             <div class="column">
                 <h1>Email: </h1>
             </div>
             <div class="column">
-                <h5>eric.mcdonald@gmail.com</h5>
+                <h5>{{userEmail}}</h5>
             </div>
         </div>
-
-        <div style="margin-bottom: 1em;" class="row">
-            <div class="column">
-                <h1>Date Format:</h1>
-            </div>
-            <div class="column">
-                <select id="dateFormats" name="formats">
-                <option value="ddmmyy">DD/MM/YY</option>
-                <option value="yymmdd">YY/MM/DD</option>
-                <option value="mdyy">M/D/YY</option>
-                <option value="yyyymondd">YYYY, Mon DD</option>
-              </select>
-            </div>
-        </div>
-        <br>
         <div class="row">
             <div class="column">
                 <h1>Password: </h1>
@@ -41,5 +25,22 @@
 
             </div>
         </div>
+        <div class="row">
+            <div class="column">
+                <h1>Date Format:</h1>
+            </div>
+            <div class="column">
+                <form (ngSubmit)="apply()" [formGroup]="preferencesForm">
+                    <select class="format-select form-control" formControlName="dateFormat">
+                        <option *ngFor="let format of formats" [ngValue]="format">{{format}}</option>
+                    </select>
+                    
+                    <button type="submit" class="form-control btn-custom">Apply</button>
+                </form>
+                <div class="form-control center-response" *ngIf="response" [ngClass]="response?.success ? 'alert-success' : 'alert'">{{response?.message}}</div> 
+            </div>
+        </div>
+        <br>
+        
     </div>
 </div>
