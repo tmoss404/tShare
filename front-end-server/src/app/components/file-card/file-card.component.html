@@ -1,1 +1,26 @@
-<p>Name: {{file?.name}} | Last Modified: {{file.LastModified}} | Size: {{file.Size}} Bytes</p>
+<div class="file-card" (click)="fileCardSelect()" [ngClass]="selected ? 'selected' : ''">
+    <div class="file-info">
+        <div class="file-check">
+            <i class="select-icon bi bi-check-circle" [ngClass]=""></i>
+            <i class="select-icon bi bi-circle" [ngClass]=""></i>
+            <i class="select-icon bi bi-check-circle-fill" [ngClass]=""></i>    
+        </div>
+    </div>
+    <div class="file-info file-name">
+        {{file?.name}}
+    </div>
+    <div class="file-info">
+        <div class="file-card-option">
+            <i class="option-icon bi bi-three-dots-vertical" (click)="$event.stopPropagation()"></i>
+        </div>
+    </div>
+    <div class="file-info last-modified">
+        {{file.LastModified | date:dateFormat}}
+    </div>
+    <div class="file-info file-owner">
+        {{file.owner.email}}
+    </div>
+    <div class="file-info file-size">
+        {{file.Size}} bytes
+    </div>
+</div>

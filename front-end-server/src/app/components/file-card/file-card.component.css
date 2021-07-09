@@ -1,3 +1,103 @@
-p {
+.file-card {
+    width: 1200px;
     color: white;
+    background-color: #323232;
+    border-radius: 10px;
+    padding: 6px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.file-card:hover ,
+.file-card.selected:hover {
+    background-color: #1ab9d1;
+    color: white;
+    transition: .2s;
+}
+
+.file-card.selected {
+    background-color: white;
+    color: black;
+}
+
+.file-info {
+    display: inline-block;
+    vertical-align: middle;
+    padding: 0 8px;
+}
+
+.file-name {
+    text-align: left;
+    width: 35%;
+    font-size: 16px;
+}
+
+.file-card-option {
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.file-card-option:hover {
+    background-color: white;
+    color: #1ab9d1;
+}
+
+.option-icon {
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.last-modified {
+    text-align: left;
+    font-size: 12px;
+    width: 15%;
+}
+
+.file-owner {
+    text-align: right;
+    font-size: 12px;
+    width: 25%;
+}
+
+.file-size {
+    text-align: right;
+    font-size: 12px;
+    width: 12%;
+}
+
+.select-icon {
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.file-card.selected .bi-check-circle-fill{
+    display: flex;
+}
+
+.file-check {
+    width: 18px;
+    height: 18px;
+    border-radius: 9px;
+}
+
+.file-card:hover .bi-circle /* Display circle icon when hovering file card */
+{
+    display: flex;
+} 
+
+.file-check .bi-circle, /* Hide circle icon by default */
+.file-check .bi-check-circle, /* Hide check circle icon by default */
+.file-check .bi-check-circle-fill, /* Hide check circle fill icon by default */
+.file-check:hover .bi-circle, /* Hide circle icon when hovering checkbox */
+.file-card.selected:hover .bi-circle, /* Hide circle icon when hovering selected file card */
+.file-card.selected .file-check:hover .bi-check-circle /* Hide check circle icon when hovering checkbox on selected file card */
+{
+    display: none;
+}
+
+.file-check:hover .bi-check-circle /* Display check circle icon when hovering checkbox */
+{
+    display: flex;
 }
