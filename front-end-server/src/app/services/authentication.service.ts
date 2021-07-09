@@ -16,11 +16,7 @@ export class AuthenticationService {
 
   constructor( private http: HttpClient, private router: Router) { }
 
-  public getToken(): string {
-    return localStorage.getItem('access_token');
-  }
-
-  public readToken(): any{
+  public readToken(): any {
     const token = localStorage.getItem('access_token');
     return helper.decodeToken(token);
   }
@@ -47,8 +43,18 @@ export class AuthenticationService {
     return this.http.post<any>('https://tshare-back-end.herokuapp.com/account/logout', token);
   }
 
-  clearToken(){
-    localStorage.removeItem("access_token");
+  setToken(token: string) {
+    localStorage.setItem( 'access_token', token);
+  }
+
+  public getToken(): string {
+    return localStorage.getItem('access_token');
+  }
+
+  clearToken() {
+    if(localStorage.getItem('access_token'))
+      localStorage.removeItem("access_token");
     this.router.navigate(['/login']);
   }
+
 }
