@@ -1,5 +1,5 @@
 .file-card {
-    width: 1200px;
+    width: 1420px;
     color: white;
     background-color: #323232;
     border-radius: 10px;
@@ -52,13 +52,13 @@
 .last-modified {
     text-align: left;
     font-size: 12px;
-    width: 15%;
+    width: 20%;
 }
 
 .file-owner {
-    text-align: right;
+    text-align: left;
     font-size: 12px;
-    width: 25%;
+    width: 20%;
 }
 
 .file-size {
