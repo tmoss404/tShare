@@ -31,7 +31,6 @@ export class HeaderComponent implements OnInit {
       this.auth.logout().subscribe({
         next: (success) => {
           this.auth.clearToken();
-          console.log(success.message);
         },
         error: (err) => {
           console.log(err.error.message);
