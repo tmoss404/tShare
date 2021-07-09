@@ -39,7 +39,14 @@ module.exports.setupRoutes = function(app) {
         });
     });
     app.post("/file/move", accountMiddleware.checkAuth, (req, res) => {
-        fileModel.moveFile(req.body).then((msg) => {
+        fileModel.moveOrCopyFile(req.body, true).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
+    app.post("/file/copy", accountMiddleware.checkAuth, (req, res) => {
+        fileModel.moveOrCopyFile(req.body, false).then((msg) => {
             routes.sendResponse(res, msg);
         }).catch((err) => {
             routes.sendResponse(res, err);

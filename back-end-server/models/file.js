@@ -43,31 +43,31 @@ module.exports.downloadFile = function(dlFileData) {
         }
     });
 };
-module.exports.moveFile = function(moveFileData) {
+module.exports.moveOrCopyFile = function(moveOrCopyFileData, move) {
     return new Promise((resolve, reject) => {
-        if (objectUtil.isNullOrUndefined(moveFileData) || objectUtil.isNullOrUndefined(moveFileData.isDirectory) || 
-            moveFileData.isDirectory != false && moveFileData.isDirectory != true || objectUtil.isNullOrUndefined(moveFileData.srcPath) || 
-                objectUtil.isNullOrUndefined(moveFileData.destPath)) {
+        if (objectUtil.isNullOrUndefined(moveOrCopyFileData) || objectUtil.isNullOrUndefined(moveOrCopyFileData.isDirectory) || 
+            moveOrCopyFileData.isDirectory != false && moveOrCopyFileData.isDirectory != true || objectUtil.isNullOrUndefined(moveOrCopyFileData.srcPath) || 
+                objectUtil.isNullOrUndefined(moveOrCopyFileData.destPath)) {
             reject(commonErrors.genericStatus400);
             return;   
         }
         try {
-            var decodedToken = jsonWebToken.verify(moveFileData.loginToken, appConstants.jwtSecretKey);
-            moveFileData.srcPath = decodedToken.accountId + "/" + fileUtil.formatFilePath(moveFileData.srcPath);
-            moveFileData.destPath = decodedToken.accountId + "/" + fileUtil.formatFilePath(moveFileData.destPath);
-            if (moveFileData.srcPath == moveFileData.destPath) {
+            var decodedToken = jsonWebToken.verify(moveOrCopyFileData.loginToken, appConstants.jwtSecretKey);
+            moveOrCopyFileData.srcPath = decodedToken.accountId + "/" + fileUtil.formatFilePath(moveOrCopyFileData.srcPath);
+            moveOrCopyFileData.destPath = decodedToken.accountId + "/" + fileUtil.formatFilePath(moveOrCopyFileData.destPath);
+            if (moveOrCopyFileData.srcPath == moveOrCopyFileData.destPath) {
                 reject({
-                    message: "srcPath and destPath cannot be equal for a move operation.",
+                    message: "srcPath and destPath cannot be equal for this operation.",
                     httpStatus: 403,
                     success: false
                 });
                 return;
             }
-            if (moveFileData.isDirectory) {
+            if (moveOrCopyFileData.isDirectory) {
                 var s3Params = {
                     Bucket: appConstants.awsBucketName,
                     MaxKeys: appConstants.awsMaxKeys,
-                    Prefix: moveFileData.srcPath
+                    Prefix: moveOrCopyFileData.srcPath
                 };
                 s3.listObjectsV2(s3Params, (err, data_) => {
                     if (err) {
@@ -76,12 +76,16 @@ module.exports.moveFile = function(moveFileData) {
                         var s3Promises = [];
                         for (var i = 0; i < data_.Contents.length; i++) {
                             if (data_.Contents[i].Key != s3Params.Prefix) {
-                                s3Promises.push(s3Helper.moveObject(moveFileData.destPath + data_.Contents[i].Key.substring(moveFileData.srcPath.length), data_.Contents[i].Key, s3));
+                                if (move) {
+                                    s3Promises.push(s3Helper.moveObject(moveOrCopyFileData.destPath + data_.Contents[i].Key.substring(moveOrCopyFileData.srcPath.length), data_.Contents[i].Key, s3));
+                                } else {
+                                    s3Promises.push(s3Helper.copyObject(moveOrCopyFileData.destPath + data_.Contents[i].Key.substring(moveOrCopyFileData.srcPath.length), data_.Contents[i].Key, s3));
+                                }
                             }
                         }
                         Promise.all(s3Promises).then((successful) => {
                             resolve({
-                                message: "Successfully moved a directory to its target path.",
+                                message: move ? "Successfully moved a directory to its target path." : "Successfully copied a directory to its target path.",
                                 httpStatus: 200,
                                 success: true
                             });
@@ -91,15 +95,27 @@ module.exports.moveFile = function(moveFileData) {
                     }
                 });
             } else {
-                s3Helper.moveObject(moveFileData.destPath, moveFileData.srcPath, s3).then((successful) => {
-                    resolve({
-                        message: "Successfully moved a file to its target path.",
-                        httpStatus: 200,
-                        success: true
+                if (move) {
+                    s3Helper.moveObject(moveOrCopyFileData.destPath, moveOrCopyFileData.srcPath, s3).then((successful) => {
+                        resolve({
+                            message: "Successfully moved a file to its target path.",
+                            httpStatus: 200,
+                            success: true
+                        });
+                    }).catch((successful) => {
+                        reject(commonErrors.failedToMoveS3ObjStatus500);
                     });
-                }).catch((successful) => {
-                    reject(commonErrors.failedToMoveS3ObjStatus500);
-                });
+                } else {
+                    s3Helper.copyObject(moveOrCopyFileData.destPath, moveOrCopyFileData.srcPath, s3).then((successful) => {
+                        resolve({
+                            message: "Successfully copied a file to its target path.",
+                            httpStatus: 200,
+                            success: true
+                        });
+                    }).catch((successful) => {
+                        reject(commonErrors.failedToMoveS3ObjStatus500);
+                    });
+                }
             }
         } catch (err) {
             reject(commonErrors.loginTokenInvalidStatus401);

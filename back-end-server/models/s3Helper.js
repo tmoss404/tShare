@@ -31,6 +31,47 @@ module.exports.getNewDuplicateKeyName = function(s3Key, duplicateId, s3) {
         });
     });
 };
+module.exports.copyObject = function(dest, src, s3) {
+    return new Promise((resolve, reject) => {
+        module.exports.getNewDuplicateKeyName(dest, 0, s3).then((duplicateKeyId) => {
+            dest = duplicateKeyId;
+            var acl = "public-read";
+            var contentType = "application/octet-stream";
+            var s3Params = {
+                Bucket: appConstants.awsBucketName,
+                Key: dest,
+                CopySource: encodeURIComponent(appConstants.awsBucketName + "/" + src),
+                ContentType: contentType,
+                ACL: acl
+            };
+            s3.getSignedUrl("copyObject", s3Params, (err, signedUrlData) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                axios({
+                    method: "put",
+                    url: signedUrlData,
+                    headers: {
+                        "x-amz-copy-source": src,
+                        "Content-Type": contentType,
+                        "x-amz-acl": acl
+                    }
+                }).then((res) => {
+                    s3Params = {
+                        Bucket: appConstants.awsBucketName,
+                        Key: src
+                    };
+                    resolve(true);
+                }).catch((err) => {
+                    reject(err);
+                });
+            });
+        }).catch((err) => {
+            reject(err);
+        });
+    });
+};
 module.exports.moveObject = function(dest, src, s3) {
     return new Promise((resolve, reject) => {
         module.exports.getNewDuplicateKeyName(dest, 0, s3).then((duplicateKeyId) => {

@@ -85,3 +85,16 @@ xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken
 }));
+
+// Checking login to make sure I reverted the access token change properly:
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/account/check-login", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken
+}));
