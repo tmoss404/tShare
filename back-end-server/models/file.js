@@ -291,7 +291,7 @@ module.exports.getSignedUrl = function(signUrlData) {
         }
         signUrlData.filePath = fileUtil.formatFilePath(signUrlData.filePath);
         var dirSeparator = signUrlData.filePath.lastIndexOf("/");
-        if (signUrlData.filePath.endsWith("/" + appConstants.dirPlaceholderFile) || dirSeparator == -1 && signUrlData.filePath.equals(appConstants.dirPlaceholderFile)) {
+        if (signUrlData.filePath.endsWith("/" + appConstants.dirPlaceholderFile) || dirSeparator == -1 && signUrlData.filePath == appConstants.dirPlaceholderFile) {
             reject({
                 message: "Invalid filename specified.",
                 httpStatus: 401,
