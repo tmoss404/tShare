@@ -135,6 +135,7 @@ xhttp.send(JSON.stringify({
     maxFiles: 1000
 }));
 
+for (var i = 0; i < 5; i++) {
 // Uploading a file again:
 var signedUrl = null;
 xhttp = new XMLHttpRequest();
@@ -179,3 +180,5 @@ xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
     maxFiles: 1000
 }));
+
+}
