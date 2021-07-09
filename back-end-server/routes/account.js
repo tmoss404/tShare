@@ -59,4 +59,18 @@ module.exports.setupRoutes = function(app) {
             routes.sendResponse(res, err);
         });
     });
+    app.post("/account/get-preferences", accountMiddleware.checkAuth, (req, res) => {
+        accountModel.getPreferences(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
+    app.post("/account/update-preferences", accountMiddleware.checkAuth, (req, res) => {
+        accountModel.updatePreferences(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
 };

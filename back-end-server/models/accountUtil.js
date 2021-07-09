@@ -46,3 +46,8 @@ module.exports.areLoginInputsValid = function(email, password) {
     }
     return true;
 };
+module.exports.isAngularDateFormatValid = function(dateFormat) {
+    return dateFormat == "M/d/yy, h:mm a" || dateFormat == "MMM d, y, h:mm:ss a" || dateFormat == "MMMM d, y, h:mm:ss a z" || dateFormat == "EEEE, MMMM d, y, h:mm:ss a zzzz" || 
+        dateFormat == "M/d/yy" || dateFormat == "MMM d, y" || dateFormat == "MMMM d, y" || dateFormat == "EEEE, MMMM d, y" || dateFormat == "h:mm a" || 
+        dateFormat == "h:mm:ss a" || dateFormat == "h:mm:ss a z" || dateFormat == "h:mm:ss a zzzz";
+};

@@ -9,6 +9,90 @@ const commonErrors = require("./commonErrors");
 
 var dbConnectionPool;
 
+module.exports.updatePreferences = function(preferencesData) {
+    return new Promise((resolve, reject) => {
+        if (objUtil.isNullOrUndefined(preferencesData) || objUtil.isNullOrUndefined(preferencesData.preferences) || 
+            objUtil.isNullOrUndefined(preferencesData.preferences.dateFormat) || !accountUtil.isAngularDateFormatValid(preferencesData.preferences.dateFormat)) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        try {
+            var decodedToken = jsonWebToken.verify(preferencesData.loginToken, appConstants.jwtSecretKey);
+            dbConnectionPool.getConnection((err, connection) => {
+                if (err) {
+                    reject(commonErrors.failedToConnectDbStatus500);
+                    return;
+                }
+                database.updateTable("Account", "date_fmt='" + preferencesData.preferences.dateFormat + "'", "account_id=" + decodedToken.accountId, connection).then((success) => {
+                    resolve({
+                        message: "Successfully updated your user preferences.",
+                        httpStatus: 200,
+                        success: true,
+                        connectionToDrop: connection
+                    });
+                }).catch((success) => {
+                    reject({
+                        message: "Failed to update your user preferences.",
+                        httpStatus: 500,
+                        success: true,
+                        connectionToDrop: connection
+                    });
+                });
+            });
+        } catch (err) {
+            reject(commonErrors.loginTokenInvalidStatus401);
+        }
+    });
+};
+module.exports.getPreferences = function(preferencesData) {
+    return new Promise((resolve, reject) => {
+        if (objUtil.isNullOrUndefined(preferencesData)) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        // TODO Centralize all these damn hideous try-catches for the login token...
+        // TODO Also scan for duplicate messages again.
+        try {
+            var decodedToken = jsonWebToken.verify(preferencesData.loginToken, appConstants.jwtSecretKey);
+            dbConnectionPool.getConnection((err, connection) => {
+                if (err) {
+                    reject(commonErrors.failedToConnectDbStatus500);
+                    return;
+                }
+                database.selectFromTable("Account", "account_id=" + decodedToken.accountId, connection).then((results) => {
+                    if (results.length == 0) {
+                        // This should never actually happen, but just for in case:
+                        reject({
+                            message: "Could not find your account somehow.",
+                            httpStatus: 401,
+                            success: false,
+                            connectionToDrop: connection
+                        });
+                    } else {
+                        resolve({
+                            message: "Successfully retrieved a user's preferences.",
+                            httpStatus: 200,
+                            success: true,
+                            connectionToDrop: connection,
+                            preferences: {
+                                dateFormat: results[0].date_fmt
+                            }
+                        });
+                    }
+                }).catch((results) => {
+                    reject({
+                        message: "Failed to retrieve a user's preferences.",
+                        httpStatus: 500,
+                        success: false,
+                        connectionToDrop: connection
+                    });
+                });
+            });
+        } catch (err) {
+            reject(commonErrors.loginTokenInvalidStatus401);
+        }
+    });
+};
 module.exports.checkPwdResetId = function(pwdResetId) {
     return new Promise((resolve, reject) => {
         if (objUtil.isNullOrUndefined(pwdResetId)) {
@@ -462,7 +546,7 @@ module.exports.registerAccount = function(account) {
                     var salt = bcrypt.genSaltSync(10);
                     var hash = bcrypt.hashSync(accountObj.password, salt);
                     accountObj.password = hash;
-                    database.insertIntoTable("Account", "email, password_hash, permissions_lvl", "'" + accountObj.email + "', '" + accountObj.password + "', 0", connection).then((result) => {
+                    database.insertIntoTable("Account", "email, password_hash, permissions_lvl, date_fmt", "'" + accountObj.email + "', '" + accountObj.password + "', 0, 'M/d/yy, h:mm a'", connection).then((result) => {
                         resolve({
                             message: "Created your account successfully.",
                             httpStatus: 200,
