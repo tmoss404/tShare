@@ -11,7 +11,7 @@ import { AuthenticationService } from 'src/app/services/authentication.service';
 export class AccountPreferencesComponent implements OnInit {
 
   userEmail: string;
-  formats: Array<string> = ['M/d/yy, h:mm a', 'MMM d, y, h:mm:ss a', 'MMMM d, y, h:mm:ss a z', 'M/d/yy', 'MMM d, y', 'MMMM d, y', 'EEEE, MMMM d, y'];
+  formats: Array<string> = ['M/d/yy, h:mm a', 'MMM d, y, h:mm:ss a', 'M/d/yy', 'MMM d, y', 'MMMM d, y', 'EEEE, MMMM d, y'];
   userPreference: string;
   preferencesForm: FormGroup;
 
