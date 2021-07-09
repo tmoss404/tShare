@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, Event, NavigationStart, NavigationEnd } from '@angular/router';
 import { AuthenticationService } from '../../services/authentication.service';
 import { Location } from '@angular/common';
+import { AccountService } from 'src/app/services/account.service';
 
 @Component({
   selector: 'app-header',
@@ -11,8 +12,9 @@ import { Location } from '@angular/common';
 export class HeaderComponent implements OnInit {
 
   constructor(
-    private router : Router,
-    private auth : AuthenticationService,
+    private router: Router,
+    private auth: AuthenticationService,
+    private accountService: AccountService,
     private location: Location
   ) { }
 
@@ -30,6 +32,7 @@ export class HeaderComponent implements OnInit {
     if(this.auth.isAuthenticated){
       this.auth.logout().subscribe({
         next: (success) => {
+          this.accountService.clearDateFormat();
           this.auth.clearToken();
         },
         error: (err) => {
