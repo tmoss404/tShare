@@ -7,7 +7,7 @@ module.exports.formatFilePath = function(filePath) {
     }
     return filePath.replace("\\", "/");
 };
-module.exports.processS3Data = function(data, accountIdPrefix) {
+module.exports.processS3Data = function(data, accountIdPrefix, owner) {
     var toDelete = [];
     for (var i = 0; i < data.Contents.length; i++) {
         if (data.Contents[i].Key.startsWith(accountIdPrefix)) {
@@ -21,6 +21,7 @@ module.exports.processS3Data = function(data, accountIdPrefix) {
         } else {
             data.Contents[i].isDirectory = false;
         }
+        data.Contents[i].owner = owner;
     }
     if (data.Prefix.includes(accountIdPrefix)) {
         data.Prefix = "";

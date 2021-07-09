@@ -38,4 +38,18 @@ module.exports.setupRoutes = function(app) {
             routes.sendResponse(res, err);
         });
     });
+    app.post("/file/move", accountMiddleware.checkAuth, (req, res) => {
+        fileModel.moveFile(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
+    app.post("/file/download", accountMiddleware.checkAuth, (req, res) => {
+        fileModel.downloadFile(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
 };

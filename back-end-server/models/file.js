@@ -5,6 +5,7 @@ const accountModel = require("../models/account");
 const awsSdk = require("aws-sdk");
 const fileUtil = require("./fileUtil");
 const s3Helper = require("./s3Helper");
+const commonErrors = require("./commonErrors");
 
 var s3  = new awsSdk.S3({
     accessKeyId: appConstants.awsAccessKeyId,
@@ -12,15 +13,104 @@ var s3  = new awsSdk.S3({
     region: appConstants.awsRegion
 });
 
+module.exports.downloadFile = function(dlFileData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(dlFileData) || objectUtil.isNullOrUndefined(dlFileData.filePath)) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        try {
+            var decodedToken = jsonWebToken.verify(dlFileData.loginToken, appConstants.jwtSecretKey);
+            dlFileData.filePath = decodedToken.accountId + "/" + fileUtil.formatFilePath(dlFileData.filePath);
+            var s3Params = {
+                Bucket: appConstants.awsBucketName,
+                Key: dlFileData.filePath
+            };
+            s3.getSignedUrl("getObject", s3Params, (err, url) => {
+                if (err) {
+                    reject(commonErrors.failedToQueryS3Status500);
+                } else {
+                    resolve({
+                        message: "Successfully retrieved a signed S3 URL for downloading a file.",
+                        httpStatus: 200,
+                        success: true,
+                        signedUrl: url
+                    });
+                }
+            });
+        } catch (err) {
+            reject(commonErrors.loginTokenInvalidStatus401);
+        }
+    });
+};
+module.exports.moveFile = function(moveFileData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(moveFileData) || objectUtil.isNullOrUndefined(moveFileData.isDirectory) || 
+            moveFileData.isDirectory != false && moveFileData.isDirectory != true || objectUtil.isNullOrUndefined(moveFileData.srcPath) || 
+                objectUtil.isNullOrUndefined(moveFileData.destPath)) {
+            reject(commonErrors.genericStatus400);
+            return;   
+        }
+        try {
+            var decodedToken = jsonWebToken.verify(moveFileData.loginToken, appConstants.jwtSecretKey);
+            moveFileData.srcPath = decodedToken.accountId + "/" + fileUtil.formatFilePath(moveFileData.srcPath);
+            moveFileData.destPath = decodedToken.accountId + "/" + fileUtil.formatFilePath(moveFileData.destPath);
+            if (moveFileData.srcPath == moveFileData.destPath) {
+                reject({
+                    message: "srcPath and destPath cannot be equal for a move operation.",
+                    httpStatus: 403,
+                    success: false
+                });
+                return;
+            }
+            if (moveFileData.isDirectory) {
+                var s3Params = {
+                    Bucket: appConstants.awsBucketName,
+                    MaxKeys: appConstants.awsMaxKeys,
+                    Prefix: moveFileData.srcPath
+                };
+                s3.listObjectsV2(s3Params, (err, data_) => {
+                    if (err) {
+                        reject(commonErrors.failedToQueryS3Status500);
+                    } else {
+                        var s3Promises = [];
+                        for (var i = 0; i < data_.Contents.length; i++) {
+                            if (data_.Contents[i].Key != s3Params.Prefix) {
+                                s3Promises.push(s3Helper.moveObject(moveFileData.destPath + data_.Contents[i].Key.substring(moveFileData.srcPath.length), data_.Contents[i].Key, s3));
+                            }
+                        }
+                        Promise.all(s3Promises).then((successful) => {
+                            resolve({
+                                message: "Successfully moved a directory to its target path.",
+                                httpStatus: 200,
+                                success: true
+                            });
+                        }).catch((successful) => {
+                            reject(commonErrors.failedToMoveS3ObjStatus500);
+                        });
+                    }
+                });
+            } else {
+                s3Helper.moveObject(moveFileData.destPath, moveFileData.srcPath, s3).then((successful) => {
+                    resolve({
+                        message: "Successfully moved a file to its target path.",
+                        httpStatus: 200,
+                        success: true
+                    });
+                }).catch((successful) => {
+                    reject(commonErrors.failedToMoveS3ObjStatus500);
+                });
+            }
+        } catch (err) {
+            reject(commonErrors.loginTokenInvalidStatus401);
+        }
+    });
+};
 module.exports.deleteFile = function(deleteFileData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(deleteFileData) || objectUtil.isNullOrUndefined(deleteFileData.path) || objectUtil.isNullOrUndefined(deleteFileData.isDirectory)
         || deleteFileData.isDirectory != true && deleteFileData.isDirectory != false) {
-            reject({
-                message: "Malformed request. Trying to hack the server?",
-                httpStatus: 400,
-                success: false
-            });
+            reject(commonErrors.genericStatus400);
             return;
         }
         try {
@@ -35,11 +125,7 @@ module.exports.deleteFile = function(deleteFileData) {
                 };
                 s3.listObjectsV2(s3Params, (err, data_) => {
                     if (err) {
-                        reject({
-                            message: "Failed to query S3 for the user's files.",
-                            httpStatus: 500,
-                            success: false
-                        });
+                        reject(commonErrors.failedToQueryS3Status500);
                     } else {
                         var s3Promises = [];
                         for (var i = 0; i < data_.Contents.length; i++) {
@@ -55,11 +141,7 @@ module.exports.deleteFile = function(deleteFileData) {
                                 success: true
                             });
                         }).catch((successful) => {
-                            reject({
-                                message: "An error has occurred while moving an S3 object.",
-                                httpStatus: 500,
-                                success: false
-                            });
+                            reject(commonErrors.failedToMoveS3ObjStatus500);
                         });
                     }
                 });
@@ -71,30 +153,18 @@ module.exports.deleteFile = function(deleteFileData) {
                         success: true
                     });
                 }).catch((successful) => {
-                    reject({
-                        message: "An error has occurred while moving an S3 object.",
-                        httpStatus: 500,
-                        success: false
-                    });
+                    reject(commonErrors.failedToMoveS3ObjStatus500);
                 });
             }
         } catch (err) {
-            reject({
-                message: "Login token is invalid.",
-                httpStatus: 401,
-                success: false
-            });
+            reject(commonErrors.loginTokenInvalidStatus401);
         }
     });
 };
 module.exports.makeDir = function(makeDirData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(makeDirData) || objectUtil.isNullOrUndefined(makeDirData.dirPath)) {
-            reject({
-                message: "Malformed request. Trying to hack the server?",
-                httpStatus: 400,
-                success: false
-            });
+            reject(commonErrors.genericStatus400);
             return;
         }
         try {
@@ -143,11 +213,7 @@ module.exports.makeDir = function(makeDirData) {
                 });
             });
         } catch (err) {
-            reject({
-                message: "Login token is invalid.",
-                httpStatus: 401,
-                success: false
-            });
+            reject(commonErrors.loginTokenInvalidStatus401);
         }
     });
 };
@@ -158,11 +224,7 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
             listFilesData.dirPath = null;
         }
         if (reqObjInvalid || listFilesData.dirPath != null && listFilesData.dirPath.length == 0) {
-            reject({
-                message: "Malformed request. Trying to hack the server?",
-                httpStatus: 400,
-                success: false
-            });
+            reject(commonErrors.genericStatus400);
             return;
         }
         if (objectUtil.isNullOrUndefined(listFilesData.maxFiles)) {
@@ -185,13 +247,12 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
             };
             s3.listObjectsV2(s3Params, (err, data_) => {
                 if (err) {
-                    reject({
-                        message: "Failed to query S3 for the user's files.",
-                        httpStatus: 500,
-                        success: false
-                    });
+                    reject(commonErrors.failedToQueryS3Status500);
                 } else {
-                    data_ = fileUtil.processS3Data(data_, accountIdPrefix);
+                    data_ = fileUtil.processS3Data(data_, accountIdPrefix, {
+                        email: decodedToken.email,
+                        accountId: decodedToken.accountId
+                    });
                     resolve({
                         message: isRecycleBin ? "Successfully retrieved the user's deleted files." : "Successfully retrieved the user's files.",
                         httpStatus: 200,
@@ -201,11 +262,7 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
                 }
             });
         } catch (err) {
-            reject({
-                message: "Login token is invalid.",
-                httpStatus: 401,
-                success: false
-            });
+            reject(commonErrors.loginTokenInvalidStatus401);
         }
     });
 };
@@ -213,15 +270,12 @@ module.exports.getSignedUrl = function(signUrlData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(signUrlData) || objectUtil.isNullOrUndefined(signUrlData.filePath) || signUrlData.filePath.length == 0 || 
             objectUtil.isNullOrUndefined(signUrlData.fileType)) {
-                reject({
-                    message: "Malformed request. Trying to hack the server?",
-                    httpStatus: 400,
-                    success: false
-                });
+                reject(commonErrors.genericStatus400);
                 return;
         }
         signUrlData.filePath = fileUtil.formatFilePath(signUrlData.filePath);
-        if (signUrlData.filePath.endsWith("/" + appConstants.dirPlaceholderFile)) {
+        var dirSeparator = signUrlData.filePath.lastIndexOf("/");
+        if (signUrlData.filePath.endsWith("/" + appConstants.dirPlaceholderFile) || dirSeparator == -1 && signUrlData.filePath.equals(appConstants.dirPlaceholderFile)) {
             reject({
                 message: "Invalid filename specified.",
                 httpStatus: 401,
@@ -279,11 +333,7 @@ module.exports.getSignedUrl = function(signUrlData) {
                 })
             });
         } catch (err) {
-            reject({
-                message: "Login token is invalid.",
-                httpStatus: 401,
-                success: false
-            });
+            reject(commonErrors.loginTokenInvalidStatus401);
         }
     });
 };
