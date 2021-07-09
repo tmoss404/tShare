@@ -14,7 +14,12 @@
         <input class="file-search" placeholder="What are you looking for?">
     </div>
     <hr>
-    <div class="file-container">
-        <app-file-card *ngFor="let file of files" [file]="file"></app-file-card>
+    <div class="file-container" >
+        <div *ngIf="files; else loading">
+            <app-file-card *ngFor="let file of files" [file]="file"></app-file-card>
+        </div>
+        <ng-template #loading>
+            <div class="spinner"></div>
+        </ng-template>
     </div>
 </div>
