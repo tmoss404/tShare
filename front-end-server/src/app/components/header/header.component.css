@@ -23,3 +23,7 @@
   color: #1ab9d1;
   font-weight: 600;
 }
+
+.nav-link {
+  cursor: pointer;
+}
