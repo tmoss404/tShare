@@ -3,11 +3,6 @@ module.exports.genericStatus400 = {
     httpStatus: 400,
     success: false
 };
-module.exports.loginTokenInvalidStatus401 = {
-    message: "Login token is invalid.",
-    httpStatus: 401,
-    success: false
-};
 module.exports.failedToQueryS3Status500 = {
     message: "Failed to query S3 for the user's files.",
     httpStatus: 500,
