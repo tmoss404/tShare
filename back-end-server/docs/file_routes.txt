@@ -222,7 +222,7 @@ xhttp.onreadystatechange = function() {
 xhttp.open("POST", "http://localhost/file/download", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
-    loginToken: theLoginToken,
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
     filePath: "your new/directory/path/file.txt"
 }));
 
@@ -238,3 +238,29 @@ xhttp.onreadystatechange = function() {
 };
 xhttp.open("GET", signedDownload, false);
 xhttp.send();
+
+
+/file/cancel-upload:
+
+This route cancels a pending upload operation. This route *must* be called if uploading via the signed URL fails. It takes two parameters: loginToken and filePath (the path of the file you tried to upload, same value as the filePath on upload) wrapped in an Object.
+Trailing and prefixed backward/forward slashes in filePath will cause undefined behaviour:
+- loginToken: String
+- filePath: String
+
+Returns an Object containing message and success:
+{"message":"Successfully cancelled a pending upload.","success":true}
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/cancel-upload", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
+    filePath: "your new\\directory/file.txt"
+}));

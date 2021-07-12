@@ -32,6 +32,39 @@ function updateFileRecord(filePath, fileOwnerId, isDirectory, connection) {
         });
     });
 }
+module.exports.deleteEmptyFileRecords = function (filePath, connection, s3) {
+    return new Promise((resolve, reject) => {
+        var splitPath = filePath.split("/");
+        var promises = [];
+        for (var i = 1; i < splitPath.length; i++) {
+            var subPath = "";
+            for (var j = 0; j <= i; j++) {
+                subPath += splitPath[j];
+                if (j != i) {
+                    subPath += "/";
+                }
+            }
+            s3.listObjectsV2({
+                Bucket: appConstants.awsBucketName,
+                MaxKeys: 1,
+                Prefix: subPath
+            }, (err, data) => {
+                if (err) {
+                    promises.push(new Promise((resolve, reject) => {
+                        reject(err);
+                    }));
+                } else if (data.KeyCount == 0) {
+                    promises.push(database.deleteFromTable("File", "path='" + subPath + "'", connection));
+                }
+            });
+        }
+        Promise.all(promises).then((results) => {
+            resolve(results);
+        }).catch((results) => {
+            reject(results);
+        });
+    });
+};
 module.exports.updateFileRecords = function(filePath, fileOwnerId, isDirectory, oldPath, connection) {
     // Patchy fixes for updating a directory's file record:
     var dirSuffix = "/" + appConstants.dirPlaceholderFile;
@@ -58,23 +91,25 @@ module.exports.updateFileRecords = function(filePath, fileOwnerId, isDirectory, 
             var subPathIsDirectory = isDirectory || i != splitPath.length - 1;
             promises.push(updateFileRecord(subPath, fileOwnerId, subPathIsDirectory, connection));
         }
-        splitPath = oldPath.split("/");
-        // Starts iterating at index 1 to avoid deleting root directory entries (the filePath and oldPath parameters are their corresponding full S3 paths):
-        for (var i = 1; i < splitPath.length; i++) {
-            var subPath = "";
-            for (var j = 0; j <= i; j++) {
-                subPath += splitPath[j];
-                if (j != i) {
-                    subPath += "/";
+        if (oldPath != subPath) {
+            splitPath = oldPath.split("/");
+            // Starts iterating at index 1 to avoid deleting root directory entries (the filePath and oldPath parameters are their corresponding full S3 paths):
+            for (var i = 1; i < splitPath.length; i++) {
+                var subPath = "";
+                for (var j = 0; j <= i; j++) {
+                    subPath += splitPath[j];
+                    if (j != i) {
+                        subPath += "/";
+                    }
                 }
+                promises.push(database.deleteFromTable("File", "path='" + subPath + "'", connection));
             }
-            promises.push(database.deleteFromTable("File", "path='" + subPath + "'", connection));
         }
         Promise.all(promises).then((results) => {
             resolve(results);
         }).catch((results) => {
             reject(results);
-        })
+        });
     });
 };
 module.exports.processS3Data = function(data, accountIdPrefix, owner) {

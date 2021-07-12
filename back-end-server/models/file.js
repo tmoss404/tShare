@@ -302,6 +302,68 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
         });
     });
 };
+module.exports.cancelUpload = function(cancelUploadData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(cancelUploadData) || objectUtil.isNullOrUndefined(cancelUploadData.filePath) || cancelUploadData.filePath.length == 0) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        var decodedToken = cancelUploadData.decodedToken;
+        cancelUploadData.filePath = decodedToken.accountId + "/" + fileUtil.formatFilePath(cancelUploadData.filePath);
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            fileUtil.deleteEmptyFileRecords(cancelUploadData.filePath, connection, s3).then((results) => {
+                var pathDirSep = cancelUploadData.filePath.lastIndexOf("/");
+                var pathPrefix = pathDirSep == -1 ? cancelUploadData.filePath : cancelUploadData.filePath.substring(0, pathDirSep);
+                var s3Params = {
+                    Bucket: appConstants.awsBucketName,
+                    MaxKeys: 1,
+                    Prefix: pathPrefix
+                };
+                var resolveMsg = {
+                    message: "Successfully cancelled a pending upload.",
+                    httpStatus: 200,
+                    success: true,
+                    connectionToDrop: connection
+                };
+                s3.listObjectsV2(s3Params, (err, data) => {
+                    if (err) {
+                        reject(commonErrors.createFailedToQueryS3Status500(connection));
+                    } else if (data.KeyCount == 0) {
+                        s3Params = {
+                            Bucket: appConstants.awsBucketName,
+                            Key: pathPrefix + "/" + appConstants.dirPlaceholderFile
+                        };
+                        s3.putObject(s3Params, (err, data) => {
+                            if (err) {
+                                reject({
+                                    message: "An error has occurred while re-adding a directory placeholder file.",
+                                    httpStatus: 500,
+                                    success: false,
+                                    connectionToDrop: connection
+                                });
+                            } else {
+                                resolve(resolveMsg);
+                            }
+                        });
+                    } else {
+                        resolve(resolveMsg);
+                    }
+                });
+            }).catch((results) => {
+                reject({
+                    message: "An error has occurred while deleting a file record.",
+                    httpStatus: 500,
+                    success: false,
+                    connectionToDrop: connection
+                });
+            });
+        });
+    });
+};
 module.exports.getSignedUrl = function(signUrlData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(signUrlData) || objectUtil.isNullOrUndefined(signUrlData.filePath) || signUrlData.filePath.length == 0 ||
