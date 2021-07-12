@@ -58,7 +58,7 @@ module.exports.getPreferences = function(preferencesData) {
                     // This should never actually happen, but just for in case:
                     reject({
                         message: "Could not find your account somehow.",
-                        httpStatus: 401,
+                        httpStatus: 500,
                         success: false,
                         connectionToDrop: connection
                     });
