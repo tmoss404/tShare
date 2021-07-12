@@ -1,5 +1,6 @@
 const appConstants = require("../config/appConstants");
 const axios = require("axios");
+const fileUtil = require("./fileUtil");
 
 module.exports.getNewDuplicateKeyName = function(s3Key, duplicateId, s3) {
     return new Promise((resolve, reject) => {
@@ -31,7 +32,7 @@ module.exports.getNewDuplicateKeyName = function(s3Key, duplicateId, s3) {
         });
     });
 };
-module.exports.copyObject = function(dest, src, s3) {
+module.exports.copyObject = function(dest, src, s3, srcOwnerId, dbConnection) {
     return new Promise((resolve, reject) => {
         module.exports.getNewDuplicateKeyName(dest, 0, s3).then((duplicateKeyId) => {
             dest = duplicateKeyId;
@@ -62,7 +63,16 @@ module.exports.copyObject = function(dest, src, s3) {
                         Bucket: appConstants.awsBucketName,
                         Key: src
                     };
-                    resolve(true);
+                    var errMsg = "An error has occurred while updating a file record for a copy operation.";
+                    fileUtil.updateFileRecords(dest, srcOwnerId, false, dest, dbConnection).then((successStatus) => {
+                        if (successStatus) {
+                            resolve(true);
+                        } else {
+                            reject(errMsg);
+                        }
+                    }).catch((successStatus) => {
+                        reject(errMsg);
+                    });
                 }).catch((err) => {
                     reject(err);
                 });
@@ -72,7 +82,7 @@ module.exports.copyObject = function(dest, src, s3) {
         });
     });
 };
-module.exports.moveObject = function(dest, src, s3) {
+module.exports.moveObject = function(dest, src, s3, srcOwnerId, dbConnection) {
     return new Promise((resolve, reject) => {
         module.exports.getNewDuplicateKeyName(dest, 0, s3).then((duplicateKeyId) => {
             dest = duplicateKeyId;
@@ -107,7 +117,16 @@ module.exports.moveObject = function(dest, src, s3) {
                         if (err) {
                             reject(err);
                         }
-                        resolve(true);
+                        var errMsg = "An error has occurred while updating a file record for a move operation.";
+                        fileUtil.updateFileRecords(dest, srcOwnerId, false, src, dbConnection).then((successStatus) => {
+                            if (successStatus) {
+                                resolve(true);
+                            } else {
+                                reject(errMsg);
+                            }
+                        }).catch((successStatus) => {
+                            reject(errMsg);
+                        });
                     });
                 }).catch((err) => {
                     reject(err);

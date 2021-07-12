@@ -12,6 +12,7 @@ var s3  = new awsSdk.S3({
     secretAccessKey: appConstants.awsAccessSecretKey,
     region: appConstants.awsRegion
 });
+var dbConnectionPool;
 
 module.exports.downloadFile = function(dlFileData) {
     return new Promise((resolve, reject) => {
@@ -27,7 +28,7 @@ module.exports.downloadFile = function(dlFileData) {
         };
         s3.getSignedUrl("getObject", s3Params, (err, url) => {
             if (err) {
-                reject(commonErrors.failedToQueryS3Status500);
+                reject(commonErrors.createFailedToQueryS3Status500());
             } else {
                 resolve({
                     message: "Successfully retrieved a signed S3 URL for downloading a file.",
@@ -58,111 +59,130 @@ module.exports.moveOrCopyFile = function(moveOrCopyFileData, move) {
             });
             return;
         }
-        if (moveOrCopyFileData.isDirectory) {
-            var s3Params = {
-                Bucket: appConstants.awsBucketName,
-                MaxKeys: appConstants.awsMaxKeys,
-                Prefix: moveOrCopyFileData.srcPath
-            };
-            s3.listObjectsV2(s3Params, (err, data_) => {
-                if (err) {
-                    reject(commonErrors.failedToQueryS3Status500);
-                } else {
-                    var s3Promises = [];
-                    for (var i = 0; i < data_.Contents.length; i++) {
-                        if (data_.Contents[i].Key != s3Params.Prefix) {
-                            if (move) {
-                                s3Promises.push(s3Helper.moveObject(moveOrCopyFileData.destPath + data_.Contents[i].Key.substring(moveOrCopyFileData.srcPath.length), data_.Contents[i].Key, s3));
-                            } else {
-                                s3Promises.push(s3Helper.copyObject(moveOrCopyFileData.destPath + data_.Contents[i].Key.substring(moveOrCopyFileData.srcPath.length), data_.Contents[i].Key, s3));
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            if (moveOrCopyFileData.isDirectory) {
+                var s3Params = {
+                    Bucket: appConstants.awsBucketName,
+                    MaxKeys: appConstants.awsMaxKeys,
+                    Prefix: moveOrCopyFileData.srcPath
+                };
+                s3.listObjectsV2(s3Params, (err, data_) => {
+                    if (err) {
+                        reject(commonErrors.createFailedToQueryS3Status500(connection));
+                    } else {
+                        var operationPromises = [];
+                        for (var i = 0; i < data_.Contents.length; i++) {
+                            if (data_.Contents[i].Key != s3Params.Prefix) {
+                                if (move) {
+                                    operationPromises.push(s3Helper.moveObject(moveOrCopyFileData.destPath + data_.Contents[i].Key.substring(moveOrCopyFileData.srcPath.length), data_.Contents[i].Key, s3, decodedToken.accountId, connection));
+                                } else {
+                                    operationPromises.push(s3Helper.copyObject(moveOrCopyFileData.destPath + data_.Contents[i].Key.substring(moveOrCopyFileData.srcPath.length), data_.Contents[i].Key, s3, decodedToken.accountId, connection));
+                                }
                             }
                         }
-                    }
-                    Promise.all(s3Promises).then((successful) => {
-                        resolve({
-                            message: move ? "Successfully moved a directory to its target path." : "Successfully copied a directory to its target path.",
-                            httpStatus: 200,
-                            success: true
+                        operationPromises.push(fileUtil.updateFileRecords(moveOrCopyFileData.destPath, decodedToken.accountId, true, moveOrCopyFileData.srcPath, connection));
+                        Promise.all(operationPromises).then((successful) => {
+                            resolve({
+                                message: move ? "Successfully moved a directory to its target path." : "Successfully copied a directory to its target path.",
+                                httpStatus: 200,
+                                success: true,
+                                connectionToDrop: connection
+                            });
+                        }).catch((successful) => {
+                            reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
                         });
-                    }).catch((successful) => {
-                        reject(commonErrors.failedToMoveS3ObjStatus500);
-                    });
-                }
-            });
-        } else {
-            if (move) {
-                s3Helper.moveObject(moveOrCopyFileData.destPath, moveOrCopyFileData.srcPath, s3).then((successful) => {
-                    resolve({
-                        message: "Successfully moved a file to its target path.",
-                        httpStatus: 200,
-                        success: true
-                    });
-                }).catch((successful) => {
-                    reject(commonErrors.failedToMoveS3ObjStatus500);
+                    }
                 });
             } else {
-                s3Helper.copyObject(moveOrCopyFileData.destPath, moveOrCopyFileData.srcPath, s3).then((successful) => {
-                    resolve({
-                        message: "Successfully copied a file to its target path.",
-                        httpStatus: 200,
-                        success: true
+                if (move) {
+                    s3Helper.moveObject(moveOrCopyFileData.destPath, moveOrCopyFileData.srcPath, s3, decodedToken.accountId, connection).then((successful) => {
+                        resolve({
+                            message: "Successfully moved a file to its target path.",
+                            httpStatus: 200,
+                            success: true,
+                            connectionToDrop: connection
+                        });
+                    }).catch((successful) => {
+                        reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
                     });
-                }).catch((successful) => {
-                    reject(commonErrors.failedToMoveS3ObjStatus500);
-                });
+                } else {
+                    s3Helper.copyObject(moveOrCopyFileData.destPath, moveOrCopyFileData.srcPath, s3, decodedToken.accountId, connection).then((successful) => {
+                        resolve({
+                            message: "Successfully copied a file to its target path.",
+                            httpStatus: 200,
+                            success: true,
+                            connectionToDrop: connection
+                        });
+                    }).catch((successful) => {
+                        reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
+                    });
+                }
             }
-        }
+        });
     });
 };
 module.exports.deleteFile = function(deleteFileData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(deleteFileData) || objectUtil.isNullOrUndefined(deleteFileData.path) || objectUtil.isNullOrUndefined(deleteFileData.isDirectory)
-        || deleteFileData.isDirectory != true && deleteFileData.isDirectory != false) {
+            || deleteFileData.isDirectory != true && deleteFileData.isDirectory != false) {
             reject(commonErrors.genericStatus400);
             return;
         }
         var decodedToken = deleteFileData.decodedToken;
         var recyclePath = decodedToken.accountId + "_recycle/" + fileUtil.formatFilePath(deleteFileData.path);
         deleteFileData.path = decodedToken.accountId + "/" + fileUtil.formatFilePath(deleteFileData.path);
-        if (deleteFileData.isDirectory) {
-            var s3Params = {
-                Bucket: appConstants.awsBucketName,
-                MaxKeys: appConstants.awsMaxKeys,
-                Prefix: deleteFileData.path
-            };
-            s3.listObjectsV2(s3Params, (err, data_) => {
-                if (err) {
-                    reject(commonErrors.failedToQueryS3Status500);
-                } else {
-                    var s3Promises = [];
-                    for (var i = 0; i < data_.Contents.length; i++) {
-                        if (data_.Contents[i].Key != s3Params.Prefix) {
-                            s3Promises.push(s3Helper.moveObject(decodedToken.accountId + "_recycle/" +
-                                data_.Contents[i].Key.substring(("" + decodedToken.accountId + "/").length), data_.Contents[i].Key, s3));
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            if (deleteFileData.isDirectory) {
+                var s3Params = {
+                    Bucket: appConstants.awsBucketName,
+                    MaxKeys: appConstants.awsMaxKeys,
+                    Prefix: deleteFileData.path
+                };
+                s3.listObjectsV2(s3Params, (err, data_) => {
+                    if (err) {
+                        reject(commonErrors.createFailedToQueryS3Status500(connection));
+                    } else {
+                        var operationPromises = [];
+                        for (var i = 0; i < data_.Contents.length; i++) {
+                            if (data_.Contents[i].Key != s3Params.Prefix) {
+                                operationPromises.push(s3Helper.moveObject(decodedToken.accountId + "_recycle/" +
+                                    data_.Contents[i].Key.substring(("" + decodedToken.accountId + "/").length), data_.Contents[i].Key, s3, decodedToken.accountId, connection));
+                            }
                         }
-                    }
-                    Promise.all(s3Promises).then((successful) => {
-                        resolve({
-                            message: "Successfully deleted all files from the specified directory into the recycle bin.",
-                            httpStatus: 200,
-                            success: true
+                        operationPromises.push(fileUtil.updateFileRecords(recyclePath, decodedToken.accountId, true, deleteFileData.path, connection));
+                        Promise.all(operationPromises).then((successful) => {
+                            resolve({
+                                message: "Successfully deleted all files from the specified directory into the recycle bin.",
+                                httpStatus: 200,
+                                success: true,
+                                connectionToDrop: connection
+                            });
+                        }).catch((successful) => {
+                            reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
                         });
-                    }).catch((successful) => {
-                        reject(commonErrors.failedToMoveS3ObjStatus500);
-                    });
-                }
-            });
-        } else {
-            s3Helper.moveObject(recyclePath, deleteFileData.path, s3).then((successful) => {
-                resolve({
-                    message: "Successfully deleted a file into the recycle bin.",
-                    httpStatus: 200,
-                    success: true
+                    }
                 });
-            }).catch((successful) => {
-                reject(commonErrors.failedToMoveS3ObjStatus500);
-            });
-        }
+            } else {
+                s3Helper.moveObject(recyclePath, deleteFileData.path, s3, decodedToken.accountId, connection).then((successful) => {
+                    resolve({
+                        message: "Successfully deleted a file into the recycle bin.",
+                        httpStatus: 200,
+                        success: true,
+                        connectionToDrop: connection
+                    });
+                }).catch((successful) => {
+                    reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
+                });
+            }
+        });
     });
 };
 module.exports.makeDir = function(makeDirData) {
@@ -178,40 +198,60 @@ module.exports.makeDir = function(makeDirData) {
             Prefix: decodedToken.accountId + "/" + makeDirData.dirPath + "/",
             MaxKeys: 1
         };
-        s3.listObjectsV2(s3Params, (err, data) => {
+        dbConnectionPool.getConnection((err, connection) => {
             if (err) {
-                reject({
-                    message: "Failed to check if the S3 directory is empty or not.",
-                    httpStatus: 500,
-                    success: false
-                });
+                reject(commonErrors.failedToConnectDbStatus500);
                 return;
             }
-            if (data.KeyCount > 0) {
-                reject({
-                    message: "The specified S3 directory must be empty beforehand to be created.",
-                    httpStatus: 401,
-                    success: false
-                });
-                return;
-            }
-            s3Params = {
-                Bucket: appConstants.awsBucketName,
-                Key: decodedToken.accountId + "/" + makeDirData.dirPath + "/" + appConstants.dirPlaceholderFile
-            };
-            s3.putObject(s3Params, (s3Err2, s3Data2) => {
-                if (s3Err2) {
+            s3.listObjectsV2(s3Params, (err, data) => {
+                if (err) {
                     reject({
-                        message: "Failed to create the empty directory.",
+                        message: "Failed to check if the S3 directory is empty or not.",
                         httpStatus: 500,
-                        success: false
+                        success: false,
+                        connectionToDrop: connection
                     });
                     return;
                 }
-                resolve({
-                    message: "Successfully created the empty directory.",
-                    httpStatus: 200,
-                    success: true
+                if (data.KeyCount > 0) {
+                    reject({
+                        message: "The specified S3 directory must be empty beforehand to be created.",
+                        httpStatus: 401,
+                        success: false,
+                        connectionToDrop: connection
+                    });
+                    return;
+                }
+                s3Params = {
+                    Bucket: appConstants.awsBucketName,
+                    Key: decodedToken.accountId + "/" + makeDirData.dirPath + "/" + appConstants.dirPlaceholderFile
+                };
+                var failMsg = {
+                    message: "Failed to create the empty directory.",
+                    httpStatus: 500,
+                    success: false,
+                    connectionToDrop: connection
+                };
+                s3.putObject(s3Params, (s3Err2, s3Data2) => {
+                    if (s3Err2) {
+                        reject(failMsg);
+                        return;
+                    }
+                    var s3Directory = decodedToken.accountId + "/" + makeDirData.dirPath;
+                    fileUtil.updateFileRecords(s3Directory, decodedToken.accountId, true, s3Directory, connection).then((successStatus) => {
+                        if (successStatus) {
+                            resolve({
+                                message: "Successfully created the empty directory.",
+                                httpStatus: 200,
+                                success: true,
+                                connectionToDrop: connection
+                            });
+                        } else {
+                            reject(failMsg);
+                        }
+                    }).catch((successStatus) => {
+                        reject(failMsg);
+                    });
                 });
             });
         });
@@ -246,7 +286,7 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
         };
         s3.listObjectsV2(s3Params, (err, data_) => {
             if (err) {
-                reject(commonErrors.failedToQueryS3Status500);
+                reject(commonErrors.createFailedToQueryS3Status500());
             } else {
                 data_ = fileUtil.processS3Data(data_, accountIdPrefix, {
                     email: decodedToken.email,
@@ -264,10 +304,10 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
 };
 module.exports.getSignedUrl = function(signUrlData) {
     return new Promise((resolve, reject) => {
-        if (objectUtil.isNullOrUndefined(signUrlData) || objectUtil.isNullOrUndefined(signUrlData.filePath) || signUrlData.filePath.length == 0 || 
+        if (objectUtil.isNullOrUndefined(signUrlData) || objectUtil.isNullOrUndefined(signUrlData.filePath) || signUrlData.filePath.length == 0 ||
             objectUtil.isNullOrUndefined(signUrlData.fileType)) {
-                reject(commonErrors.genericStatus400);
-                return;
+            reject(commonErrors.genericStatus400);
+            return;
         }
         signUrlData.filePath = fileUtil.formatFilePath(signUrlData.filePath);
         var dirSeparator = signUrlData.filePath.lastIndexOf("/");
@@ -280,52 +320,79 @@ module.exports.getSignedUrl = function(signUrlData) {
             return;
         }
         var decodedToken = signUrlData.decodedToken;
-        s3Helper.getNewDuplicateKeyName(decodedToken.accountId + "/" + signUrlData.filePath, 0, s3).then((duplicateKeyId) => {
-            var s3Params = {
-                Bucket: appConstants.awsBucketName,
-                Key: duplicateKeyId,
-                Expires: appConstants.awsSignedUrlSeconds,
-                ContentType: signUrlData.fileType,
-                ACL: "public-read"
-            };
-            s3.getSignedUrl("putObject", s3Params, (err, data) => {
-                if (err) {
-                    reject({
-                        message: "An error has occurred while retrieving a signed S3 URL.",
-                        httpStatus: 500,
-                        success: false
-                    });
-                    return;
-                }
-                s3Params = {
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            s3Helper.getNewDuplicateKeyName(decodedToken.accountId + "/" + signUrlData.filePath, 0, s3).then((duplicateKeyId) => {
+                var s3Params = {
                     Bucket: appConstants.awsBucketName,
-                    Key: !signUrlData.filePath.includes("/") ? duplicateKeyId :
-                        decodedToken.accountId + "/" + signUrlData.filePath.substring(0, signUrlData.filePath.lastIndexOf("/")) + "/" + appConstants.dirPlaceholderFile
+                    Key: duplicateKeyId,
+                    Expires: appConstants.awsSignedUrlSeconds,
+                    ContentType: signUrlData.fileType,
+                    ACL: "public-read"
                 };
-                s3.deleteObject(s3Params, (s3Err2, s3Data2) => {
-                    if (s3Err2) {
+                s3.getSignedUrl("putObject", s3Params, (err, data) => {
+                    if (err) {
                         reject({
-                            message: "An error has occurred while trying to delete the placeholder file.",
+                            message: "An error has occurred while retrieving a signed S3 URL.",
                             httpStatus: 500,
-                            success: false
+                            success: false,
+                            connectionToDrop: connection
                         });
-                    } else {
-                        resolve({
-                            message: "Successfully retrieved a signed S3 URL.",
-                            httpStatus: 200,
-                            success: true,
-                            signedUrl: "https://" + appConstants.awsBucketName + ".s3.amazonaws.com/" + decodedToken.accountId + "/" + encodeURIComponent(signUrlData.filePath),
-                            signedUrlData: data
-                        });
+                        return;
                     }
+                    s3Params = {
+                        Bucket: appConstants.awsBucketName,
+                        Key: !signUrlData.filePath.includes("/") ? duplicateKeyId :
+                            decodedToken.accountId + "/" + signUrlData.filePath.substring(0, signUrlData.filePath.lastIndexOf("/")) + "/" + appConstants.dirPlaceholderFile
+                    };
+                    s3.deleteObject(s3Params, (s3Err2, s3Data2) => {
+                        if (s3Err2) {
+                            reject({
+                                message: "An error has occurred while trying to delete the placeholder file.",
+                                httpStatus: 500,
+                                success: false,
+                                connectionToDrop: connection
+                            });
+                        } else {
+                            var errMsg = {
+                                message: "An error has occurred while creating the new file record.",
+                                httpStatus: 500,
+                                success: false,
+                                connectionToDrop: connection
+                            };
+                            fileUtil.updateFileRecords(duplicateKeyId, decodedToken.accountId, false, duplicateKeyId, connection).then((successStatus) => {
+                                if (successStatus) {
+                                    resolve({
+                                        message: "Successfully retrieved a signed S3 URL.",
+                                        httpStatus: 200,
+                                        success: true,
+                                        signedUrl: "https://" + appConstants.awsBucketName + ".s3.amazonaws.com/" + decodedToken.accountId + "/" + encodeURIComponent(signUrlData.filePath),
+                                        signedUrlData: data,
+                                        connectionToDrop: connection
+                                    });
+                                } else {
+                                    reject(errMsg);
+                                }
+                            }).catch((successStatus) => {
+                                reject(errMsg);
+                            });
+                        }
+                    });
                 });
+            }).catch((err) => {
+                reject({
+                    message: "An error has occurred while trying to retrieve a unique S3 bucket key name.",
+                    httpStatus: 500,
+                    success: false,
+                    connectionToDrop: connection
+                })
             });
-        }).catch((err) => {
-            reject({
-                message: "An error has occurred while trying to retrieve a unique S3 bucket key name.",
-                httpStatus: 500,
-                success: false
-            })
         });
     });
+};
+module.exports.init = function(connectionPool) {
+    dbConnectionPool = connectionPool;
 };

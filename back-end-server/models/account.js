@@ -563,4 +563,4 @@ module.exports.registerAccount = function(account) {
 }
 module.exports.init = function(connectionPool) {
     dbConnectionPool = connectionPool;
-}
+};
