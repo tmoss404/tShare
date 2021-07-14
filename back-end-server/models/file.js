@@ -255,20 +255,31 @@ module.exports.makeDir = function(makeDirData) {
                         reject(failMsg);
                         return;
                     }
-                    var s3Directory = decodedToken.accountId + "/" + makeDirData.dirPath;
-                    fileUtil.updateFileRecords(s3Directory, decodedToken.accountId, true, s3Directory, connection, s3).then((successStatus) => {
-                        if (successStatus) {
-                            resolve({
-                                message: "Successfully created the empty directory.",
-                                httpStatus: 200,
-                                success: true,
-                                connectionToDrop: connection
-                            });
+                    s3Params = {
+                        Bucket: appConstants.awsBucketName,
+                        Key: makeDirData.dirPath.includes("/") ? decodedToken.accountId + "/" + makeDirData.dirPath.substring(0, makeDirData.dirPath.lastIndexOf("/")) + "/" + appConstants.dirPlaceholderFile
+                            : decodedToken.accountId + "/" + appConstants.dirPlaceholderFile
+                    };
+                    s3.deleteObject(s3Params, (s3Err2, s3Data2) => {
+                        if (s3Err2) {
+                            reject(commonErrors.createFailedToDelPlaceholderStatus500(connection));
                         } else {
-                            reject(failMsg);
+                            var s3Directory = decodedToken.accountId + "/" + makeDirData.dirPath;
+                            fileUtil.updateFileRecords(s3Directory, decodedToken.accountId, true, s3Directory, connection, s3).then((successStatus) => {
+                                if (successStatus) {
+                                    resolve({
+                                        message: "Successfully created the empty directory.",
+                                        httpStatus: 200,
+                                        success: true,
+                                        connectionToDrop: connection
+                                    });
+                                } else {
+                                    reject(failMsg);
+                                }
+                            }).catch((successStatus) => {
+                                reject(failMsg);
+                            });
                         }
-                    }).catch((successStatus) => {
-                        reject(failMsg);
                     });
                 });
             });
@@ -306,15 +317,22 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
             if (err) {
                 reject(commonErrors.createFailedToQueryS3Status500());
             } else {
-                data_ = fileUtil.processS3Data(data_, accountIdPrefix, {
-                    email: decodedToken.email,
-                    accountId: decodedToken.accountId
-                }, listFilesData.showNestedFiles, pathPrefix, listFilesData.dirPath);
-                resolve({
-                    message: isRecycleBin ? "Successfully retrieved the user's deleted files." : "Successfully retrieved the user's files.",
-                    httpStatus: 200,
-                    success: true,
-                    data: data_
+                dbConnectionPool.getConnection((err, connection) => {
+                    if (err) {
+                        reject(commonErrors.failedToConnectDbStatus500);
+                        return;
+                    }
+                    fileUtil.processS3Data(data_, accountIdPrefix, {
+                        email: decodedToken.email,
+                        accountId: decodedToken.accountId
+                    }, listFilesData.showNestedFiles, pathPrefix, connection).then((s3Data) => {
+                        resolve({
+                            message: isRecycleBin ? "Successfully retrieved the user's deleted files." : "Successfully retrieved the user's files.",
+                            httpStatus: 200,
+                            success: true,
+                            data: s3Data
+                        });
+                    });
                 });
             }
         });
@@ -430,12 +448,7 @@ module.exports.getSignedUrl = function(signUrlData) {
                     };
                     s3.deleteObject(s3Params, (s3Err2, s3Data2) => {
                         if (s3Err2) {
-                            reject({
-                                message: "An error has occurred while trying to delete the placeholder file.",
-                                httpStatus: 500,
-                                success: false,
-                                connectionToDrop: connection
-                            });
+                            reject(commonErrors.createFailedToDelPlaceholderStatus500(connection));
                         } else {
                             var errMsg = {
                                 message: "An error has occurred while creating the new file record.",

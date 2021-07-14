@@ -149,3 +149,18 @@ xhttp.send(JSON.stringify({
     showNestedFiles: false,
     dirPath: "test0/test with spaces"
 }));
+
+// Listing files (no directory path):
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/list", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    maxFiles: 1000,
+    showNestedFiles: true
+}));

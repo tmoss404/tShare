@@ -24,3 +24,11 @@ module.exports.createFailedToQueryS3Status500 = function(connection) {
         connectionToDrop: connection
     };
 };
+module.exports.createFailedToDelPlaceholderStatus500 = function(connection) {
+    return {
+        message: "An error has occurred while trying to delete the placeholder file.",
+        httpStatus: 500,
+        success: false,
+        connectionToDrop: connection
+    };
+};

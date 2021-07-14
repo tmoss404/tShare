@@ -1,7 +1,20 @@
 const objectUtil = require("../objectUtil");
 const appConstants = require("../config/appConstants");
 const database = require("../config/database");
+const stringUtil = require("../stringUtil");
 
+var metadataSuffix = "/" + appConstants.dirPlaceholderFile;
+
+function handleNoDbRecordForFile(s3File) {
+    console.log("Could not find a database file record for \"" + JSON.stringify(s3File) + "\". Attempting to guess...");
+    s3File.isDirectory = s3File.Key.endsWith(metadataSuffix);
+}
+function addOwnerAndStripRoot(s3File, pathPrefix, owner) {
+    if (s3File.Key.startsWith(pathPrefix)) {
+        s3File.Key = s3File.Key.substring(pathPrefix.length);
+    }
+    s3File.owner = owner;
+}
 module.exports.formatFilePath = function(filePath) {
     if (objectUtil.isNullOrUndefined(filePath)) {
         return null;
@@ -111,41 +124,55 @@ module.exports.updateFileRecords = function(filePath, fileOwnerId, isDirectory, 
         });
     });
 };
-module.exports.processS3Data = function(data, accountIdPrefix, owner, showNestedFiles, pathPrefix, dirPath) {
-    for (var i = 0; i < data.Contents.length; i++) {
-        var subDir = data.Contents[i].Key.substring(pathPrefix.length);
-        if (!showNestedFiles && subDir.includes("/")) {
-            data.Contents[i].Key = subDir.substring(0, subDir.indexOf("/"));
-            data.Contents[i].isDirectory = true;
-            data.Contents[i].Size = 0;
-        } else {
-            if (data.Contents[i].Key.startsWith(accountIdPrefix)) {
-                data.Contents[i].Key = data.Contents[i].Key.substring(accountIdPrefix.length);
+module.exports.processS3Data = function(data, accountIdPrefix, owner, showNestedFiles, pathPrefix, connection) {
+    return new Promise((resolve, reject) => {
+        var promises = [];
+        for (var i = 0; i < data.Contents.length; i++) {
+            if (!data.Contents[i].Key.startsWith(pathPrefix)) {
+                continue;  // This is a file in a different root directory, so we skip it.
             }
-            var metadataSuffix = "/" + appConstants.dirPlaceholderFile;
-            if (data.Contents[i].Key.endsWith(metadataSuffix)) {
-                data.Contents[i].Key = data.Contents[i].Key.substring(0, data.Contents[i].Key.length - metadataSuffix.length);
-                data.Contents[i].Size = 0;
-                data.Contents[i].isDirectory = true;
-            } else {
-                data.Contents[i].isDirectory = false;
-            }
-            if (!showNestedFiles && data.Contents[i].Key.includes("/")) {
-                data.Contents[i].Key = data.Contents[i].Key.substring(data.Contents[i].Key.lastIndexOf("/") + 1);
-            }
-            if (!showNestedFiles && data.Contents[i].Key == dirPath) {
-                data.Contents.splice(i, 1);
-                if (data.KeyCount > 0) {
-                    --data.KeyCount;
+            var subDir = data.Contents[i].Key.substring(pathPrefix.length);
+            var dirSepCount = stringUtil.countCharInStr(subDir, '/');
+            if (!showNestedFiles) {
+                if (dirSepCount >= 2) {
+                    data.Contents.splice(i, 1);
+                    --i;
+                    if (data.KeyCount > 0) {
+                        --data.KeyCount;
+                    }
+                    continue;
+                } else if (dirSepCount >= 1) {
+                    data.Contents[i].Key = data.Contents[i].Key.substring(0, data.Contents[i].Key.lastIndexOf("/"));
                 }
-                --i;
-                continue;
             }
+            promises.push(new Promise((resolve, reject) => {
+                var content = data.Contents[i];
+                database.selectFromTable("File", "path='" + (content.Key.endsWith(metadataSuffix) ? content.Key.substring(0, content.Key.length - metadataSuffix.length) : content.Key) + "'", connection).then((results) => {
+                    if (results.length == 0) {
+                        handleNoDbRecordForFile(content);
+                    } else if (results[0].is_directory) {
+                        if (content.Key.endsWith(metadataSuffix)) {
+                            content.Key = content.Key.substring(0, content.Key.length - metadataSuffix.length);
+                        }
+                        content.Size = 0;
+                        content.isDirectory = true;
+                    } else {
+                        content.isDirectory = false;
+                    }
+                    addOwnerAndStripRoot(content, showNestedFiles ? accountIdPrefix : pathPrefix, owner);
+                    resolve(data);
+                }).catch((results) => {
+                    handleNoDbRecordForFile(content);
+                    addOwnerAndStripRoot(content, showNestedFiles ? accountIdPrefix : pathPrefix, owner);
+                    resolve(data);
+                });
+            }));
         }
-        data.Contents[i].owner = owner;
-    }
-    if (data.Prefix.includes(accountIdPrefix)) {
-        data.Prefix = "";
-    }
-    return data;
+        Promise.all(promises).then((s3Data) => {
+            if (data.Prefix.includes(accountIdPrefix)) {
+                data.Prefix = "";
+            }
+            resolve(data);
+        });
+    });
 }
