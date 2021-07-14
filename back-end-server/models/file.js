@@ -309,7 +309,7 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
                 data_ = fileUtil.processS3Data(data_, accountIdPrefix, {
                     email: decodedToken.email,
                     accountId: decodedToken.accountId
-                }, listFilesData.showNestedFiles, pathPrefix);
+                }, listFilesData.showNestedFiles, pathPrefix, listFilesData.dirPath);
                 resolve({
                     message: isRecycleBin ? "Successfully retrieved the user's deleted files." : "Successfully retrieved the user's files.",
                     httpStatus: 200,

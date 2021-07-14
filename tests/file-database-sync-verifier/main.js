@@ -60,6 +60,10 @@ connection.connect(function(err) {
             for (var i = 0; i < data.KeyCount; i++) {
                 promises.push(new Promise((resolve, reject) => {
                     var s3Object = data.Contents[i];
+                    var placeholderSuffix = "/__tshare-placeholder__";
+                    if (s3Object.Key.endsWith(placeholderSuffix)) {
+                        s3Object.Key = s3Object.Key.substring(0, s3Object.Key.lastIndexOf(placeholderSuffix));
+                    }
                     connection.query("SELECT * FROM File WHERE path='" + s3Object.Key + "'", function(error, results, fields) {
                         if (error) {
                             reject(error);
