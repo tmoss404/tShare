@@ -30,6 +30,7 @@ import { ComingSoonComponent } from './components/coming-soon/coming-soon.compon
 import { AccountPreferencesComponent } from './components/account-preferences/account-preferences.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { FileCardComponent } from './components/file-card/file-card.component';
+import { ContextMenuModule } from 'ngx-contextmenu';
 
 @NgModule({
   declarations: [
@@ -63,7 +64,10 @@ import { FileCardComponent } from './components/file-card/file-card.component';
     AppRoutingModule,
     FormsModule,
     HttpClientModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    ContextMenuModule.forRoot({
+      useBootstrap4: true
+    })
   ],
   providers: [{
     provide: HTTP_INTERCEPTORS,

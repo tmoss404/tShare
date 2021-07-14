@@ -82,6 +82,10 @@
     border-radius: 9px;
 }
 
+.file-type {
+    font-size: 20px;
+}
+
 .file-card:hover .bi-circle /* Display circle icon when hovering file card */
 {
     display: flex;

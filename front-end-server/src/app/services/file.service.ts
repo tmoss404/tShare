@@ -13,11 +13,19 @@ export class FileService {
     private auth: AuthenticationService
   ) { }
   
-  public getSignedUrl(fileToUpload: File) : Observable<any> {
+  public getSignedUrl(fileToUpload: File, dir: string) : Observable<any> {
     if(fileToUpload.name != null){
+      let filePath: string;
+      if(dir != null) {
+        filePath = dir + '/' + fileToUpload.name; 
+      }
+      else {
+        filePath = fileToUpload.name;
+      }
+
       let signUrlData = {
         loginToken: this.auth.getToken(),
-        filePath: fileToUpload.name,
+        filePath: filePath,
         fileType: fileToUpload.type
       }
       
@@ -38,8 +46,23 @@ export class FileService {
     return this.http.put<any>(signedUrl, fileToUpload, httpOptions);
   }
 
-  public getFiles() : Observable<any> {
-    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/list`, {loginToken: this.auth.getToken()});
+  public getFiles(path: string) : Observable<any> {
+    let getFilesData = { 
+      loginToken: this.auth.getToken(),
+      dirPath: path,
+      showNestedFiles: false 
+    }
+
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/list`, getFilesData);
+  }
+
+  public createDir(path: string) : Observable<any> {
+    let createDirData = {
+      loginToken: this.auth.getToken(),
+      dirPath: path
+    }
+
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/make-directory`, createDirData);
   }
 
 }

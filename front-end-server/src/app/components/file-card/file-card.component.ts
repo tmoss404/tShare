@@ -1,5 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { AccountService } from 'src/app/services/account.service';
+import { ContextMenuService, ContextMenuComponent } from 'ngx-contextmenu';
 
 @Component({
   selector: 'app-file-card',
@@ -9,17 +10,20 @@ import { AccountService } from 'src/app/services/account.service';
 export class FileCardComponent implements OnInit {
 
   @Input() file: any;
+  @Input() contextMenu: ContextMenuComponent;
+
+  @Output() changeDirEvent = new EventEmitter<string>();
+
   selected: boolean | false;
   dateFormat: string | 'M/d/yy, h:mm a';
 
   constructor(
-    private accountService: AccountService
+    private accountService: AccountService,
+    private contextMenuService: ContextMenuService
   ) { }
 
   ngOnInit(): void {
-    if(this.file)
-      this.file.name = this.getLastItem();
-
+    if(this.file) this.file.name = this.getLastItem();
     this.dateFormat = this.accountService.getDateFormat();
   }
 
@@ -28,7 +32,24 @@ export class FileCardComponent implements OnInit {
     return this.file.Key.substring(fileRoute.lastIndexOf('/') + 1);
   }
 
-  fileCardSelect(){
+  fileCardSelect() {
     this.selected = !this.selected;
   }
+
+  onContextMenu($event: MouseEvent, file: any): void {
+    this.contextMenuService.show.next({
+      contextMenu: this.contextMenu,
+      event: <any>$event,
+      item: file
+    });
+    $event.preventDefault();
+    $event.stopPropagation();
+  }
+
+  folderOpen() {
+    if(this.file.isDirectory){
+      this.changeDirEvent.emit(this.file.name);
+    }
+  }
+
 }
