@@ -1,17 +1,23 @@
-<div class="file-card" (click)="fileCardSelect()" [ngClass]="selected ? 'selected' : ''">
+<div class="file-card" (click)="fileCardSelect()" [ngClass]="selected ? 'selected' : ''" (contextmenu)="onContextMenu($event, file)" (dblclick)="folderOpen()">
     <div class="file-info">
         <div class="file-check">
-            <i class="select-icon bi bi-check-circle" [ngClass]=""></i>
-            <i class="select-icon bi bi-circle" [ngClass]=""></i>
-            <i class="select-icon bi bi-check-circle-fill" [ngClass]=""></i>    
+            <i class="select-icon bi bi-check-circle"></i>
+            <i class="select-icon bi bi-circle"></i>
+            <i class="select-icon bi bi-check-circle-fill"></i>    
+        </div>
+    </div>
+    <div class="file-info">
+        <div class="file-type">
+             <i *ngIf="!file?.isDirectory" class="bi bi-file-earmark"></i>
+             <i *ngIf="file?.isDirectory" class="bi bi-folder"></i>
         </div>
     </div>
     <div class="file-info file-name">
         {{file?.name}}
     </div>
     <div class="file-info">
-        <div class="file-card-option">
-            <i class="option-icon bi bi-three-dots-vertical" (click)="$event.stopPropagation()"></i>
+        <div class="file-card-option" (click)="onContextMenu($event, file)">
+            <i class="option-icon bi bi-three-dots-vertical"></i>
         </div>
     </div>
     <div class="file-info last-modified">

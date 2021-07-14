@@ -1,7 +1,7 @@
 <div class="container">
     <div class="option-bar">
         <div class="option-container">
-            <button class="file-option-btn">New Folder</button>
+            <button class="file-option-btn" (click)="createFolder()">New Folder</button>
 
             <button class="file-option-btn" (click)="uploader.click()">Upload File</button>
                 <input hidden type="file" #uploader (change)="uploadFile($event.target.files)" onclick="this.value = null" />
@@ -10,40 +10,60 @@
 
             <button class="file-option-btn">Grant Access</button>
 
-            <button class="file-option-btn refresh" (click)="getFiles()">Refresh</button>
+            <button class="file-option-btn" (click)="getFiles()">Refresh</button>
 
             <input class="file-search" placeholder="What are you looking for?">
         </div>
     </div>
-    <div class="file-container" >
-        <div class="file-header">
-            <div class="file-info">
-                <div class="file-check">    
-                </div>
-            </div>
-            <div class="file-info file-name">
-                Name
-            </div>
-            <div class="file-info">
-                <div class="file-card-option"></div>
-            </div>
-            <div class="file-info last-modified">
-                Last Modified
-            </div>
-            <div class="file-info file-owner">
-                Owner
-            </div>
-            <div class="file-info file-size">
-                File Size
-            </div>
-        <hr class="file-header-rule">
-        </div>
-        
+    <div class="file-container">
         <div *ngIf="files; else loading">
-            <app-file-card *ngFor="let file of files" [file]="file"></app-file-card>
+            <div class="file-header">
+                <div class="file-info">
+                    <div class="file-check">    
+                    </div>
+                </div>
+                <div class="file-info">
+                    <div class="file-check">
+                    </div>
+                </div>
+                <div class="file-info file-name">
+                    Name
+                </div>
+                <div class="file-info">
+                    <div class="file-card-option"></div>
+                </div>
+                <div class="file-info last-modified">
+                    Last Modified
+                </div>
+                <div class="file-info file-owner">
+                    Owner
+                </div>
+                <div class="file-info file-size">
+                    File Size
+                </div>
+                <hr class="file-header-rule">
+            </div>
+            <app-file-card *ngFor="let file of files" [file]="file" (changeDirEvent)="changeCurrentDir($event)"></app-file-card>
         </div>
         <ng-template #loading>
             <div class="spinner"></div>
         </ng-template>
     </div>
 </div>
+<context-menu>
+    <ng-template contextMenuItem>
+        Download
+    </ng-template>
+    <ng-template contextMenuItem>
+        Delete
+    </ng-template>
+    <ng-template contextMenuItem>
+        Copy
+    </ng-template>
+    <ng-template contextMenuItem>
+        Move
+    </ng-template>
+    <ng-template contextMenuItem>
+        Rename
+    </ng-template>
+</context-menu>
