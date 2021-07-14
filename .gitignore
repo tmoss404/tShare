@@ -1,3 +1,4 @@
 tests/amazon-s3-separate-dirs/node_modules/
 tests/amazon-s3-getobject/node_modules/
+tests/file-database-sync-verifier/node_modules/
 .vs/

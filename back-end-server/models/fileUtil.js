@@ -44,12 +44,15 @@ module.exports.deleteEmptyFileRecords = function (filePath, connection, s3) {
                     subPath += "/";
                 }
             }
+            if (i < splitPath.length - 1) {
+                subPath += "/";
+            }
             promises.push(new Promise((resolve, reject) => {
                 var savedSubPath = subPath;
                 s3.listObjectsV2({
                     Bucket: appConstants.awsBucketName,
                     MaxKeys: 1,
-                    Prefix: savedSubPath + "/"
+                    Prefix: savedSubPath
                 }, (err, data) => {
                     if (err) {
                         reject(err);
