@@ -37,44 +37,27 @@ module.exports.copyObject = function(dest, src, s3, srcOwnerId, dbConnection) {
         module.exports.getNewDuplicateKeyName(dest, 0, s3).then((duplicateKeyId) => {
             dest = duplicateKeyId;
             var acl = "public-read";
-            var contentType = "application/octet-stream";
             var s3Params = {
                 Bucket: appConstants.awsBucketName,
                 Key: dest,
                 CopySource: encodeURIComponent(appConstants.awsBucketName + "/" + src),
-                ContentType: contentType,
+                ContentType: "application/octet-stream",
                 ACL: acl
             };
-            s3.getSignedUrl("copyObject", s3Params, (err, signedUrlData) => {
+            s3.copyObject(s3Params, (err, data) => {
                 if (err) {
                     reject(err);
                     return;
                 }
-                axios({
-                    method: "put",
-                    url: signedUrlData,
-                    headers: {
-                        "x-amz-copy-source": src,
-                        "Content-Type": contentType,
-                        "x-amz-acl": acl
-                    }
-                }).then((res) => {
-                    s3Params = {
-                        Bucket: appConstants.awsBucketName,
-                        Key: src
-                    };
-                    var errMsg = "An error has occurred while updating a file record for a copy operation.";
-                    fileUtil.updateFileRecords(dest, srcOwnerId, false, dest, dbConnection, s3).then((successStatus) => {
-                        if (successStatus) {
-                            resolve(true);
-                        } else {
-                            reject(errMsg);
-                        }
-                    }).catch((successStatus) => {
+                var errMsg = "An error has occurred while updating a file record for a copy operation.";
+                fileUtil.updateFileRecords(dest, srcOwnerId, false, dest, dbConnection, s3).then((successStatus) => {
+                    if (successStatus) {
+                        resolve(true);
+                    } else {
                         reject(errMsg);
-                    });
-                }).catch((err) => {
-                    reject(err);
+                    }
+                }).catch((successStatus) => {
+                    reject(errMsg);
                 });
             });
         }).catch((err) => {
@@ -87,49 +70,37 @@ module.exports.moveObject = function(dest, src, s3, srcOwnerId, dbConnection) {
         module.exports.getNewDuplicateKeyName(dest, 0, s3).then((duplicateKeyId) => {
             dest = duplicateKeyId;
             var acl = "public-read";
-            var contentType = "application/octet-stream";
             var s3Params = {
                 Bucket: appConstants.awsBucketName,
                 Key: dest,
                 CopySource: encodeURIComponent(appConstants.awsBucketName + "/" + src),
-                ContentType: contentType,
+                ContentType: "application/octet-stream",
                 ACL: acl
             };
-            s3.getSignedUrl("copyObject", s3Params, (err, signedUrlData) => {
+            s3.copyObject(s3Params, (err, data) => {
                 if (err) {
                     reject(err);
                     return;
                 }
-                axios({
-                    method: "put",
-                    url: signedUrlData,
-                    headers: {
-                        "x-amz-copy-source": src,
-                        "Content-Type": contentType,
-                        "x-amz-acl": acl
+                s3Params = {
+                    Bucket: appConstants.awsBucketName,
+                    Key: src
+                };
+                s3.deleteObject(s3Params, (err, deleteObjData) => {
+                    if (err) {
+                        reject(err);
+                        return;
                     }
-                }).then((res) => {
-                    s3Params = {
-                        Bucket: appConstants.awsBucketName,
-                        Key: src
-                    };
-                    s3.deleteObject(s3Params, (err, deleteObjData) => {
-                        if (err) {
-                            reject(err);
-                        }
-                        var errMsg = "An error has occurred while updating a file record for a move operation.";
-                        fileUtil.updateFileRecords(dest, srcOwnerId, false, src, dbConnection, s3).then((successStatus) => {
-                            if (successStatus) {
-                                resolve(true);
-                            } else {
-                                reject(errMsg);
-                            }
-                        }).catch((successStatus) => {
+                    var errMsg = "An error has occurred while updating a file record for a move operation.";
+                    fileUtil.updateFileRecords(dest, srcOwnerId, false, src, dbConnection, s3).then((successStatus) => {
+                        if (successStatus) {
+                            resolve(true);
+                        } else {
                             reject(errMsg);
-                        });
+                        }
+                    }).catch((successStatus) => {
+                        reject(errMsg);
                     });
-                }).catch((err) => {
-                    reject(err);
                 });
             });
         }).catch((err) => {

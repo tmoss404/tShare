@@ -281,7 +281,7 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
         if (!reqObjInvalid && objectUtil.isUndefined(listFilesData.dirPath)) {
             listFilesData.dirPath = null;
         }
-        if (reqObjInvalid || listFilesData.dirPath != null && listFilesData.dirPath.length == 0) {
+        if (reqObjInvalid || listFilesData.dirPath != null && listFilesData.dirPath.length == 0 || listFilesData.showNestedFiles != false && listFilesData.showNestedFiles != true) {
             reject(commonErrors.genericStatus400);
             return;
         }
@@ -309,7 +309,7 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
                 data_ = fileUtil.processS3Data(data_, accountIdPrefix, {
                     email: decodedToken.email,
                     accountId: decodedToken.accountId
-                });
+                }, listFilesData.showNestedFiles, pathPrefix);
                 resolve({
                     message: isRecycleBin ? "Successfully retrieved the user's deleted files." : "Successfully retrieved the user's files.",
                     httpStatus: 200,

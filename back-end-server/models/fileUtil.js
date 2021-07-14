@@ -108,19 +108,29 @@ module.exports.updateFileRecords = function(filePath, fileOwnerId, isDirectory, 
         });
     });
 };
-module.exports.processS3Data = function(data, accountIdPrefix, owner) {
+module.exports.processS3Data = function(data, accountIdPrefix, owner, showNestedFiles, pathPrefix) {
     var toDelete = [];
     for (var i = 0; i < data.Contents.length; i++) {
-        if (data.Contents[i].Key.startsWith(accountIdPrefix)) {
-            data.Contents[i].Key = data.Contents[i].Key.substring(accountIdPrefix.length);
-        }
-        var metadataSuffix = "/" + appConstants.dirPlaceholderFile;
-        if (data.Contents[i].Key.endsWith(metadataSuffix)) {
-            data.Contents[i].Key = data.Contents[i].Key.substring(0, data.Contents[i].Key.length - metadataSuffix.length);
-            data.Contents[i].Size = 0;
+        var subDir = data.Contents[i].Key.substring(pathPrefix.length);
+        if (!showNestedFiles && subDir.includes("/")) {
+            data.Contents[i].Key = subDir.substring(0, subDir.indexOf("/"));
             data.Contents[i].isDirectory = true;
+            data.Contents[i].Size = 0;
         } else {
-            data.Contents[i].isDirectory = false;
+            if (data.Contents[i].Key.startsWith(accountIdPrefix)) {
+                data.Contents[i].Key = data.Contents[i].Key.substring(accountIdPrefix.length);
+            }
+            var metadataSuffix = "/" + appConstants.dirPlaceholderFile;
+            if (data.Contents[i].Key.endsWith(metadataSuffix)) {
+                data.Contents[i].Key = data.Contents[i].Key.substring(0, data.Contents[i].Key.length - metadataSuffix.length);
+                data.Contents[i].Size = 0;
+                data.Contents[i].isDirectory = true;
+            } else {
+                data.Contents[i].isDirectory = false;
+            }
+            if (!showNestedFiles && data.Contents[i].Key.includes("/")) {
+                data.Contents[i].Key = data.Contents[i].Key.substring(data.Contents[i].Key.lastIndexOf("/") + 1);
+            }
         }
         data.Contents[i].owner = owner;
     }
