@@ -111,8 +111,7 @@ module.exports.updateFileRecords = function(filePath, fileOwnerId, isDirectory, 
         });
     });
 };
-module.exports.processS3Data = function(data, accountIdPrefix, owner, showNestedFiles, pathPrefix) {
-    var toDelete = [];
+module.exports.processS3Data = function(data, accountIdPrefix, owner, showNestedFiles, pathPrefix, dirPath) {
     for (var i = 0; i < data.Contents.length; i++) {
         var subDir = data.Contents[i].Key.substring(pathPrefix.length);
         if (!showNestedFiles && subDir.includes("/")) {
@@ -133,6 +132,14 @@ module.exports.processS3Data = function(data, accountIdPrefix, owner, showNested
             }
             if (!showNestedFiles && data.Contents[i].Key.includes("/")) {
                 data.Contents[i].Key = data.Contents[i].Key.substring(data.Contents[i].Key.lastIndexOf("/") + 1);
+            }
+            if (!showNestedFiles && data.Contents[i].Key == dirPath) {
+                data.Contents.splice(i, 1);
+                if (data.KeyCount > 0) {
+                    --data.KeyCount;
+                }
+                --i;
+                continue;
             }
         }
         data.Contents[i].owner = owner;
