@@ -22,6 +22,17 @@ module.exports.selectFromTable = function(tableName, whereClause, connection) {
         });
     });
 };
+module.exports.selectAllFromTable = function(tableName, connection) {
+    return new Promise((resolve, reject) => {
+        connection.query("SELECT * FROM " + tableName, function(err, results, fields) {
+            if (!objectUtil.isNullOrUndefined(err)) {
+                reject(null);
+            } else {
+                resolve(results);
+            }
+        });
+    });
+};
 module.exports.insertIntoTable = function(tableName, columnsClause, valuesClause, connection) {
     return new Promise((resolve, reject) => {
         connection.query("INSERT INTO " + tableName + " (" + columnsClause + ") VALUES (" + valuesClause + ")", function(err, results, fields) {

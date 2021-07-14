@@ -9,6 +9,40 @@ const commonErrors = require("./commonErrors");
 
 var dbConnectionPool;
 
+module.exports.listAccounts = function(listAccountsData) {
+    return new Promise((resolve, reject) => {
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            database.selectAllFromTable("Account", connection).then((results) => {
+                var accounts = [];
+                for (var i = 0; i < results.length; i++) {
+                    accounts.push({
+                        accountId: results[i].account_id,
+                        email: results[i].email,
+                        permissionsLvl: results[i].permissions_lvl
+                    });
+                }
+                resolve({
+                    message: "Successfully retrieved a list of users on the system.",
+                    httpStatus: 200,
+                    success: true,
+                    connectionToDrop: connection,
+                    users: accounts
+                });
+            }).catch((results) => {
+                reject({
+                    message: "Failed to retrieve a list of users on the system.",
+                    httpStatus: 500,
+                    success: false,
+                    connectionToDrop: connection
+                });
+            });
+        });
+    });
+};
 module.exports.updatePreferences = function(preferencesData) {
     return new Promise((resolve, reject) => {
         if (objUtil.isNullOrUndefined(preferencesData) || objUtil.isNullOrUndefined(preferencesData.preferences) || 

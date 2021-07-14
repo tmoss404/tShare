@@ -73,4 +73,11 @@ module.exports.setupRoutes = function(app) {
             routes.sendResponse(res, err);
         });
     });
+    app.post("/account/list", accountMiddleware.checkAuth, (req, res) => {
+        accountModel.listAccounts(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
 };
