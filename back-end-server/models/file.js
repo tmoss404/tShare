@@ -322,6 +322,7 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
                         reject(commonErrors.failedToConnectDbStatus500);
                         return;
                     }
+                    // reject() is straight up unused in fileUtil#processS3Data. So, no need to handle the catch.
                     fileUtil.processS3Data(data_, accountIdPrefix, {
                         email: decodedToken.email,
                         accountId: decodedToken.accountId
@@ -330,7 +331,8 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
                             message: isRecycleBin ? "Successfully retrieved the user's deleted files." : "Successfully retrieved the user's files.",
                             httpStatus: 200,
                             success: true,
-                            data: s3Data
+                            data: s3Data,
+                            connectionToDrop: connection
                         });
                     });
                 });
