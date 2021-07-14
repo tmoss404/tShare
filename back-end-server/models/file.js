@@ -84,13 +84,16 @@ module.exports.moveOrCopyFile = function(moveOrCopyFileData, move) {
                                 }
                             }
                         }
-                        operationPromises.push(fileUtil.updateFileRecords(moveOrCopyFileData.destPath, decodedToken.accountId, true, moveOrCopyFileData.srcPath, connection));
                         Promise.all(operationPromises).then((successful) => {
-                            resolve({
-                                message: move ? "Successfully moved a directory to its target path." : "Successfully copied a directory to its target path.",
-                                httpStatus: 200,
-                                success: true,
-                                connectionToDrop: connection
+                            fileUtil.updateFileRecords(moveOrCopyFileData.destPath, decodedToken.accountId, true, moveOrCopyFileData.srcPath, connection, s3).then((results) => {
+                                resolve({
+                                    message: move ? "Successfully moved a directory to its target path." : "Successfully copied a directory to its target path.",
+                                    httpStatus: 200,
+                                    success: true,
+                                    connectionToDrop: connection
+                                });
+                            }).catch((results) => {
+                                reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
                             });
                         }).catch((successful) => {
                             reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
@@ -100,22 +103,30 @@ module.exports.moveOrCopyFile = function(moveOrCopyFileData, move) {
             } else {
                 if (move) {
                     s3Helper.moveObject(moveOrCopyFileData.destPath, moveOrCopyFileData.srcPath, s3, decodedToken.accountId, connection).then((successful) => {
-                        resolve({
-                            message: "Successfully moved a file to its target path.",
-                            httpStatus: 200,
-                            success: true,
-                            connectionToDrop: connection
+                        fileUtil.updateFileRecords(moveOrCopyFileData.destPath, decodedToken.accountId, false, moveOrCopyFileData.srcPath, connection, s3).then((results) => {
+                            resolve({
+                                message: "Successfully moved a file to its target path.",
+                                httpStatus: 200,
+                                success: true,
+                                connectionToDrop: connection
+                            });
+                        }).catch((results) => {
+                            reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
                         });
                     }).catch((successful) => {
                         reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
                     });
                 } else {
                     s3Helper.copyObject(moveOrCopyFileData.destPath, moveOrCopyFileData.srcPath, s3, decodedToken.accountId, connection).then((successful) => {
-                        resolve({
-                            message: "Successfully copied a file to its target path.",
-                            httpStatus: 200,
-                            success: true,
-                            connectionToDrop: connection
+                        fileUtil.updateFileRecords(moveOrCopyFileData.destPath, decodedToken.accountId, false, moveOrCopyFileData.srcPath, connection, s3).then((results) => {
+                            resolve({
+                                message: "Successfully copied a file to its target path.",
+                                httpStatus: 200,
+                                success: true,
+                                connectionToDrop: connection
+                            });
+                        }).catch((results) => {
+                            reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
                         });
                     }).catch((successful) => {
                         reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
@@ -157,13 +168,16 @@ module.exports.deleteFile = function(deleteFileData) {
                                     data_.Contents[i].Key.substring(("" + decodedToken.accountId + "/").length), data_.Contents[i].Key, s3, decodedToken.accountId, connection));
                             }
                         }
-                        operationPromises.push(fileUtil.updateFileRecords(recyclePath, decodedToken.accountId, true, deleteFileData.path, connection));
                         Promise.all(operationPromises).then((successful) => {
-                            resolve({
-                                message: "Successfully deleted all files from the specified directory into the recycle bin.",
-                                httpStatus: 200,
-                                success: true,
-                                connectionToDrop: connection
+                            fileUtil.updateFileRecords(recyclePath, decodedToken.accountId, true, deleteFileData.path, connection, s3).then((results) => {
+                                resolve({
+                                    message: "Successfully deleted all files from the specified directory into the recycle bin.",
+                                    httpStatus: 200,
+                                    success: true,
+                                    connectionToDrop: connection
+                                });
+                            }).catch((results) => {
+                                reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
                             });
                         }).catch((successful) => {
                             reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
@@ -172,11 +186,15 @@ module.exports.deleteFile = function(deleteFileData) {
                 });
             } else {
                 s3Helper.moveObject(recyclePath, deleteFileData.path, s3, decodedToken.accountId, connection).then((successful) => {
-                    resolve({
-                        message: "Successfully deleted a file into the recycle bin.",
-                        httpStatus: 200,
-                        success: true,
-                        connectionToDrop: connection
+                    fileUtil.updateFileRecords(recyclePath, decodedToken.accountId, false, deleteFileData.path, connection, s3).then((results) => {
+                        resolve({
+                            message: "Successfully deleted a file into the recycle bin.",
+                            httpStatus: 200,
+                            success: true,
+                            connectionToDrop: connection
+                        });
+                    }).catch((results) => {
+                        reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
                     });
                 }).catch((successful) => {
                     reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
@@ -238,7 +256,7 @@ module.exports.makeDir = function(makeDirData) {
                         return;
                     }
                     var s3Directory = decodedToken.accountId + "/" + makeDirData.dirPath;
-                    fileUtil.updateFileRecords(s3Directory, decodedToken.accountId, true, s3Directory, connection).then((successStatus) => {
+                    fileUtil.updateFileRecords(s3Directory, decodedToken.accountId, true, s3Directory, connection, s3).then((successStatus) => {
                         if (successStatus) {
                             resolve({
                                 message: "Successfully created the empty directory.",
@@ -425,7 +443,7 @@ module.exports.getSignedUrl = function(signUrlData) {
                                 success: false,
                                 connectionToDrop: connection
                             };
-                            fileUtil.updateFileRecords(duplicateKeyId, decodedToken.accountId, false, duplicateKeyId, connection).then((successStatus) => {
+                            fileUtil.updateFileRecords(duplicateKeyId, decodedToken.accountId, false, duplicateKeyId, connection, s3).then((successStatus) => {
                                 if (successStatus) {
                                     resolve({
                                         message: "Successfully retrieved a signed S3 URL.",

@@ -64,7 +64,7 @@ module.exports.copyObject = function(dest, src, s3, srcOwnerId, dbConnection) {
                         Key: src
                     };
                     var errMsg = "An error has occurred while updating a file record for a copy operation.";
-                    fileUtil.updateFileRecords(dest, srcOwnerId, false, dest, dbConnection).then((successStatus) => {
+                    fileUtil.updateFileRecords(dest, srcOwnerId, false, dest, dbConnection, s3).then((successStatus) => {
                         if (successStatus) {
                             resolve(true);
                         } else {
@@ -118,7 +118,7 @@ module.exports.moveObject = function(dest, src, s3, srcOwnerId, dbConnection) {
                             reject(err);
                         }
                         var errMsg = "An error has occurred while updating a file record for a move operation.";
-                        fileUtil.updateFileRecords(dest, srcOwnerId, false, src, dbConnection).then((successStatus) => {
+                        fileUtil.updateFileRecords(dest, srcOwnerId, false, src, dbConnection, s3).then((successStatus) => {
                             if (successStatus) {
                                 resolve(true);
                             } else {
