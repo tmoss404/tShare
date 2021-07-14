@@ -147,7 +147,7 @@
     height: 100%;
 }
 
-hr {
+.file-header-rule {
     background-color: white;
     margin: 6px 6px 1rem 0;
     width: 100%;
