@@ -1,0 +1,15 @@
+{
+  "name": "file-database-sync-verifier",
+  "version": "1.0.0",
+  "description": "This program tests that the File table is in sync with the actual S3 file system.",
+  "main": "main.js",
+  "scripts": {
+    "test": "node main"
+  },
+  "author": "Eric McDonald",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.945.0",
+    "mysql": "^2.18.1"
+  }
+}
