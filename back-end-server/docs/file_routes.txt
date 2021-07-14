@@ -57,13 +57,14 @@ xhttp.send("This is the contents of my file!");
 
 This route allows you to retrieve a list of file paths and file metadata that are prefixed with the specified directory path. The data it returns in "data" is specified by AWS S3. See https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html for more documentation on the data return variable specifically. 
 Please note that backwards-slashes (\) will be converted to forwards-slashes (/). Having trailing or prefixed /'s in dirPath will cause undefined behavior. Also, sensitive information is removed from data. See back-end-server/models/fileUtil.js#processS3Data for what is being filtered. It also adds an isDirectory variable to each Contents element.
-It takes three parameters wrapped in an Object:
+It takes four parameters wrapped in an Object:
 - loginToken: String
 - dirPath: String, or null/undefined to retrieve all of the user's files
 - maxFiles: int, non-zero and non-negative, up to 1000
+- showNestedFiles: boolean, indicates whether or not to show files that are contained within folders that are inside of dirPath
 
 Returns an Object containing at least message, and success. Optionally, data is returned as well if the request was successful:
-{"message":"Successfully retrieved the user's files.","success":true,"data":{"IsTruncated":false,"Contents":[{"Key":"your new/directory/path/file.txt","LastModified":"2021-07-01T21:26:35.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":32,"StorageClass":"STANDARD","isDirectory":false}],"Name":"bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b","Prefix":"","MaxKeys":1000,"CommonPrefixes":[],"KeyCount":1}}
+{"message":"Successfully retrieved the user's files.","success":true,"data":{"IsTruncated":false,"Contents":[{"Key":"file.txt","LastModified":"2021-07-14T13:20:37.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":32,"StorageClass":"STANDARD","isDirectory":false,"owner":{"email":"tkhjkkhbackend43e@gmail.com","accountId":2474}},{"Key":"path2","LastModified":"2021-07-14T13:21:35.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":0,"StorageClass":"STANDARD","isDirectory":true,"owner":{"email":"tkhjkkhbackend43e@gmail.com","accountId":2474}}],"Name":"bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b","Prefix":"","MaxKeys":1000,"CommonPrefixes":[],"KeyCount":2}}
 
 Example request:
 
@@ -79,7 +80,8 @@ xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
     dirPath: "your new/directory",  // Optional, can be null or undefined
-    maxFiles: 1000  // Optional, can be undefined
+    maxFiles: 1000,  // Optional, can be undefined
+    showNestedFiles: false
 }));
 
 
@@ -222,7 +224,7 @@ xhttp.onreadystatechange = function() {
 xhttp.open("POST", "http://localhost/file/download", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
-    loginToken: theLoginToken,
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
     filePath: "your new/directory/path/file.txt"
 }));
 
@@ -238,3 +240,29 @@ xhttp.onreadystatechange = function() {
 };
 xhttp.open("GET", signedDownload, false);
 xhttp.send();
+
+
+/file/cancel-upload:
+
+This route cancels a pending upload operation. This route *must* be called if uploading via the signed URL fails. It takes two parameters: loginToken and filePath (the path of the file you tried to upload, same value as the filePath on upload) wrapped in an Object.
+Trailing and prefixed backward/forward slashes in filePath will cause undefined behaviour:
+- loginToken: String
+- filePath: String
+
+Returns an Object containing message and success:
+{"message":"Successfully cancelled a pending upload.","success":true}
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/cancel-upload", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
+    filePath: "your new\\directory/file.txt"
+}));

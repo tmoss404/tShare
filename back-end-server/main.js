@@ -16,6 +16,14 @@ app.use(express.json());
 database.init();
 routes.init(app);
 
+function handleShutdown() {
+    console.log("Shutting down...");
+    database.connectionPool.end((err) => {
+        process.exit(err ? -1 : 0);
+    });
+}
+process.on("SIGINT", handleShutdown);
+process.on("SIGTERM", handleShutdown);
 app.listen(appConstants.serverPort, () => {
     console.log("The server has started listening on port " + appConstants.serverPort + ".");
 });

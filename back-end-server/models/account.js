@@ -9,6 +9,40 @@ const commonErrors = require("./commonErrors");
 
 var dbConnectionPool;
 
+module.exports.listAccounts = function(listAccountsData) {
+    return new Promise((resolve, reject) => {
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            database.selectAllFromTable("Account", connection).then((results) => {
+                var accounts = [];
+                for (var i = 0; i < results.length; i++) {
+                    accounts.push({
+                        accountId: results[i].account_id,
+                        email: results[i].email,
+                        permissionsLvl: results[i].permissions_lvl
+                    });
+                }
+                resolve({
+                    message: "Successfully retrieved a list of users on the system.",
+                    httpStatus: 200,
+                    success: true,
+                    connectionToDrop: connection,
+                    users: accounts
+                });
+            }).catch((results) => {
+                reject({
+                    message: "Failed to retrieve a list of users on the system.",
+                    httpStatus: 500,
+                    success: false,
+                    connectionToDrop: connection
+                });
+            });
+        });
+    });
+};
 module.exports.updatePreferences = function(preferencesData) {
     return new Promise((resolve, reject) => {
         if (objUtil.isNullOrUndefined(preferencesData) || objUtil.isNullOrUndefined(preferencesData.preferences) || 
@@ -16,32 +50,28 @@ module.exports.updatePreferences = function(preferencesData) {
             reject(commonErrors.genericStatus400);
             return;
         }
-        try {
-            var decodedToken = jsonWebToken.verify(preferencesData.loginToken, appConstants.jwtSecretKey);
-            dbConnectionPool.getConnection((err, connection) => {
-                if (err) {
-                    reject(commonErrors.failedToConnectDbStatus500);
-                    return;
-                }
-                database.updateTable("Account", "date_fmt='" + preferencesData.preferences.dateFormat + "'", "account_id=" + decodedToken.accountId, connection).then((success) => {
-                    resolve({
-                        message: "Successfully updated your user preferences.",
-                        httpStatus: 200,
-                        success: true,
-                        connectionToDrop: connection
-                    });
-                }).catch((success) => {
-                    reject({
-                        message: "Failed to update your user preferences.",
-                        httpStatus: 500,
-                        success: true,
-                        connectionToDrop: connection
-                    });
+        var decodedToken = preferencesData.decodedToken;
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            database.updateTable("Account", "date_fmt='" + preferencesData.preferences.dateFormat + "'", "account_id=" + decodedToken.accountId, connection).then((success) => {
+                resolve({
+                    message: "Successfully updated your user preferences.",
+                    httpStatus: 200,
+                    success: true,
+                    connectionToDrop: connection
+                });
+            }).catch((success) => {
+                reject({
+                    message: "Failed to update your user preferences.",
+                    httpStatus: 500,
+                    success: true,
+                    connectionToDrop: connection
                 });
             });
-        } catch (err) {
-            reject(commonErrors.loginTokenInvalidStatus401);
-        }
+        });
     });
 };
 module.exports.getPreferences = function(preferencesData) {
@@ -50,47 +80,42 @@ module.exports.getPreferences = function(preferencesData) {
             reject(commonErrors.genericStatus400);
             return;
         }
-        // TODO Centralize all these damn hideous try-catches for the login token...
         // TODO Also scan for duplicate messages again.
-        try {
-            var decodedToken = jsonWebToken.verify(preferencesData.loginToken, appConstants.jwtSecretKey);
-            dbConnectionPool.getConnection((err, connection) => {
-                if (err) {
-                    reject(commonErrors.failedToConnectDbStatus500);
-                    return;
-                }
-                database.selectFromTable("Account", "account_id=" + decodedToken.accountId, connection).then((results) => {
-                    if (results.length == 0) {
-                        // This should never actually happen, but just for in case:
-                        reject({
-                            message: "Could not find your account somehow.",
-                            httpStatus: 401,
-                            success: false,
-                            connectionToDrop: connection
-                        });
-                    } else {
-                        resolve({
-                            message: "Successfully retrieved a user's preferences.",
-                            httpStatus: 200,
-                            success: true,
-                            connectionToDrop: connection,
-                            preferences: {
-                                dateFormat: results[0].date_fmt
-                            }
-                        });
-                    }
-                }).catch((results) => {
+        var decodedToken = preferencesData.decodedToken;
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            database.selectFromTable("Account", "account_id=" + decodedToken.accountId, connection).then((results) => {
+                if (results.length == 0) {
+                    // This should never actually happen, but just for in case:
                     reject({
-                        message: "Failed to retrieve a user's preferences.",
+                        message: "Could not find your account somehow.",
                         httpStatus: 500,
                         success: false,
                         connectionToDrop: connection
                     });
+                } else {
+                    resolve({
+                        message: "Successfully retrieved a user's preferences.",
+                        httpStatus: 200,
+                        success: true,
+                        connectionToDrop: connection,
+                        preferences: {
+                            dateFormat: results[0].date_fmt
+                        }
+                    });
+                }
+            }).catch((results) => {
+                reject({
+                    message: "Failed to retrieve a user's preferences.",
+                    httpStatus: 500,
+                    success: false,
+                    connectionToDrop: connection
                 });
             });
-        } catch (err) {
-            reject(commonErrors.loginTokenInvalidStatus401);
-        }
+        });
     });
 };
 module.exports.checkPwdResetId = function(pwdResetId) {
@@ -153,52 +178,48 @@ module.exports.changePassword = function(changePwdInfo) {
             });
             return;
         }
-        try {
-            var decodedToken = jsonWebToken.verify(changePwdInfo.loginToken, appConstants.jwtSecretKey);
-            dbConnectionPool.getConnection((err, connection) => {
-                if (err) {
-                    reject(commonErrors.failedToConnectDbStatus500);
+        var decodedToken = changePwdInfo.decodedToken;
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            var salt = bcrypt.genSaltSync(10);
+            var hash = bcrypt.hashSync(changePwdInfo.newPassword, salt);
+            database.selectFromTable("Account", "email='" + decodedToken.email + "'", connection).then((results) => {
+                if (results.length == 0 || !bcrypt.compareSync(changePwdInfo.currentPassword, results[0].password_hash)) {
+                    reject({
+                        message: "Your current password is incorrect.",
+                        httpStatus: 401,
+                        success: false,
+                        connectionToDrop: connection
+                    });
                     return;
                 }
-                var salt = bcrypt.genSaltSync(10);
-                var hash = bcrypt.hashSync(changePwdInfo.newPassword, salt);
-                database.selectFromTable("Account", "email='" + decodedToken.email + "'", connection).then((results) => {
-                    if (results.length == 0 || !bcrypt.compareSync(changePwdInfo.currentPassword, results[0].password_hash)) {
-                        reject({
-                            message: "Your current password is incorrect.",
-                            httpStatus: 401,
-                            success: false,
-                            connectionToDrop: connection
-                        });
-                        return;
-                    }
-                    database.updateTable("Account", "password_hash='" + hash + "'", "email='" + decodedToken.email + "'", connection).then((results) => {
-                        resolve({
-                            message: "Updated your password in the database successfully.",
-                            httpStatus: 200,
-                            success: true,
-                            connectionToDrop: connection
-                        });
-                    }).catch((results) => {
-                        reject({
-                            message: "Failed to update your new password in the database.",
-                            httpStatus: 500,
-                            success: false,
-                            connectionToDrop: connection
-                        });
+                database.updateTable("Account", "password_hash='" + hash + "'", "email='" + decodedToken.email + "'", connection).then((results) => {
+                    resolve({
+                        message: "Updated your password in the database successfully.",
+                        httpStatus: 200,
+                        success: true,
+                        connectionToDrop: connection
                     });
                 }).catch((results) => {
                     reject({
-                        message: "Failed to query your current password in the database.",
+                        message: "Failed to update your new password in the database.",
                         httpStatus: 500,
                         success: false,
                         connectionToDrop: connection
                     });
                 });
+            }).catch((results) => {
+                reject({
+                    message: "Failed to query your current password in the database.",
+                    httpStatus: 500,
+                    success: false,
+                    connectionToDrop: connection
+                });
             });
-        } catch(err) {
-            reject(commonErrors.loginTokenInvalidStatus401);
-        }
+        });
     });
 };
 module.exports.resetPassword = function(resetPwdInfo, resetPwdId_) {
@@ -418,6 +439,7 @@ module.exports.checkLogin = function(loginInfo) {
             };
             try {
                 var decodedToken = jsonWebToken.verify(loginInfo.loginToken, appConstants.jwtSecretKey);
+                loginInfo.decodedToken = decodedToken;
                 database.selectFromTable("Invalid_Token", "token='" + JSON.stringify(decodedToken) + "'", connection).then((results) => {
                     if (results.length == 0) {
                         resolve({
@@ -575,4 +597,4 @@ module.exports.registerAccount = function(account) {
 }
 module.exports.init = function(connectionPool) {
     dbConnectionPool = connectionPool;
-}
+};

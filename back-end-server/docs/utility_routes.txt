@@ -1,0 +1,16 @@
+All file-related routes are prefixed with /utility/ and follow-this-naming-convention-with-hyphens. Data validation is done by this server.
+Also, all requests have the fields listed wrapped in an Object. All routes should return at least a message and a success status wrapped in an Object.
+
+
+
+// Add this function to your web browser's console before running the example scripts:
+// Hey, don't blame me! Tanner wanted the HTTP statuses to work like this for the Angular side of things.
+function statusReturnsResponse(status) {
+    return true;
+}
+
+
+
+/utility/log:
+
+TODO Mikhail, please add your documentation for /utility/log here.
