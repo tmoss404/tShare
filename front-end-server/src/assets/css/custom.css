@@ -88,6 +88,20 @@
     border-radius: .3rem;
 }
 
+.ngx-contextmenu .dropdown-menu {
+    background-color: #202020;
+    padding: 0;
+    border-radius: 0;
+}
+
+.ngx-contextmenu .dropdown-menu>li>a {
+    color: white;
+}
+
+.ngx-contextmenu .dropdown-menu>li>a:hover {
+    background-color: #1ab9d1;   
+}
+
 /* Added to create responsive images in the app, wrap your images with a div with the sizing you want your image to be */
 img {
     width: 100%;
