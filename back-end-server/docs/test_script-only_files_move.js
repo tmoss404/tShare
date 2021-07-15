@@ -181,5 +181,5 @@ xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
     maxFiles: 1000,
-    showNestedFiles: false
+    showNestedFiles: true
 }));
