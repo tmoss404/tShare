@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthenticationService } from './authentication.service';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,7 @@ export class FileService {
   public getSignedUrl(fileToUpload: File, dir: string) : Observable<any> {
     if(fileToUpload.name != null){
       let filePath: string;
-      if(dir != null) {
+      if(dir != (null || undefined)) {
         filePath = dir + '/' + fileToUpload.name; 
       }
       else {

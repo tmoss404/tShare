@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { lastValueFrom } from 'rxjs';
 import { FileService } from 'src/app/services/file.service';
 
 @Component({
@@ -6,38 +7,31 @@ import { FileService } from 'src/app/services/file.service';
   templateUrl: './my-files.component.html',
   styleUrls: ['./my-files.component.css']
 })
-export class MyFilesComponent implements OnInit, OnDestroy {
+export class MyFilesComponent implements OnInit {
 
   files: Array<any>;
   fileToUpload: File;
-  filesSub: any;
   currentDir: string = null;
-  testDirName: string = "new folder";
+  testDirName: string = "newer folder";
 
   constructor(
     private fileService: FileService
   ) { }
 
   ngOnInit(): void {
-    this.getFiles();
+    this.getFiles(this.currentDir);
   }
 
-  ngOnDestroy(): void {
-    if(this.filesSub)
-      this.filesSub.unsubscribe();
-  }
+  async getFiles(dir: string) {
+    this.files = undefined;
 
-  getFiles() {
-    this.filesSub = this.fileService.getFiles(this.currentDir).subscribe({
-      next: (success) => {
-        this.files = success.data.Contents;
-        console.log(this.files);
-        console.log('Current directory: ' + this.currentDir);
-      },
-      error: (err) => {
-        console.log(err.error);
-      }
+    const files$ = this.fileService.getFiles(dir);
+    await lastValueFrom(files$).then((res) => {
+      this.files = res.data.Contents;
+    }).catch((err) => {
+      console.log(err);
     });
+    console.log('Current directory: ' + this.currentDir);
   }
 
   uploadFile(files: FileList) {
@@ -50,7 +44,7 @@ export class MyFilesComponent implements OnInit, OnDestroy {
           next: (success) => {
             this.fileService.uploadFile(success.signedUrlData, this.fileToUpload).subscribe({
               next: (success) => {
-                this.getFiles();
+                this.getFiles(this.currentDir);
               },
               error: (err) => {
                 console.log(err.error);
@@ -66,10 +60,11 @@ export class MyFilesComponent implements OnInit, OnDestroy {
   }
 
   createFolder() {
-    let newDir = this.currentDir != null ? this.currentDir + '/' + this.testDirName : this.testDirName;
+    let newDir = this.currentDir != (null || undefined) ? this.currentDir + '/' + this.testDirName : this.testDirName;
+    console.log(newDir);
     this.fileService.createDir(newDir).subscribe({
       next: (success) => {
-        this.getFiles();
+        this.getFiles(this.currentDir);
       },
       error: (err) => {
         console.log(err.error);
@@ -78,14 +73,11 @@ export class MyFilesComponent implements OnInit, OnDestroy {
   }
 
   changeCurrentDir(dirName: string) {
-    if(this.currentDir == null) {
-      this.currentDir = dirName;
-    }
-    else {
-      this.currentDir = this.currentDir + '/' + dirName; 
-    }
+    let newDir = this.currentDir == (null || undefined) ? dirName : this.currentDir + '/' + dirName;
 
-    this.getFiles();
+    this.getFiles(newDir).then(() => {
+      this.currentDir = newDir;
+    });
   }
 
 }
