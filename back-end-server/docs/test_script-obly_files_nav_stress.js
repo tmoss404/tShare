@@ -45,20 +45,6 @@ xhttp.send(JSON.stringify({
 while (theLoginToken == null) {}
 
 
-// Creating an empty directory:
-xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
-        console.log(this.response);
-    }
-};
-xhttp.open("POST", "http://localhost/file/make-directory", false);
-xhttp.setRequestHeader("Content-Type", "application/json");
-xhttp.send(JSON.stringify({
-    loginToken: theLoginToken,
-    dirPath: "your new\\directory/path"
-}));
-
 // Uploading a file:
 var signedUrl = null;
 xhttp = new XMLHttpRequest();
@@ -73,7 +59,7 @@ xhttp.open("POST", "http://localhost/file/upload", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
 loginToken: theLoginToken,
-filePath: "your new\\directory/path/file.txt",
+filePath: "test0",
 fileType: "text/plain"
 }));
 
@@ -90,6 +76,20 @@ xhttp.setRequestHeader("Content-Type", "text/plain");  // This header MUST match
 xhttp.setRequestHeader("x-amz-acl", "public-read");  // You MUST have this header set, otherwise AWS will give you error 403.
 xhttp.send("This is the contents of my file!");
 
+// Creating an empty directory:
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/make-directory", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    dirPath: "test0"
+}));
+
 // Listing files (no directory path):
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
@@ -102,84 +102,6 @@ xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
     maxFiles: 1000,
-    showNestedFiles: true
-}));
-
-// Moving a single file:
-xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
-        console.log(this.response);
-    }
-};
-xhttp.open("POST", "http://localhost/file/move", false);
-xhttp.setRequestHeader("Content-Type", "application/json");
-xhttp.send(JSON.stringify({
-    loginToken: theLoginToken,
-    srcPath: "your new\\directory/path/file.txt",
-    destPath: "your even new\\directory/path/file.txt",
-    isDirectory: false
-}));
-
-
-// Listing files again (no directory path):
-xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
-        console.log(this.response);
-    }
-};
-xhttp.open("POST", "http://localhost/file/list", false);
-xhttp.setRequestHeader("Content-Type", "application/json");
-xhttp.send(JSON.stringify({
-    loginToken: theLoginToken,
-    maxFiles: 1000,
-    showNestedFiles: true
-}));
-
-// Moving a directory:
-xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
-        console.log(this.response);
-    }
-};
-xhttp.open("POST", "http://localhost/file/move", false);
-xhttp.setRequestHeader("Content-Type", "application/json");
-xhttp.send(JSON.stringify({
-    loginToken: theLoginToken,
-    srcPath: "your even new\\directory/path",
-    destPath: "your even newer 2\\directory/path",
-    isDirectory: true
-}));
-
-// Attempting to use the same srcPath and destPath:
-xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
-        console.log(this.response);
-    }
-};
-xhttp.open("POST", "http://localhost/file/move", false);
-xhttp.setRequestHeader("Content-Type", "application/json");
-xhttp.send(JSON.stringify({
-    loginToken: theLoginToken,
-    srcPath: "your even newer 2/directory/path",
-    destPath: "your even newer 2\\directory/path",
-    isDirectory: true
-}));
-
-// Listing files again (no directory path):
-xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
-        console.log(this.response);
-    }
-};
-xhttp.open("POST", "http://localhost/file/list", false);
-xhttp.setRequestHeader("Content-Type", "application/json");
-xhttp.send(JSON.stringify({
-    loginToken: theLoginToken,
-    maxFiles: 1000,
-    showNestedFiles: true
+    showNestedFiles: false,
+    dirPath: null
 }));

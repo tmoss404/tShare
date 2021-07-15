@@ -306,15 +306,24 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
             if (err) {
                 reject(commonErrors.createFailedToQueryS3Status500());
             } else {
-                data_ = fileUtil.processS3Data(data_, accountIdPrefix, {
-                    email: decodedToken.email,
-                    accountId: decodedToken.accountId
-                }, listFilesData.showNestedFiles, pathPrefix, listFilesData.dirPath);
-                resolve({
-                    message: isRecycleBin ? "Successfully retrieved the user's deleted files." : "Successfully retrieved the user's files.",
-                    httpStatus: 200,
-                    success: true,
-                    data: data_
+                dbConnectionPool.getConnection((err, connection) => {
+                    if (err) {
+                        reject(commonErrors.failedToConnectDbStatus500);
+                        return;
+                    }
+                    // reject() is straight up unused in fileUtil#processS3Data. So, no need to handle the catch.
+                    fileUtil.processS3Data(data_, accountIdPrefix, {
+                        email: decodedToken.email,
+                        accountId: decodedToken.accountId
+                    }, listFilesData.showNestedFiles, pathPrefix, connection).then((s3Data) => {
+                        resolve({
+                            message: isRecycleBin ? "Successfully retrieved the user's deleted files." : "Successfully retrieved the user's files.",
+                            httpStatus: 200,
+                            success: true,
+                            data: s3Data,
+                            connectionToDrop: connection
+                        });
+                    });
                 });
             }
         });
@@ -333,7 +342,7 @@ module.exports.cancelUpload = function(cancelUploadData) {
                 reject(commonErrors.failedToConnectDbStatus500);
                 return;
             }
-            fileUtil.deleteEmptyFileRecords(cancelUploadData.filePath, connection, s3).then((results) => {
+            fileUtil.deleteEmptyFileRecords(cancelUploadData.filePath, decodedToken.accountId, connection, s3).then((results) => {
                 var pathDirSep = cancelUploadData.filePath.lastIndexOf("/");
                 var pathPrefix = pathDirSep == -1 ? cancelUploadData.filePath : cancelUploadData.filePath.substring(0, pathDirSep);
                 var s3Params = {
@@ -423,43 +432,27 @@ module.exports.getSignedUrl = function(signUrlData) {
                         });
                         return;
                     }
-                    s3Params = {
-                        Bucket: appConstants.awsBucketName,
-                        Key: !signUrlData.filePath.includes("/") ? duplicateKeyId :
-                            decodedToken.accountId + "/" + signUrlData.filePath.substring(0, signUrlData.filePath.lastIndexOf("/")) + "/" + appConstants.dirPlaceholderFile
+                    var errMsg = {
+                        message: "An error has occurred while creating the new file record.",
+                        httpStatus: 500,
+                        success: false,
+                        connectionToDrop: connection
                     };
-                    s3.deleteObject(s3Params, (s3Err2, s3Data2) => {
-                        if (s3Err2) {
-                            reject({
-                                message: "An error has occurred while trying to delete the placeholder file.",
-                                httpStatus: 500,
-                                success: false,
+                    fileUtil.updateFileRecords(duplicateKeyId, decodedToken.accountId, false, duplicateKeyId, connection, s3).then((successStatus) => {
+                        if (successStatus) {
+                            resolve({
+                                message: "Successfully retrieved a signed S3 URL.",
+                                httpStatus: 200,
+                                success: true,
+                                signedUrl: "https://" + appConstants.awsBucketName + ".s3.amazonaws.com/" + decodedToken.accountId + "/" + encodeURIComponent(signUrlData.filePath),
+                                signedUrlData: data,
                                 connectionToDrop: connection
                             });
                         } else {
-                            var errMsg = {
-                                message: "An error has occurred while creating the new file record.",
-                                httpStatus: 500,
-                                success: false,
-                                connectionToDrop: connection
-                            };
-                            fileUtil.updateFileRecords(duplicateKeyId, decodedToken.accountId, false, duplicateKeyId, connection, s3).then((successStatus) => {
-                                if (successStatus) {
-                                    resolve({
-                                        message: "Successfully retrieved a signed S3 URL.",
-                                        httpStatus: 200,
-                                        success: true,
-                                        signedUrl: "https://" + appConstants.awsBucketName + ".s3.amazonaws.com/" + decodedToken.accountId + "/" + encodeURIComponent(signUrlData.filePath),
-                                        signedUrlData: data,
-                                        connectionToDrop: connection
-                                    });
-                                } else {
-                                    reject(errMsg);
-                                }
-                            }).catch((successStatus) => {
-                                reject(errMsg);
-                            });
+                            reject(errMsg);
                         }
+                    }).catch((successStatus) => {
+                        reject(errMsg);
                     });
                 });
             }).catch((err) => {

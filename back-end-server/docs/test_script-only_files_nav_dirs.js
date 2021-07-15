@@ -73,51 +73,6 @@ xhttp.send(JSON.stringify({
     dirPath: "test0/test with spaces"
 }));
 
-// Creating an empty directory:
-xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
-        console.log(this.response);
-    }
-};
-xhttp.open("POST", "http://localhost/file/make-directory", false);
-xhttp.setRequestHeader("Content-Type", "application/json");
-xhttp.send(JSON.stringify({
-    loginToken: theLoginToken,
-    dirPath: "test0/test with spaces/test1"
-}));
-
-// Uploading a file:
-var signedUrl = null;
-xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
-        console.log(this.response);
-        signedUrl = JSON.parse(this.responseText).signedUrlData;
-        console.log(signedUrl);
-    }
-};
-xhttp.open("POST", "http://localhost/file/upload", false);
-xhttp.setRequestHeader("Content-Type", "application/json");
-xhttp.send(JSON.stringify({
-loginToken: theLoginToken,
-filePath: "test0/test with spaces/file.txt",
-fileType: "text/plain"
-}));
-
-while (signedUrl == null) {}
-
-xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
-        console.log(this.response);
-    }
-};
-xhttp.open("PUT", signedUrl, false);
-xhttp.setRequestHeader("Content-Type", "text/plain");  // This header MUST match up with the fileType you provided in the sign URL request.
-xhttp.setRequestHeader("x-amz-acl", "public-read");  // You MUST have this header set, otherwise AWS will give you error 403.
-xhttp.send("This is the contents of my file!");
-
 // Listing files (no directory path):
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
@@ -146,21 +101,5 @@ xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
     maxFiles: 1000,
-    showNestedFiles: false,
-    dirPath: "test0/test with spaces"
-}));
-
-// Listing files (no directory path):
-xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
-        console.log(this.response);
-    }
-};
-xhttp.open("POST", "http://localhost/file/list", false);
-xhttp.setRequestHeader("Content-Type", "application/json");
-xhttp.send(JSON.stringify({
-    loginToken: theLoginToken,
-    maxFiles: 1000,
-    showNestedFiles: true
+    showNestedFiles: false
 }));
