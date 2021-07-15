@@ -342,7 +342,7 @@ module.exports.cancelUpload = function(cancelUploadData) {
                 reject(commonErrors.failedToConnectDbStatus500);
                 return;
             }
-            fileUtil.deleteEmptyFileRecords(cancelUploadData.filePath, connection, s3).then((results) => {
+            fileUtil.deleteEmptyFileRecords(cancelUploadData.filePath, decodedToken.accountId, connection, s3).then((results) => {
                 var pathDirSep = cancelUploadData.filePath.lastIndexOf("/");
                 var pathPrefix = pathDirSep == -1 ? cancelUploadData.filePath : cancelUploadData.filePath.substring(0, pathDirSep);
                 var s3Params = {

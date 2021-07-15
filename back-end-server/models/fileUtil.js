@@ -9,11 +9,11 @@ function handleNoDbRecordForFile(s3File) {
     console.log("Could not find a database file record for \"" + JSON.stringify(s3File) + "\". Attempting to guess...");
     s3File.isDirectory = s3File.Key.endsWith(metadataSuffix);
 }
-function addOwnerAndStripRoot(s3File, pathPrefix, owner) {
+function addOwnerAndStripRoot(s3File, pathPrefix, owner, showNestedFiles) {
     if (s3File.Key.startsWith(pathPrefix)) {
         s3File.Key = s3File.Key.substring(pathPrefix.length);
     }
-    if (stringUtil.countCharInStr(s3File.Key.substring(pathPrefix.length), '/') >= 1) {
+    if (!showNestedFiles && stringUtil.countCharInStr(s3File.Key.substring(pathPrefix.length), '/') >= 1) {
         s3File.Key = s3File.Key.substring(s3File.Key.lastIndexOf("/") + 1);
     }
     s3File.owner = owner;
@@ -38,7 +38,7 @@ function updateFileRecord(filePath, fileOwnerId, isDirectory, connection) {
         filePath += "/" + appConstants.dirPlaceholderFile;
     }
     return new Promise((resolve, reject) => {
-        database.selectFromTable("File", "path='" + filePath + "'", connection).then((results) => {
+        database.selectFromTable("File", "path='" + filePath + "' AND owner_id=" + fileOwnerId, connection).then((results) => {
             if (results.length == 0) {
                 insertFileRecord(filePath, fileOwnerId, isDirectory, connection).then((results) => {
                     resolve(results);
@@ -57,7 +57,7 @@ function updateFileRecord(filePath, fileOwnerId, isDirectory, connection) {
         });
     });
 }
-module.exports.deleteEmptyFileRecords = function (filePath, connection, s3) {
+module.exports.deleteEmptyFileRecords = function(filePath, fileOwnerId, connection, s3) {
     return new Promise((resolve, reject) => {
         var splitPath = filePath.split("/");
         var promises = [];
@@ -82,7 +82,7 @@ module.exports.deleteEmptyFileRecords = function (filePath, connection, s3) {
                     if (err) {
                         reject(err);
                     } else if (data.KeyCount == 0) {
-                        database.deleteFromTable("File", "path='" + savedSubPath + "'", connection).then((results) => {
+                        database.deleteFromTable("File", "path='" + savedSubPath + "' AND owner_id=" + fileOwnerId, connection).then((results) => {
                             resolve(results);
                         }).catch((results) => {
                             reject(results);
@@ -127,7 +127,7 @@ module.exports.updateFileRecords = function(filePath, fileOwnerId, isDirectory, 
             promises.push(updateFileRecord(subPath, fileOwnerId, subPathIsDirectory, connection));
         }
         if (oldPath != subPath) {
-            promises.push(module.exports.deleteEmptyFileRecords(oldPath, connection, s3));
+            promises.push(module.exports.deleteEmptyFileRecords(oldPath, fileOwnerId, connection, s3));
         }
         Promise.all(promises).then((results) => {
             resolve(results);
@@ -151,10 +151,9 @@ module.exports.processS3Data = function(data, accountIdPrefix, owner, showNested
                     continue;
                 }
             }
-            // TODO Check both owner_id and the path for the file records!!!
             promises.push(new Promise((resolve, reject) => {
                 var content = data.Contents[i];
-                database.selectFromTable("File", "path='" + content.Key + "'", connection).then((results) => {
+                database.selectFromTable("File", "path='" + content.Key + "' AND owner_id=" + owner.accountId, connection).then((results) => {
                     if (results.length == 0) {
                         handleNoDbRecordForFile(content);
                     } else if (results[0].is_directory != 0) {
@@ -166,11 +165,11 @@ module.exports.processS3Data = function(data, accountIdPrefix, owner, showNested
                     } else {
                         content.isDirectory = false;
                     }
-                    addOwnerAndStripRoot(content, showNestedFiles ? accountIdPrefix : pathPrefix, owner);
+                    addOwnerAndStripRoot(content, showNestedFiles ? accountIdPrefix : pathPrefix, owner, showNestedFiles);
                     resolve(data);
                 }).catch((results) => {
                     handleNoDbRecordForFile(content);
-                    addOwnerAndStripRoot(content, showNestedFiles ? accountIdPrefix : pathPrefix, owner);
+                    addOwnerAndStripRoot(content, showNestedFiles ? accountIdPrefix : pathPrefix, owner, showNestedFiles);
                     resolve(data);
                 });
             }));
