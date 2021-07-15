@@ -255,31 +255,20 @@ module.exports.makeDir = function(makeDirData) {
                         reject(failMsg);
                         return;
                     }
-                    s3Params = {
-                        Bucket: appConstants.awsBucketName,
-                        Key: makeDirData.dirPath.includes("/") ? decodedToken.accountId + "/" + makeDirData.dirPath.substring(0, makeDirData.dirPath.lastIndexOf("/")) + "/" + appConstants.dirPlaceholderFile
-                            : decodedToken.accountId + "/" + appConstants.dirPlaceholderFile
-                    };
-                    s3.deleteObject(s3Params, (s3Err2, s3Data2) => {
-                        if (s3Err2) {
-                            reject(commonErrors.createFailedToDelPlaceholderStatus500(connection));
-                        } else {
-                            var s3Directory = decodedToken.accountId + "/" + makeDirData.dirPath;
-                            fileUtil.updateFileRecords(s3Directory, decodedToken.accountId, true, s3Directory, connection, s3).then((successStatus) => {
-                                if (successStatus) {
-                                    resolve({
-                                        message: "Successfully created the empty directory.",
-                                        httpStatus: 200,
-                                        success: true,
-                                        connectionToDrop: connection
-                                    });
-                                } else {
-                                    reject(failMsg);
-                                }
-                            }).catch((successStatus) => {
-                                reject(failMsg);
+                    var s3Directory = decodedToken.accountId + "/" + makeDirData.dirPath;
+                    fileUtil.updateFileRecords(s3Directory, decodedToken.accountId, true, s3Directory, connection, s3).then((successStatus) => {
+                        if (successStatus) {
+                            resolve({
+                                message: "Successfully created the empty directory.",
+                                httpStatus: 200,
+                                success: true,
+                                connectionToDrop: connection
                             });
+                        } else {
+                            reject(failMsg);
                         }
+                    }).catch((successStatus) => {
+                        reject(failMsg);
                     });
                 });
             });
@@ -443,38 +432,27 @@ module.exports.getSignedUrl = function(signUrlData) {
                         });
                         return;
                     }
-                    s3Params = {
-                        Bucket: appConstants.awsBucketName,
-                        Key: !signUrlData.filePath.includes("/") ? duplicateKeyId :
-                            decodedToken.accountId + "/" + signUrlData.filePath.substring(0, signUrlData.filePath.lastIndexOf("/")) + "/" + appConstants.dirPlaceholderFile
+                    var errMsg = {
+                        message: "An error has occurred while creating the new file record.",
+                        httpStatus: 500,
+                        success: false,
+                        connectionToDrop: connection
                     };
-                    s3.deleteObject(s3Params, (s3Err2, s3Data2) => {
-                        if (s3Err2) {
-                            reject(commonErrors.createFailedToDelPlaceholderStatus500(connection));
-                        } else {
-                            var errMsg = {
-                                message: "An error has occurred while creating the new file record.",
-                                httpStatus: 500,
-                                success: false,
+                    fileUtil.updateFileRecords(duplicateKeyId, decodedToken.accountId, false, duplicateKeyId, connection, s3).then((successStatus) => {
+                        if (successStatus) {
+                            resolve({
+                                message: "Successfully retrieved a signed S3 URL.",
+                                httpStatus: 200,
+                                success: true,
+                                signedUrl: "https://" + appConstants.awsBucketName + ".s3.amazonaws.com/" + decodedToken.accountId + "/" + encodeURIComponent(signUrlData.filePath),
+                                signedUrlData: data,
                                 connectionToDrop: connection
-                            };
-                            fileUtil.updateFileRecords(duplicateKeyId, decodedToken.accountId, false, duplicateKeyId, connection, s3).then((successStatus) => {
-                                if (successStatus) {
-                                    resolve({
-                                        message: "Successfully retrieved a signed S3 URL.",
-                                        httpStatus: 200,
-                                        success: true,
-                                        signedUrl: "https://" + appConstants.awsBucketName + ".s3.amazonaws.com/" + decodedToken.accountId + "/" + encodeURIComponent(signUrlData.filePath),
-                                        signedUrlData: data,
-                                        connectionToDrop: connection
-                                    });
-                                } else {
-                                    reject(errMsg);
-                                }
-                            }).catch((successStatus) => {
-                                reject(errMsg);
                             });
+                        } else {
+                            reject(errMsg);
                         }
+                    }).catch((successStatus) => {
+                        reject(errMsg);
                     });
                 });
             }).catch((err) => {

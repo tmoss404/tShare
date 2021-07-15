@@ -13,7 +13,16 @@ function addOwnerAndStripRoot(s3File, pathPrefix, owner) {
     if (s3File.Key.startsWith(pathPrefix)) {
         s3File.Key = s3File.Key.substring(pathPrefix.length);
     }
+    if (stringUtil.countCharInStr(s3File.Key.substring(pathPrefix.length), '/') >= 1) {
+        s3File.Key = s3File.Key.substring(s3File.Key.lastIndexOf("/") + 1);
+    }
     s3File.owner = owner;
+}
+function removeFromS3DataAt(s3Data, index) {
+    s3Data.Contents.splice(index, 1);
+    if (s3Data.KeyCount > 0) {
+        --s3Data.KeyCount;
+    }
 }
 module.exports.formatFilePath = function(filePath) {
     if (objectUtil.isNullOrUndefined(filePath)) {
@@ -25,6 +34,9 @@ function insertFileRecord(filePath, fileOwnerId, isDirectory, connection) {
     return database.insertIntoTable("File", "path, owner_id, is_directory", "'" + filePath + "', " + fileOwnerId + ", " + isDirectory, connection);
 };
 function updateFileRecord(filePath, fileOwnerId, isDirectory, connection) {
+    if (!filePath.endsWith("/" + appConstants.dirPlaceholderFile) && isDirectory) {
+        filePath += "/" + appConstants.dirPlaceholderFile;
+    }
     return new Promise((resolve, reject) => {
         database.selectFromTable("File", "path='" + filePath + "'", connection).then((results) => {
             if (results.length == 0) {
@@ -132,25 +144,20 @@ module.exports.processS3Data = function(data, accountIdPrefix, owner, showNested
                 continue;  // This is a file in a different root directory, so we skip it.
             }
             var subDir = data.Contents[i].Key.substring(pathPrefix.length);
-            var dirSepCount = stringUtil.countCharInStr(subDir, '/');
             if (!showNestedFiles) {
-                if (dirSepCount >= 2) {
-                    data.Contents.splice(i, 1);
+                if (stringUtil.countCharInStr(subDir, '/') >= (accountIdPrefix == pathPrefix && !data.Contents[i].Key.endsWith("/" + appConstants.dirPlaceholderFile) ? 1 : 2) || data.Contents[i].Key == pathPrefix + appConstants.dirPlaceholderFile) {
+                    removeFromS3DataAt(data, i);
                     --i;
-                    if (data.KeyCount > 0) {
-                        --data.KeyCount;
-                    }
                     continue;
-                } else if (dirSepCount >= 1) {
-                    data.Contents[i].Key = data.Contents[i].Key.substring(0, data.Contents[i].Key.lastIndexOf("/"));
                 }
             }
+            // TODO Check both owner_id and the path for the file records!!!
             promises.push(new Promise((resolve, reject) => {
                 var content = data.Contents[i];
-                database.selectFromTable("File", "path='" + (content.Key.endsWith(metadataSuffix) ? content.Key.substring(0, content.Key.length - metadataSuffix.length) : content.Key) + "'", connection).then((results) => {
+                database.selectFromTable("File", "path='" + content.Key + "'", connection).then((results) => {
                     if (results.length == 0) {
                         handleNoDbRecordForFile(content);
-                    } else if (results[0].is_directory) {
+                    } else if (results[0].is_directory != 0) {
                         if (content.Key.endsWith(metadataSuffix)) {
                             content.Key = content.Key.substring(0, content.Key.length - metadataSuffix.length);
                         }
@@ -169,6 +176,18 @@ module.exports.processS3Data = function(data, accountIdPrefix, owner, showNested
             }));
         }
         Promise.all(promises).then((s3Data) => {
+            for (var i = 0; i < data.Contents.length; i++) {
+                for (var j = 0; j < data.Contents.length; j++) {
+                    if (j == i) {
+                        continue;
+                    }
+                    // Removes duplicate entries.
+                    if (data.Contents[i].isDirectory == data.Contents[j].isDirectory && data.Contents[i].Size == data.Contents[j].Size && data.Contents[i].Key == data.Contents[j].Key) {
+                        removeFromS3DataAt(data, j);
+                        --j;
+                    }
+                }
+            }
             if (data.Prefix.includes(accountIdPrefix)) {
                 data.Prefix = "";
             }
