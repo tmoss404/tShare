@@ -1,6 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { lastValueFrom } from 'rxjs';
 import { FileService } from 'src/app/services/file.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { folderName } from '../../validators/folderName.validator';
 
 @Component({
   selector: 'app-my-files',
@@ -13,9 +16,12 @@ export class MyFilesComponent implements OnInit {
   fileToUpload: File;
   currentDir: string = null;
   testDirName: string = "newer folder";
+  newFolderForm: FormGroup;
 
   constructor(
-    private fileService: FileService
+    private fileService: FileService,
+    private modalService: NgbModal,
+    private formBuilder: FormBuilder
   ) { }
 
   ngOnInit(): void {
@@ -32,6 +38,7 @@ export class MyFilesComponent implements OnInit {
       console.log(err);
     });
     console.log('Current directory: ' + this.currentDir);
+    console.log(this.files);
   }
 
   uploadFile(files: FileList) {
@@ -59,17 +66,28 @@ export class MyFilesComponent implements OnInit {
     }
   }
 
-  createFolder() {
-    let newDir = this.currentDir != (null || undefined) ? this.currentDir + '/' + this.testDirName : this.testDirName;
-    console.log(newDir);
+  openNewFolderModal(content) {
+    this.newFolderForm = this.formBuilder.group({
+      folderName: ['', [Validators.required, folderName()]]
+    });
+
+    this.modalService.open(content, {centered: true, windowClass: 'new-folder-modal', size: 'sm'}); 
+  }
+
+  createFolder(modal: any) {
+    let folderName = this.newFolderForm.value.folderName;
+    let newDir = this.currentDir != (null || undefined) ? this.currentDir + '/' + folderName : folderName;
+
     this.fileService.createDir(newDir).subscribe({
       next: (success) => {
+        modal.close();
         this.getFiles(this.currentDir);
       },
       error: (err) => {
         console.log(err.error);
       }
     });
+    
   }
 
   changeCurrentDir(dirName: string) {
