@@ -1,11 +1,3 @@
-.form-control {
-    text-align: center;
-    border-radius: 1.5rem;
-    margin-bottom: .5rem;
-    max-width: 370px;
-    min-width: none;
-}
-
 .center-form {
     margin: 6rem auto 0 auto;
     padding: 100px;
