@@ -6,7 +6,7 @@
     min-width: none;
 }
 
-.center {
+.center-form {
     margin: 6rem auto 0 auto;
     padding: 100px;
     width: 600px;
@@ -148,3 +148,10 @@ img {
     from {transform: rotate(0deg);}
     to {transform: rotate(359deg);}
  }
+
+ .center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }

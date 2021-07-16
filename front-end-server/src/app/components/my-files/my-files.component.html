@@ -1,7 +1,7 @@
 <div class="container">
     <div class="option-bar">
         <div class="option-container">
-            <button class="file-option-btn" (click)="createFolder()">New Folder</button>
+            <button class="file-option-btn" (click)="createFolder(content)">New Folder</button>
 
             <button class="file-option-btn" (click)="uploader.click()">Upload File</button>
                 <input hidden type="file" #uploader (change)="uploadFile($event.target.files)" onclick="this.value = null" />
@@ -50,6 +50,8 @@
         </ng-template>
     </div>
 </div>
+
+<!-- Context menu template -->
 <context-menu>
     <ng-template contextMenuItem>
         Download
@@ -67,3 +69,23 @@
         Rename
     </ng-template>
 </context-menu>
+
+<!-- New Folder modal template -->
+<ng-template #content let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title" id="modal-basic-title">Profile update</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form>
+        <div class="form-group">
+          
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-dark" (click)="modal.close('Save click')">Save</button>
+    </div>
+  </ng-template>
