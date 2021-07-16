@@ -12,5 +12,34 @@ function statusReturnsResponse(status) {
 
 
 /utility/log:
+This route is used for sending an email to certain recipients.  It takes two parameters inside an Object and returns an Object containing a message, success and the httpStatus property.
+If the recipient emails, message, or the request body is malformed, the request will be rejected and nothing will be returned:
+- recipients: String
+- receivedMessage: String
 
-TODO Mikhail, please add your documentation for /utility/log here.
+Returns a message, httpStatus and a success/error wrapped in an object:
+// Success
+{"message": receivedMessage,
+  "httpStatus": 200,
+  "success": true "}
+
+// Error
+{"message": "An error has occurred while sending the email.",
+  "httpStatus": 500,
+  "success": false "}
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "tshare-back-end.herokuapp.com/utility/log", true);
+xhttp.setRequestHeader("Content-Type", "application/json");  // Please note that the Content-Type must be application/json to be received properly. This goes for ALL routes.
+xhttp.send(JSON.stringify({	
+    message: "This is the error that occurred in my application.", 
+	recipients: ["eric.d.mcdonald@gmail.com", "mfrolov@gmail.com", "tmoss@gmail.com"]
+})); 
+
