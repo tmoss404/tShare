@@ -31,7 +31,7 @@ const routes: Routes = [
   {path: "product", component: ProductComponent},
   {path: "contact-us", component: ContactUsComponent},
   {path: "login", component: LoginComponent, canActivate: [UserLoggedInGuardService]},
-  {path: "file-dashboard", component: FileDashboardComponent,
+  {path: "file-hub", component: FileDashboardComponent,
     children: [
       {path: "my-files", component: MyFilesComponent},
       {path: "shared-content", component: SharedContentComponent},

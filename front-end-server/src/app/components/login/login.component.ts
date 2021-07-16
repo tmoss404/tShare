@@ -50,7 +50,7 @@ export class LoginComponent implements OnInit {
           }
         });
 
-        this.router.navigate(['/file-dashboard/my-files']);
+        this.router.navigate(['/file-hub/my-files']);
       },
       error: (err) => {
         this.response = err.error;
