@@ -1,1 +1,25 @@
 @import "~bootstrap-icons/font/bootstrap-icons.css";
+
+.new-folder-modal .modal-content {
+    background-color: #202020;
+    color: white;
+}
+
+.new-folder-modal .close {
+    color: white;
+}
+
+.new-folder-modal .btn-dark {
+    border-radius: 6px;
+    background-color: #323232;
+    border: none;
+}
+
+.new-folder-modal .btn-dark:hover {
+    background-color: #1ab9d1;
+}
+
+.new-folder-modal .modal-footer,
+.new-folder-modal .modal-header {
+    border: none;
+}
