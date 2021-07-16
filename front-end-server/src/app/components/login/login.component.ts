@@ -3,6 +3,7 @@ import { AuthenticationService } from '../../services/authentication.service';
 import { Router } from '@angular/router';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { AccountService } from 'src/app/services/account.service';
+import { User } from 'src/app/User';
 
 @Component({
   selector: 'app-login',
@@ -12,7 +13,7 @@ import { AccountService } from 'src/app/services/account.service';
 export class LoginComponent implements OnInit {
 
   loginForm : FormGroup;
-
+  user: User = new User;
   response : {
     message: string,
     success: boolean
@@ -33,9 +34,9 @@ export class LoginComponent implements OnInit {
   }
 
   login() : void {
-    const user = this.loginForm.value;
+    this.user = this.loginForm.value;
     
-    this.auth.login(user).subscribe({
+    this.auth.login(this.user).subscribe({
       next: (success) => {
         this.auth.setToken(success.loginToken);
 
