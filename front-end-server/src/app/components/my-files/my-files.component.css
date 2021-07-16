@@ -60,21 +60,20 @@
 
 .file-container {
     border-radius: 6px;
-    margin: 1.2rem;
-    margin-left: 4rem;
+    margin-left: 4%;
     overflow-y: auto;
-    height: 84%;
-    width: 92%;
+    height: 75%;
+    width: 94%;
 }
 
 @media (max-height: 768px) {
     .file-container {
-        height: 80%;
+        height: 68%;
     }
 }
 @media (max-height: 615px) {
     .file-container {
-        height: 76%;
+        height: 66%;
     }
 }
 
@@ -88,15 +87,38 @@
 }
 
 .option-container {
-    margin-left: 3rem;
+    margin-left: 3%;
+}
+
+.go-back-bar {
+    margin-left: 4%;
+    margin-top: 1rem;
+    color: white;
+}
+
+.go-back {
+    background-color: #323232;
+    font-size: 16px;
+    border-radius: 6px;
+    text-align: center;
+    display: inline-block;
+    padding: 6px 12px;
+    width: auto;
+}
+
+.go-back:hover {
+    background-color: #1ab9d1;
+    cursor: pointer;
 }
 
 .file-header {
-    width: 1420px;
+    width: 1442px;
     color: white;
     border-radius: 10px;
-    padding: 6px;
+    padding: 4px 16px;
     overflow: hidden;
+    margin-bottom: .8rem;
+    margin-top: .8rem;
 }
 
 .file-info {

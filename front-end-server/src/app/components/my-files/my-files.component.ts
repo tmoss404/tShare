@@ -37,8 +37,6 @@ export class MyFilesComponent implements OnInit {
     }).catch((err) => {
       console.log(err);
     });
-    console.log('Current directory: ' + this.currentDir);
-    console.log(this.files);
   }
 
   uploadFile(files: FileList) {
@@ -98,4 +96,19 @@ export class MyFilesComponent implements OnInit {
     });
   }
 
+  goBack() {
+    let newDir: string;
+
+    if(this.currentDir != (null || undefined)){
+      if(!this.currentDir.includes('/')) {
+        newDir = null;
+      }
+      else {
+        newDir = this.currentDir.substring(0, this.currentDir.lastIndexOf('/'));
+      }
+      this.getFiles(newDir).then(() => {
+        this.currentDir = newDir;
+      });
+    }
+  }
 }
