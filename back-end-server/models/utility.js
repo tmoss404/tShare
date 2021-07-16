@@ -15,21 +15,37 @@ module.exports.logError = function(logErrData) {
         - Lastly, please note that error/success messages must contain the following properties: message, httpStatus, success. Please see how I'm sending this information in one of the models in the models folder, such as in account.js.
         */
 
-        // Declaring incoming values
-        var recipient = logErrData.recipient;
-        var receivedMessage = logErrData.message;
 
         // Validating the logErrData
-        if (objectUtil.isNullOrUndefined(logErrData) || objectUtil.isNullOrUndefined(receivedMessage) || objectUtil.isNullOrUndefined(recipient) || receivedMessage.length == 0 || recipient.length == 0) {
+        if (objectUtil.isNullOrUndefined(logErrData) || objectUtil.isNullOrUndefined(logErrData.message) || objectUtil.isNullOrUndefined(logErrData.recipient) || logErrData.message.length == 0 || logErrData.recipient.length == 0) {
             reject(commonErrors.genericStatus400);
 
             return;
         }
+
+        // Declaring incoming values
+        var recipients = logErrData.recipient;
+        var receivedMessage = logErrData.message;
+
+
         // Received Error consol.logging
         console.log("Received error: " + receivedMessage);
 
 
-        // Trustify
+        // Emails for trustifi
+
+        var trustifiRecipients = [];
+
+        for (var i = 0; i < recipients.length; i++) {
+
+            trustifiRecipients.push({
+                emails: recipients[i]
+            });
+
+        }
+
+        // BEGIN Trustifi
+
         var trustifiOpts = {
             'method': 'POST',
             'url': 'https://be.trustifi.com/api/i/v1/email',
@@ -40,14 +56,14 @@ module.exports.logError = function(logErrData) {
             },
             body: JSON.stringify({
                 "recipients": [{
-                    "email": recipient
+                    "email": trustifiRecipients.emails
                 }],
                 "lists": [],
                 "contacts": [],
                 "attachments": [],
-                "title": "Error that occurred in the tShare application",
+                "title": "A fatal error has occurred in the front-end server of tShare",
                 "html": "Hi,<br/><br/><br/>" +
-                    " This is an error: " + receivedMessage + ".<br/><br/>" +
+                    "This is a notification that a fatal error has occurred in tShare: " + receivedMessage + ".<br/><br/>" +
                     "Best,<br/><br/><br/>Mikhail Frolov - tShare",
                 "methods": {
                     "postmark": false,
@@ -57,12 +73,13 @@ module.exports.logError = function(logErrData) {
                 }
             })
         };
-        // Trustify
+
+
         request(trustifiOpts, function(error, response) {
             if (error) {
                 reject({
                     message: "An error has occurred while sending the email.",
-                    httpStatus: 400,
+                    httpStatus: 500,
                     success: false
                 });
                 return;
@@ -81,4 +98,5 @@ module.exports.logError = function(logErrData) {
             success: false
         });
     });
+    // END Trustifi
 };
