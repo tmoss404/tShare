@@ -59,7 +59,7 @@
 
 <!-- Context menu template -->
 <context-menu>
-    <ng-template contextMenuItem>
+    <ng-template contextMenuItem let-item (execute)="downloadFile($event.item)">
         Download
     </ng-template>
     <ng-template contextMenuItem>

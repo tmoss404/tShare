@@ -43,7 +43,7 @@ export class MyFilesComponent implements OnInit {
     if(files.item(0).name != null){
       this.fileToUpload = files.item(0);
 
-      let signUrlReq = this.fileService.getSignedUrl(this.fileToUpload, this.currentDir);
+      let signUrlReq = this.fileService.getSignedUrlUpload(this.fileToUpload, this.currentDir);
       if (signUrlReq != null) {
         signUrlReq.subscribe({
           next: (success) => {
@@ -108,6 +108,43 @@ export class MyFilesComponent implements OnInit {
       }
       this.getFiles(newDir).then(() => {
         this.currentDir = newDir;
+      });
+    }
+  }
+
+  downloadFile(file: any) {
+    if(!file.isDirectory){
+      let filePath: string;
+
+      if(this.currentDir != (null || undefined)){
+        filePath = this.currentDir + '/' + file.name;
+      }
+      else {
+        filePath = file.name;
+      }
+
+      this.fileService.getSignedUrlDownload(filePath).subscribe({
+        next: (success) => {
+          this.fileService.downloadFile(success.signedUrl).subscribe({
+            next: (success) => {
+              console.log(success);
+              let blob = new Blob([success], { type: success.type});
+          
+              let downloadLink = document.createElement('a');
+              downloadLink.href = window.URL.createObjectURL(blob);
+              if (file.name)
+                  downloadLink.setAttribute('download', file.name);
+              document.body.appendChild(downloadLink);
+              downloadLink.click();
+            },
+            error: (err) => {
+              console.log(err);
+            }
+          });
+        },
+        error: (err) => {
+          console.log(err.error);
+        }
       });
     }
   }
