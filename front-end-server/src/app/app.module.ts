@@ -1,7 +1,14 @@
+/* Modules */
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
 import { AppRoutingModule } from './app-routing.module';
+import { FormsModule } from '@angular/forms';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { ReactiveFormsModule } from '@angular/forms';
+import { ContextMenuModule } from 'ngx-contextmenu';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+
+/* Components */
 import { AppComponent } from './app.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { HeaderComponent } from './components/header/header.component';
@@ -13,11 +20,7 @@ import { ForgotPasswordComponent } from './components/forgot-password/forgot-pas
 import { ProductComponent } from './components/product/product.component';
 import { CompanyComponent } from './components/company/company.component';
 import { ContactUsComponent } from './components/contact-us/contact-us.component';
-import { FormsModule } from '@angular/forms';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { ReactiveFormsModule } from '@angular/forms';
 import { TermsOfServiceComponent } from './components/terms-of-service/terms-of-service.component';
-import { AuthInterceptorService } from './services/auth-interceptor.service';
 import { MyFilesComponent } from './components/my-files/my-files.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { FileDashboardComponent } from './components/file-dashboard/file-dashboard.component';
@@ -30,7 +33,9 @@ import { ComingSoonComponent } from './components/coming-soon/coming-soon.compon
 import { AccountPreferencesComponent } from './components/account-preferences/account-preferences.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { FileCardComponent } from './components/file-card/file-card.component';
-import { ContextMenuModule } from 'ngx-contextmenu';
+
+/* Services */
+import { AuthInterceptorService } from './services/auth-interceptor.service';
 
 @NgModule({
   declarations: [
@@ -65,6 +70,7 @@ import { ContextMenuModule } from 'ngx-contextmenu';
     FormsModule,
     HttpClientModule,
     ReactiveFormsModule,
+    NgbModule,
     ContextMenuModule.forRoot({
       useBootstrap4: true
     })
