@@ -38,4 +38,6 @@ export class ForgotPasswordComponent implements OnInit {
     });
   }
 
+  get form() { return this.emailForm.controls }
+
 }

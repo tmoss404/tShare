@@ -1,19 +1,25 @@
 <div class="container">
     <div class="option-bar">
         <div class="option-container">
-            <button class="file-option-btn" (click)="createFolder()">New Folder</button>
+            <button class="file-option-btn" (click)="openNewFolderModal(content)"><i class="bi bi-folder-plus"></i>&#160;&#160;New Folder</button>
 
-            <button class="file-option-btn" (click)="uploader.click()">Upload File</button>
+            <button class="file-option-btn" (click)="uploader.click()"><i class="bi bi-upload"></i>&#160;&#160;Upload File</button>
                 <input hidden type="file" #uploader (change)="uploadFile($event.target.files)" onclick="this.value = null" />
 
-            <button class="file-option-btn">Delete Selected</button>
+            <button class="file-option-btn"><i class="bi bi-trash"></i>&#160;&#160;Delete Selected</button>
 
-            <button class="file-option-btn">Grant Access</button>
+            <button class="file-option-btn"><i class="bi bi-person-plus"></i>&#160;&#160;Grant Access</button>
 
-            <button class="file-option-btn" (click)="getFiles()">Refresh</button>
+            <button class="file-option-btn" (click)="getFiles(currentDir)"><i class="bi bi-arrow-repeat"></i>&#160;&#160;Refresh</button>
 
             <input class="file-search" placeholder="What are you looking for?">
         </div>
+    </div>
+    <div *ngIf="currentDir != (null || undefined)" class="go-back-bar">
+        <div class="go-back" (click)="goBack()">
+            <div class="bi bi-arrow-90deg-up"> ../{{currentDir}}</div>
+        </div>
+        
     </div>
     <div class="file-container">
         <div *ngIf="files; else loading">
@@ -50,8 +56,10 @@
         </ng-template>
     </div>
 </div>
+
+<!-- Context menu template -->
 <context-menu>
-    <ng-template contextMenuItem>
+    <ng-template contextMenuItem let-item (execute)="downloadFile($event.item)">
         Download
     </ng-template>
     <ng-template contextMenuItem>
@@ -67,3 +75,34 @@
         Rename
     </ng-template>
 </context-menu>
+
+<!-- New Folder modal template -->
+<ng-template #content let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title" id="modal-basic-title">Create Folder</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <form (ngSubmit)="createFolder(modal)" [formGroup]="newFolderForm">
+        <div class="modal-body">
+            <div class="form-group">
+                <div class="input-group">
+                    <input type="text" class="form-control" formControlName='folderName' placeholder="Enter Folder Name" ngbAutofocus>
+                </div>
+            </div>
+            <div *ngIf="newFolderForm.controls.folderName.invalid && newFolderForm.controls.folderName.dirty">   
+                <div *ngIf="newFolderForm.controls.folderName.errors?.required" class="form-control alert">
+                    You must enter a name.
+                </div>
+                <div *ngIf="newFolderForm.controls.folderName.errors?.invalidChars" class="form-control alert">
+                    Invalid characters.
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
+            <button type="submit" class="btn btn-dark" [disabled]="!newFolderForm.valid">Create</button>
+        </div>
+    </form>
+  </ng-template>

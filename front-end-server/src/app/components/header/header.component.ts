@@ -46,8 +46,8 @@ export class HeaderComponent implements OnInit {
 
   dashboardActive() {
     let relativePath : string = this.location.path();
-    return relativePath === '/file-dashboard/my-files' || relativePath === '/file-dashboard/shared-content' || 
-            relativePath === '/file-dashboard/request-access' || relativePath === '/file-dashboard/requests' ||
-            relativePath === '/file-dashboard/quick-access' || relativePath === '/file-dashboard/deleted-files';
+    return relativePath === '/file-hub/my-files' || relativePath === '/file-hub/shared-content' || 
+            relativePath === '/file-hub/request-access' || relativePath === '/file-hub/requests' ||
+            relativePath === '/file-hub/quick-access' || relativePath === '/file-hub/deleted-files';
   }
 }

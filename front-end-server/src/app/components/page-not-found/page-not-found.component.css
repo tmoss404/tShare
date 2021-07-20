@@ -18,7 +18,7 @@ section.notFound {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0 5%;
+    margin-top: 1.4%;
     height: 82.8vh;
 }
 
@@ -72,9 +72,10 @@ div.text a:hover {
 
 .img {
     height: 80%;
+    width: 70%;
 }
 
 .resize-img {
     height: 50%;
-    width: 62%;
+    width: 55%;
 }

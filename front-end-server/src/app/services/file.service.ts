@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthenticationService } from './authentication.service';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -13,17 +14,17 @@ export class FileService {
     private auth: AuthenticationService
   ) { }
   
-  public getSignedUrl(fileToUpload: File, dir: string) : Observable<any> {
+  public getSignedUrlUpload(fileToUpload: File, dir: string) : Observable<any> {
     if(fileToUpload.name != null){
       let filePath: string;
-      if(dir != null) {
+      if(dir != (null || undefined)) {
         filePath = dir + '/' + fileToUpload.name; 
       }
       else {
         filePath = fileToUpload.name;
       }
 
-      let signUrlData = {
+      const signUrlData = {
         loginToken: this.auth.getToken(),
         filePath: filePath,
         fileType: fileToUpload.type
@@ -46,8 +47,24 @@ export class FileService {
     return this.http.put<any>(signedUrl, fileToUpload, httpOptions);
   }
 
+  public getSignedUrlDownload(filePath: string) :Observable<any> {
+    const signUrlData = {
+      loginToken: this.auth.getToken(),
+      filePath: filePath
+    }
+
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/download`, signUrlData);
+
+  }
+
+  public downloadFile(signedUrl: string) : Observable<any> {
+
+    return this.http.get<any>(signedUrl, {responseType: 'blob' as 'json'});
+
+  }
+
   public getFiles(path: string) : Observable<any> {
-    let getFilesData = { 
+    const getFilesData = { 
       loginToken: this.auth.getToken(),
       dirPath: path,
       showNestedFiles: false 
@@ -57,7 +74,7 @@ export class FileService {
   }
 
   public createDir(path: string) : Observable<any> {
-    let createDirData = {
+    const createDirData = {
       loginToken: this.auth.getToken(),
       dirPath: path
     }
