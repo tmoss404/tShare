@@ -56,7 +56,7 @@ xhttp.open("POST", "http://localhost/file/make-directory", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
-    dirPath: "your new\\directory/path"
+    dirPath: "your new/directory/path"
 }));
 
 // Uploading a file:
@@ -73,7 +73,7 @@ xhttp.open("POST", "http://localhost/file/upload", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
 loginToken: theLoginToken,
-filePath: "your new\\directory/path/file.txt",
+filePath: "your new/directory/path/file.txt",
 fileType: "text/plain"
 }));
 
@@ -116,8 +116,8 @@ xhttp.open("POST", "http://localhost/file/move", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
-    srcPath: "your new\\directory/path/file.txt",
-    destPath: "your even new\\directory/path/file.txt",
+    srcPath: "your new/directory/path/file.txt",
+    destPath: "your even new/directory/path/file.txt",
     isDirectory: false
 }));
 
@@ -148,8 +148,8 @@ xhttp.open("POST", "http://localhost/file/move", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
-    srcPath: "your even new\\directory/path",
-    destPath: "your even newer 2\\directory/path",
+    srcPath: "your even new/directory/path",
+    destPath: "your even newer 2/directory/path",
     isDirectory: true
 }));
 
@@ -165,7 +165,7 @@ xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
     srcPath: "your even newer 2/directory/path",
-    destPath: "your even newer 2\\directory/path",
+    destPath: "your even newer 2/directory/path",
     isDirectory: true
 }));
 
