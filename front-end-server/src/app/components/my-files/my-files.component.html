@@ -62,13 +62,13 @@
     <ng-template contextMenuItem let-item (execute)="downloadFile($event.item)">
         Download
     </ng-template>
-    <ng-template contextMenuItem let-item (execute)="openNewFolderModal">
+    <ng-template contextMenuItem>
         Delete
     </ng-template>
-    <ng-template contextMenuItem>
+    <ng-template contextMenuItem  let-item (execute)="openNewFolderModal(copycontent)">
         Copy
     </ng-template>
-    <ng-template contextMenuItem>
+    <ng-template contextMenuItem let-item (execute)="openNewFolderModal(movecontent)">
         Move
     </ng-template>
     <ng-template contextMenuItem>
@@ -108,7 +108,7 @@
   </ng-template>
 
   <!-- New Folder modal template -->
-<!-- <ng-template #content let-modal>
+<ng-template #copycontent let-modal>
     <div class="modal-header">
       <h4 class="modal-title" id="modal-basic-title">Copy file</h4>
       <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
@@ -122,7 +122,7 @@
         </div>
   </ng-template>
 
-  <ng-template #content let-modal>
+  <ng-template #movecontent let-modal>
     <div class="modal-header">
       <h4 class="modal-title" id="modal-basic-title">Move file</h4>
       <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
@@ -134,4 +134,4 @@
             <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
             <button type="submit" class="btn btn-dark" [disabled]="!newFolderForm.valid">Copy</button>
         </div>
-  </ng-template> -->
+  </ng-template>
