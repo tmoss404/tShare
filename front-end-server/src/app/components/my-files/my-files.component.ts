@@ -72,12 +72,12 @@ export class MyFilesComponent implements OnInit {
     this.modalService.open(content, {centered: true, windowClass: 'new-folder-modal', size: 'md'}); 
   }
 
-  openCopyModal(content) {
-    this.modalService.open(content, {centered: true, windowClass: 'copy-modal', size: 'md'}); 
+  openCopyModal(copycontent) {
+    this.modalService.open(copycontent, {centered: true, windowClass: 'copy-modal', size: 'md'}); 
   }
 
-  openMoveModal(content) {
-    this.modalService.open(content, {centered: true, windowClass: 'move-modal', size: 'md'}); 
+  openMoveModal(movecontent) {
+    this.modalService.open(movecontent, {centered: true, windowClass: 'move-modal', size: 'md'}); 
   }
 
   createFolder(modal: any) {
