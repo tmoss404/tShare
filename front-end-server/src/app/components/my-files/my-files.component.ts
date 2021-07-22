@@ -21,7 +21,7 @@ export class MyFilesComponent implements OnInit {
   constructor(
     private fileService: FileService,
     private modalService: NgbModal,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
   ) { }
 
   ngOnInit(): void {
@@ -69,7 +69,15 @@ export class MyFilesComponent implements OnInit {
       folderName: ['', [Validators.required, folderName()]]
     });
 
-    this.modalService.open(content, {centered: true, windowClass: 'new-folder-modal', size: 'sm'}); 
+    this.modalService.open(content, {centered: true, windowClass: 'new-folder-modal', size: 'md'}); 
+  }
+
+  openCopyModal(content) {
+    this.modalService.open(content, {centered: true, windowClass: 'copy-modal', size: 'md'}); 
+  }
+
+  openMoveModal(content) {
+    this.modalService.open(content, {centered: true, windowClass: 'move-modal', size: 'md'}); 
   }
 
   createFolder(modal: any) {
@@ -148,4 +156,6 @@ export class MyFilesComponent implements OnInit {
       });
     }
   }
+
+  
 }

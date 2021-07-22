@@ -62,7 +62,7 @@
     <ng-template contextMenuItem let-item (execute)="downloadFile($event.item)">
         Download
     </ng-template>
-    <ng-template contextMenuItem>
+    <ng-template contextMenuItem let-item (execute)="openNewFolderModal">
         Delete
     </ng-template>
     <ng-template contextMenuItem>
@@ -106,3 +106,32 @@
         </div>
     </form>
   </ng-template>
+
+  <!-- New Folder modal template -->
+<!-- <ng-template #content let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title" id="modal-basic-title">Copy file</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <p>Select the folder you wish to copy this file to below:</p>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
+            <button type="submit" class="btn btn-dark" [disabled]="!newFolderForm.valid">Copy</button>
+        </div>
+  </ng-template>
+
+  <ng-template #content let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title" id="modal-basic-title">Move file</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <p>Select the folder you wish to move this file to below:</p>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
+            <button type="submit" class="btn btn-dark" [disabled]="!newFolderForm.valid">Copy</button>
+        </div>
+  </ng-template> -->
