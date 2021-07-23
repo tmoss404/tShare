@@ -136,7 +136,7 @@ module.exports.updateFileRecords = function(filePath, fileOwnerId, isDirectory, 
         });
     });
 };
-module.exports.processS3Data = function(data, accountIdPrefix, owner, showNestedFiles, pathPrefix, connection) {
+module.exports.processS3Data = function(data, accountIdPrefix, owner, showNestedFiles, pathPrefix, onlyDirs, connection) {
     return new Promise((resolve, reject) => {
         var promises = [];
         for (var i = 0; i < data.Contents.length; i++) {
@@ -153,6 +153,7 @@ module.exports.processS3Data = function(data, accountIdPrefix, owner, showNested
             }
             promises.push(new Promise((resolve, reject) => {
                 var content = data.Contents[i];
+                var index = i;
                 database.selectFromTable("File", "path='" + content.Key + "' AND owner_id=" + owner.accountId, connection).then((results) => {
                     if (results.length == 0) {
                         handleNoDbRecordForFile(content);
@@ -185,6 +186,12 @@ module.exports.processS3Data = function(data, accountIdPrefix, owner, showNested
                         removeFromS3DataAt(data, j);
                         --j;
                     }
+                }
+            }
+            for (var i = 0; i < data.Contents.length; i++) {
+                if (onlyDirs && !data.Contents[i].isDirectory) {
+                    removeFromS3DataAt(data, i);
+                    --i;
                 }
             }
             if (data.Prefix.includes(accountIdPrefix)) {

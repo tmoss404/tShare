@@ -64,30 +64,121 @@ module.exports.moveOrCopyFile = function(moveOrCopyFileData, move) {
                 reject(commonErrors.failedToConnectDbStatus500);
                 return;
             }
-            if (moveOrCopyFileData.isDirectory) {
-                var s3Params = {
-                    Bucket: appConstants.awsBucketName,
-                    MaxKeys: appConstants.awsMaxKeys,
-                    Prefix: moveOrCopyFileData.srcPath
-                };
-                s3.listObjectsV2(s3Params, (err, data_) => {
-                    if (err) {
-                        reject(commonErrors.createFailedToQueryS3Status500(connection));
-                    } else {
-                        var operationPromises = [];
-                        for (var i = 0; i < data_.Contents.length; i++) {
-                            if (data_.Contents[i].Key != s3Params.Prefix) {
-                                if (move) {
-                                    operationPromises.push(s3Helper.moveObject(moveOrCopyFileData.destPath + data_.Contents[i].Key.substring(moveOrCopyFileData.srcPath.length), data_.Contents[i].Key, s3, decodedToken.accountId, connection));
-                                } else {
-                                    operationPromises.push(s3Helper.copyObject(moveOrCopyFileData.destPath + data_.Contents[i].Key.substring(moveOrCopyFileData.srcPath.length), data_.Contents[i].Key, s3, decodedToken.accountId, connection));
-                                }
-                            }
+            var splitPath = moveOrCopyFileData.destPath.split("/");
+            var promises = [];
+            for (var i = 0; i < (moveOrCopyFileData.isDirectory ? splitPath.length : splitPath.length - 1); i++) {
+                var subPath = "";
+                for (var j = 0; j <= i; j++) {
+                    subPath += splitPath[j];
+                    if (j != i) {
+                        subPath += "/";
+                    }
+                }
+                promises.push(new Promise((resolve, reject) => {
+                    var path = subPath;
+                    s3.putObject({
+                        Bucket: appConstants.awsBucketName,
+                        Key: path + "/" + appConstants.dirPlaceholderFile
+                    }, (err, data) => {
+                        if (err) {
+                            reject();
+                            return;
                         }
-                        Promise.all(operationPromises).then((successful) => {
-                            fileUtil.updateFileRecords(moveOrCopyFileData.destPath, decodedToken.accountId, true, moveOrCopyFileData.srcPath, connection, s3).then((results) => {
+                        fileUtil.updateFileRecords(path, decodedToken.accountId, true, path, connection).then((successStatus) => {
+                            if (successStatus) {
+                                resolve();
+                            } else {
+                                reject();
+                            }
+                        }).catch((successStatus) => {
+                            reject();
+                        });
+                    });
+                }));
+            }
+            Promise.all(promises).then(() => {
+                if (!moveOrCopyFileData.isDirectory) {
+                    s3Helper.copyObject(moveOrCopyFileData.destPath, moveOrCopyFileData.srcPath, s3, decodedToken.accountId, connection).then((successful) => {
+                        if (move) {
+                            s3.deleteObject({
+                                Bucket: appConstants.awsBucketName,
+                                Key: moveOrCopyFileData.srcPath
+                            }, (err, data) => {
+                                if (err) {
+                                    reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
+                                } else {
+                                    splitPath = moveOrCopyFileData.srcPath.split("/");
+                                    promises = [];
+                                    for (var i = splitPath.length - 1 - 1; i >= 0; i--) {
+                                        var subPath = "";
+                                        for (var j = 0; j <= i; j++) {
+                                            subPath += splitPath[j];
+                                            if (j != i) {
+                                                subPath += "/";
+                                            }
+                                        }
+                                        promises.push(new Promise((resolve, reject) => {
+                                            s3.listObjectsV2({
+                                                Bucket: appConstants.awsBucketName,
+                                                MaxKeys: 2,
+                                                Prefix: subPath
+                                            }, (err, data) => {
+                                                if (err) {
+                                                    reject();
+                                                } else {
+                                                    var hasFiles = false;
+                                                    for (var k = 0; k < data.Contents.length; k++) {
+                                                        if (!data.Contents[k].Key.endsWith("/" + appConstants.dirPlaceholderFile)) {
+                                                            hasFiles = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if (!hasFiles) {
+                                                        s3.deleteObject({
+                                                            Bucket: appConstants.awsBucketName,
+                                                            Key: subPath + "/" + appConstants.dirPlaceholderFile
+                                                        }, (err, data) => {
+                                                            if (err) {
+                                                                reject();
+                                                            } else {
+                                                                fileUtil.updateFileRecords(subPath, decodedToken.accountId, true, subPath, connection, s3).then((results) => {
+                                                                    resolve();
+                                                                }).catch((results) => {
+                                                                    reject();
+                                                                });
+                                                            }
+                                                        });
+                                                    } else {
+                                                        fileUtil.updateFileRecords(subPath, decodedToken.accountId, true, subPath, connection, s3).then((results) => {
+                                                            resolve();
+                                                        }).catch((results) => {
+                                                            reject();
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                        }));
+                                    }
+                                    Promise.all(promises).then((results) => {
+                                        fileUtil.updateFileRecords(moveOrCopyFileData.destPath, decodedToken.accountId, false, moveOrCopyFileData.srcPath, connection, s3).then((results) => {
+                                            resolve({
+                                                message: "Successfully moved a file to its target path.",
+                                                httpStatus: 200,
+                                                success: true,
+                                                connectionToDrop: connection
+                                            });
+                                        }).catch((results) => {
+                                            reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
+                                        });
+                                    }).catch((results) => {
+                                        reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
+                                    });
+                                }
+                            });
+                        } else {
+                            fileUtil.updateFileRecords(moveOrCopyFileData.destPath, decodedToken.accountId, false, moveOrCopyFileData.destPath, connection, s3).then((results) => {
                                 resolve({
-                                    message: move ? "Successfully moved a directory to its target path." : "Successfully copied a directory to its target path.",
+                                    message: "Successfully copied a file to its target path.",
                                     httpStatus: 200,
                                     success: true,
                                     connectionToDrop: connection
@@ -95,44 +186,82 @@ module.exports.moveOrCopyFile = function(moveOrCopyFileData, move) {
                             }).catch((results) => {
                                 reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
                             });
-                        }).catch((successful) => {
-                            reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
-                        });
-                    }
-                });
-            } else {
-                if (move) {
-                    s3Helper.moveObject(moveOrCopyFileData.destPath, moveOrCopyFileData.srcPath, s3, decodedToken.accountId, connection).then((successful) => {
-                        fileUtil.updateFileRecords(moveOrCopyFileData.destPath, decodedToken.accountId, false, moveOrCopyFileData.srcPath, connection, s3).then((results) => {
-                            resolve({
-                                message: "Successfully moved a file to its target path.",
-                                httpStatus: 200,
-                                success: true,
-                                connectionToDrop: connection
-                            });
-                        }).catch((results) => {
-                            reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
-                        });
+                        }
                     }).catch((successful) => {
                         reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
                     });
                 } else {
-                    s3Helper.copyObject(moveOrCopyFileData.destPath, moveOrCopyFileData.srcPath, s3, decodedToken.accountId, connection).then((successful) => {
-                        fileUtil.updateFileRecords(moveOrCopyFileData.destPath, decodedToken.accountId, false, moveOrCopyFileData.srcPath, connection, s3).then((results) => {
-                            resolve({
-                                message: "Successfully copied a file to its target path.",
-                                httpStatus: 200,
-                                success: true,
-                                connectionToDrop: connection
+                    splitPath = moveOrCopyFileData.srcPath.split("/");
+                    promises = [];
+                    for (var i = splitPath.length - 1; i >= 0; i--) {
+                        var subPath = "";
+                        for (var j = 0; j <= i; j++) {
+                            subPath += splitPath[j];
+                            if (j != i) {
+                                subPath += "/";
+                            }
+                        }
+                        promises.push(new Promise((resolve, reject) => {
+                            s3.listObjectsV2({
+                                Bucket: appConstants.awsBucketName,
+                                MaxKeys: 2,
+                                Prefix: subPath
+                            }, (err, data) => {
+                                if (err) {
+                                    reject();
+                                } else {
+                                    var hasFiles = false;
+                                    for (var k = 0; k < data.Contents.length; k++) {
+                                        if (!data.Contents[k].Key.endsWith("/" + appConstants.dirPlaceholderFile)) {
+                                            hasFiles = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!hasFiles) {
+                                        s3.deleteObject({
+                                            Bucket: appConstants.awsBucketName,
+                                            Key: subPath + "/" + appConstants.dirPlaceholderFile
+                                        }, (err, data) => {
+                                            if (err) {
+                                                reject();
+                                            } else {
+                                                fileUtil.updateFileRecords(subPath, decodedToken.accountId, true, subPath, connection, s3).then((results) => {
+                                                    resolve();
+                                                }).catch((results) => {
+                                                    reject();
+                                                });
+                                            }
+                                        });
+                                    } else {
+                                        fileUtil.updateFileRecords(subPath, decodedToken.accountId, true, subPath, connection, s3).then((results) => {
+                                            resolve();
+                                        }).catch((results) => {
+                                            reject();
+                                        });
+                                    }
+                                }
                             });
-                        }).catch((results) => {
-                            reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
+                        }));
+                    }
+                    Promise.all(promises).then((results) => {
+                        resolve({
+                            message: "Successfully moved a directory to its target path.",
+                            httpStatus: 200,
+                            success: true,
+                            connectionToDrop: connection
                         });
-                    }).catch((successful) => {
+                    }).catch((results) => {
                         reject(commonErrors.createFailedToDupS3ObjStatus500(connection));
                     });
                 }
-            }
+            }).catch(() => {
+                reject({
+                    message: "Failed to create a sub-directory for a " + (move ? "move operation." : "copy operation."),
+                    httpStatus: 500,
+                    success: false,
+                    connectionToDrop: connection
+                });
+            });
         });
     });
 };
@@ -281,7 +410,7 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
         if (!reqObjInvalid && objectUtil.isUndefined(listFilesData.dirPath)) {
             listFilesData.dirPath = null;
         }
-        if (reqObjInvalid || listFilesData.dirPath != null && listFilesData.dirPath.length == 0 || listFilesData.showNestedFiles != false && listFilesData.showNestedFiles != true) {
+        if (reqObjInvalid || listFilesData.dirPath != null && listFilesData.dirPath.length == 0 || listFilesData.showNestedFiles != false && listFilesData.showNestedFiles != true || !objectUtil.isNullOrUndefined(listFilesData.onlyDirs) && listFilesData.onlyDirs != false && listFilesData.onlyDirs != true) {
             reject(commonErrors.genericStatus400);
             return;
         }
@@ -315,7 +444,7 @@ module.exports.listFiles = function(listFilesData, isRecycleBin) {
                     fileUtil.processS3Data(data_, accountIdPrefix, {
                         email: decodedToken.email,
                         accountId: decodedToken.accountId
-                    }, listFilesData.showNestedFiles, pathPrefix, connection).then((s3Data) => {
+                    }, listFilesData.showNestedFiles, pathPrefix, listFilesData.onlyDirs, connection).then((s3Data) => {
                         resolve({
                             message: isRecycleBin ? "Successfully retrieved the user's deleted files." : "Successfully retrieved the user's files.",
                             httpStatus: 200,

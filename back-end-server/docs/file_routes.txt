@@ -62,6 +62,7 @@ It takes four parameters wrapped in an Object:
 - dirPath: String, or null/undefined to retrieve all of the user's files
 - maxFiles: int, non-zero and non-negative, up to 1000
 - showNestedFiles: boolean, indicates whether or not to show files that are contained within folders that are inside of dirPath
+- onlyDirs: boolean, indicates whether or not to only show directories in the response data
 
 Returns an Object containing at least message, and success. Optionally, data is returned as well if the request was successful:
 {"message":"Successfully retrieved the user's files.","success":true,"data":{"IsTruncated":false,"Contents":[{"Key":"file.txt","LastModified":"2021-07-14T13:20:37.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":32,"StorageClass":"STANDARD","isDirectory":false,"owner":{"email":"tkhjkkhbackend43e@gmail.com","accountId":2474}},{"Key":"path2","LastModified":"2021-07-14T13:21:35.000Z","ETag":"\"38e08468daab0c0900839d05afbea3da\"","Size":0,"StorageClass":"STANDARD","isDirectory":true,"owner":{"email":"tkhjkkhbackend43e@gmail.com","accountId":2474}}],"Name":"bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b","Prefix":"","MaxKeys":1000,"CommonPrefixes":[],"KeyCount":2}}
