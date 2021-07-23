@@ -28,7 +28,7 @@ export class MyFilesComponent implements OnInit {
     this.getFiles(this.currentDir);
   }
 
-  //Async getfiles function, returning a promise so I can execute certain operations after it resolves
+  //Async get files function, returning a promise so I can execute certain operations after it resolves
   async getFiles(dir: string) : Promise<any> {
     this.files = undefined;
 
@@ -60,8 +60,8 @@ export class MyFilesComponent implements OnInit {
        // Request to the back-end to delete the file
     this.fileService.deleteFile(filePath).subscribe({
       next: (success) => {
-        console.log("Great Success - File is deleted" + success + "filePath/Name: " + filePath);
         this.getFiles(this.currentDir);
+        console.log("Great Success - " + filePath + " is deleted.");
       },
       error: (err) => {
         console.log("Error ocurred while trying to delete the file" + err.error);

@@ -5,7 +5,7 @@
 
             <button class="file-option-btn"><i class="bi bi-trash"></i>&#160;&#160;Delete Selected</button>
 
-            <button class="file-option-btn"><i class="bi bi-arrow-repeat"></i>&#160;&#160;Refresh</button>
+            <button class="file-option-btn" (click)="getDeletedFiles()"><i class="bi bi-arrow-repeat"></i>&#160;&#160;Refresh</button>
 
             <input class="file-search" placeholder="What are you looking for?">
         </div>
@@ -14,7 +14,7 @@
         <div *ngIf="files; else loading">
             <div class="file-header">
                 <div class="file-info">
-                    <div class="file-check">    
+                    <div class="file-check">
                     </div>
                 </div>
                 <div class="file-info">

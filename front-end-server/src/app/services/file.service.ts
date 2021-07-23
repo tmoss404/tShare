@@ -74,6 +74,17 @@ export class FileService {
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/delete`, deleteFileData);
   }
 
+  // Get Deleted Files
+  public getDeletedFiles() : Observable<any> {
+    const getDeletedFilesData = { 
+      loginToken: this.auth.getToken(),
+      dirPath: null,
+      showNestedFiles: true 
+    }
+
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/recycle/list`, getDeletedFilesData);
+  }
+
   public getFiles(path: string) : Observable<any> {
     const getFilesData = { 
       loginToken: this.auth.getToken(),
