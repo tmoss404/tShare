@@ -86,4 +86,13 @@ export class AccountService {
       localStorage.removeItem('dateFormat');
   }
   
+  getUsers() : Observable<any> {
+    const getAcctData = {
+      loginToken: this.auth.getToken()
+    }
+
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/account/list`, getAcctData);
+
+  }
+
 }

@@ -1,0 +1,38 @@
+.user-card {
+    width: 1248px;
+    color: white;
+    background-color: #323232;
+    border-radius: 10px;
+    padding: 6px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.user-card:hover {
+    background-color: #1ab9d1;
+    color: white;
+    transition: .2s;
+    cursor: pointer;
+}
+
+.user-info {
+    display: inline-block;
+    vertical-align: middle;
+    padding: 0 8px;
+}
+
+.user-email {
+    text-align: left;
+    width: 35%;
+    font-size: 16px;
+}
+
+.last-modified {
+    text-align: left;
+    font-size: 12px;
+    width: 20%;
+}
+
+.user-icon {
+    font-size: 28px;
+}

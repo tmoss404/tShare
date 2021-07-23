@@ -2,10 +2,18 @@
     <div class="option-bar">
         <div class="option-container">
             <button class="file-option-btn"><i class="bi bi-patch-question"></i>&#160;&#160;Request Selected</button>
-            <button class="file-option-btn"><i class="bi bi-arrow-repeat"></i>&#160;&#160;Refresh</button>
+            <button class="file-option-btn" (click)="getUsers()"><i class="bi bi-arrow-repeat"></i>&#160;&#160;Refresh</button>
 
             <input class="file-search" placeholder="What are you looking for?">    
         </div>
+    </div>
+    <div class="user-container">
+        <div *ngIf="users; else loading">
+            <app-user-card *ngFor="let user of users" [user]="user"></app-user-card>
+        </div>
+        <ng-template #loading>
+            <div class="spinner"></div>
+        </ng-template>
     </div>
 </div>
 
