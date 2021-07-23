@@ -7,6 +7,8 @@ import { Component, OnInit } from '@angular/core';
 })
 export class DeletedFilesComponent implements OnInit {
 
+  files : Array<any>;
+
   constructor() { }
 
   ngOnInit(): void {

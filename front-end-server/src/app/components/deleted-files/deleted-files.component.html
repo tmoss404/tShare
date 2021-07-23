@@ -10,4 +10,48 @@
             <input class="file-search" placeholder="What are you looking for?">
         </div>
     </div>
+    <div class="file-container">
+        <div *ngIf="files; else loading">
+            <div class="file-header">
+                <div class="file-info">
+                    <div class="file-check">    
+                    </div>
+                </div>
+                <div class="file-info">
+                    <div class="file-check">
+                    </div>
+                </div>
+                <div class="file-info file-name">
+                    Name
+                </div>
+                <div class="file-info">
+                    <div class="file-card-option"></div>
+                </div>
+                <div class="file-info last-modified">
+                    Last Modified
+                </div>
+                <div class="file-info file-owner">
+                    Owner
+                </div>
+                <div class="file-info file-size">
+                    File Size
+                </div>
+                <hr class="file-header-rule">
+            </div>
+            <app-file-card *ngFor="let file of files" [file]="file"></app-file-card>
+        </div>
+        <ng-template #loading>
+            <div class="spinner"></div>
+        </ng-template>
+    </div>
 </div>
+
+<!-- Context menu template -->
+<context-menu>
+    <ng-template contextMenuItem>
+        Restore
+    </ng-template>
+    <ng-template contextMenuItem>
+        Delete
+    </ng-template>
+</context-menu>
