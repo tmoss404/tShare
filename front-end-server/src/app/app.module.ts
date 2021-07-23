@@ -36,6 +36,7 @@ import { FileCardComponent } from './components/file-card/file-card.component';
 
 /* Services */
 import { AuthInterceptorService } from './services/auth-interceptor.service';
+import { UserCardComponent } from './components/user-card/user-card.component';
 
 @NgModule({
   declarations: [
@@ -62,7 +63,8 @@ import { AuthInterceptorService } from './services/auth-interceptor.service';
     ComingSoonComponent,
     AccountPreferencesComponent,
     ChangePasswordComponent,
-    FileCardComponent
+    FileCardComponent,
+    UserCardComponent
   ],
   imports: [
     BrowserModule,
