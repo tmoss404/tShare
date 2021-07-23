@@ -58,21 +58,22 @@
     color: white;
 }
 
-.file-container {
+.user-container {
     border-radius: 6px;
+    margin-top: 2%;
     margin-left: 4%;
     overflow-y: auto;
     height: 75%;
-    width: 94%;
+    width: 82%;
 }
 
 @media (max-height: 768px) {
-    .file-container {
+    .user-container {
         height: 68%;
     }
 }
 @media (max-height: 615px) {
-    .file-container {
+    .user-container {
         height: 66%;
     }
 }
