@@ -115,10 +115,10 @@
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
-    <p>Select the folder you wish to copy this file to below:</p>
+    <hr class="file-header-rule">
     <div class="modal-footer">
         <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
-        <button type="submit" class="btn btn-dark" [disabled]="!newFolderForm.valid">Copy</button>
+        <button type="submit" class="btn btn-dark" (click)="!newFolderForm.valid">Copy</button>
     </div>
 </ng-template>
 
@@ -129,9 +129,9 @@
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
-    <p>Select the folder you wish to move this file to below:</p>
+    <hr class="file-header-rule">
     <div class="modal-footer">
         <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
-        <button type="submit" class="btn btn-dark" [disabled]="!newFolderForm.valid">Copy</button>
+        <button type="submit" class="btn btn-dark" (click)="!newFolderForm.valid">Move</button>
     </div>
 </ng-template>
