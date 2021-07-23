@@ -73,6 +73,17 @@ export class FileService {
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/list`, getFilesData);
   }
 
+  public getDirectories(path: string) : Observable<any> {
+    const getFilesData = { 
+      loginToken: this.auth.getToken(),
+      dirPath: path,
+      showNestedFiles: false,
+      onlyDirs: true 
+    }
+
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/list`, getFilesData);
+  }
+
   public createDir(path: string) : Observable<any> {
     const createDirData = {
       loginToken: this.auth.getToken(),
