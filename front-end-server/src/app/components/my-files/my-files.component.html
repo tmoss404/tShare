@@ -4,7 +4,7 @@
             <button class="file-option-btn" (click)="openNewFolderModal(content)"><i class="bi bi-folder-plus"></i>&#160;&#160;New Folder</button>
 
             <button class="file-option-btn" (click)="uploader.click()"><i class="bi bi-upload"></i>&#160;&#160;Upload File</button>
-                <input hidden type="file" #uploader (change)="uploadFile($event.target.files)" onclick="this.value = null" />
+            <input hidden type="file" #uploader (change)="uploadFile($event.target.files)" onclick="this.value = null" />
 
             <button class="file-option-btn"><i class="bi bi-trash"></i>&#160;&#160;Delete Selected</button>
 
@@ -19,13 +19,13 @@
         <div class="go-back" (click)="goBack()">
             <div class="bi bi-arrow-90deg-up"> ../{{currentDir}}</div>
         </div>
-        
+
     </div>
     <div class="file-container">
         <div *ngIf="files; else loading">
             <div class="file-header">
                 <div class="file-info">
-                    <div class="file-check">    
+                    <div class="file-check">
                     </div>
                 </div>
                 <div class="file-info">
@@ -62,10 +62,10 @@
     <ng-template contextMenuItem let-item (execute)="downloadFile($event.item)">
         Download
     </ng-template>
-    <ng-template contextMenuItem>
+    <ng-template contextMenuItem let-item (execute)="deleteFile($event.item)">
         Delete
     </ng-template>
-    <ng-template contextMenuItem  let-item (execute)="openNewFolderModal(copycontent)">
+    <ng-template contextMenuItem let-item (execute)="openNewFolderModal(copycontent)">
         Copy
     </ng-template>
     <ng-template contextMenuItem let-item (execute)="openNewFolderModal(movecontent)">
@@ -79,8 +79,8 @@
 <!-- New Folder modal template -->
 <ng-template #content let-modal>
     <div class="modal-header">
-      <h4 class="modal-title" id="modal-basic-title">Create Folder</h4>
-      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <h4 class="modal-title" id="modal-basic-title">Create Folder</h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
@@ -91,7 +91,7 @@
                     <input type="text" class="form-control" formControlName='folderName' placeholder="Enter Folder Name" ngbAutofocus>
                 </div>
             </div>
-            <div *ngIf="newFolderForm.controls.folderName.invalid && newFolderForm.controls.folderName.dirty">   
+            <div *ngIf="newFolderForm.controls.folderName.invalid && newFolderForm.controls.folderName.dirty">
                 <div *ngIf="newFolderForm.controls.folderName.errors?.required" class="form-control alert">
                     You must enter a name.
                 </div>
@@ -105,33 +105,33 @@
             <button type="submit" class="btn btn-dark" [disabled]="!newFolderForm.valid">Create</button>
         </div>
     </form>
-  </ng-template>
+</ng-template>
 
-  <!-- New Folder modal template -->
+<!-- New Folder modal template -->
 <ng-template #copycontent let-modal>
     <div class="modal-header">
-      <h4 class="modal-title" id="modal-basic-title">Copy file</h4>
-      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <h4 class="modal-title" id="modal-basic-title">Copy file</h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
     <p>Select the folder you wish to copy this file to below:</p>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
-            <button type="submit" class="btn btn-dark" [disabled]="!newFolderForm.valid">Copy</button>
-        </div>
-  </ng-template>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
+        <button type="submit" class="btn btn-dark" [disabled]="!newFolderForm.valid">Copy</button>
+    </div>
+</ng-template>
 
-  <ng-template #movecontent let-modal>
+<ng-template #movecontent let-modal>
     <div class="modal-header">
-      <h4 class="modal-title" id="modal-basic-title">Move file</h4>
-      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <h4 class="modal-title" id="modal-basic-title">Move file</h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
     <p>Select the folder you wish to move this file to below:</p>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
-            <button type="submit" class="btn btn-dark" [disabled]="!newFolderForm.valid">Copy</button>
-        </div>
-  </ng-template>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
+        <button type="submit" class="btn btn-dark" [disabled]="!newFolderForm.valid">Copy</button>
+    </div>
+</ng-template>
