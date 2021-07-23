@@ -63,6 +63,17 @@ export class FileService {
 
   }
 
+  // Delete File
+  public deleteFile(path: string) : Observable<any> {
+    const deleteFileData = {
+      loginToken: this.auth.getToken(),
+      path: path,
+      isDirectory: false
+    }
+
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/delete`, deleteFileData);
+  }
+
   public getFiles(path: string) : Observable<any> {
     const getFilesData = { 
       loginToken: this.auth.getToken(),

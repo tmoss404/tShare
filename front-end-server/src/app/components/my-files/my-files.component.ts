@@ -40,9 +40,38 @@ export class MyFilesComponent implements OnInit {
     });
   }
 
+  /* BEGIN DELETE FILE */
   deleteFile(file: any) : void {
+   
+    // We cannot delete directories, so we disable the functionality for a file that is a directory
+    if(!file.isDirectory){
 
+      let filePath: string;
+
+      //Add a slash to the route if you are not in the root directory
+      if(this.currentDir != (null || undefined)){
+        filePath = this.currentDir + '/' + file.name;
+      }
+      // File path is simply the name of the file if you are currently in the root directory
+      else {
+        filePath = file.name;
+      }
+
+       // Request to the back-end to delete the file
+    this.fileService.deleteFile(filePath).subscribe({
+      next: (success) => {
+        console.log("Great Success - File is deleted" + success + "filePath/Name: " + filePath);
+        this.getFiles(this.currentDir);
+      },
+      error: (err) => {
+        console.log("Error ocurred while trying to delete the file" + err.error);
+      }
+    });
+    }
+    
   }
+
+    /*END DELETE FILE */
 
   downloadFile(file: any) : void {
     //We cannot download directories, so we disable the functionality for a file that is a directory
