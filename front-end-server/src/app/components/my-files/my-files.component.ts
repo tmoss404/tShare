@@ -40,6 +40,10 @@ export class MyFilesComponent implements OnInit {
     });
   }
 
+  deleteFile(file: any) : void {
+
+  }
+
   downloadFile(file: any) : void {
     //We cannot download directories, so we disable the functionality for a file that is a directory
     if(!file.isDirectory){
