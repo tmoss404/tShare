@@ -471,7 +471,7 @@ module.exports.permaDelete = function(permaDeleteData) {
                 return;
             }
             if (permaDeleteData.isDirectory) {
-                database.selectFromTable("File", "path LIKE '" + fullPath + "/%'", connection).then((results) => {
+                database.selectFromTable("File", "path LIKE '" + fullPath + "/%' AND owner_id=" + decodedToken.accountId, connection).then((results) => {
                     if (results.length == 0) {
                         reject(failToFindErr);
                         return;
