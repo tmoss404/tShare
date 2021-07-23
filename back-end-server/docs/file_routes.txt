@@ -267,3 +267,31 @@ xhttp.send(JSON.stringify({
     loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
     filePath: "your new\\directory/file.txt"
 }));
+
+
+/file/recycle/delete:
+
+This route permanently deletes the specified file from the recycle bin. Please note that the file must first exist in the recycle bin to be deleted. It takes three parameters: loginToken, path, and isDirectory all wrapped in an Object. Specifying isDirectory=true will cause the entire directory specified to be deleted, including the directory folder itself. 
+Trailing or prefixed slashes will cause undefined behaviour:
+- loginToken: String
+- path: String
+- isDirectory: boolean, indicates whether or not path specifies a directory
+
+Returns an Object containing message and success:
+{"message":"Successfully deleted a directory permanently.","success":true}
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/file/recycle/delete", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
+    path: "your directory",
+    isDirectory: true
+}));

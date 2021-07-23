@@ -31,6 +31,13 @@ module.exports.setupRoutes = function(app) {
             routes.sendResponse(res, err);
         });
     });
+    app.post("/file/recycle/delete", accountMiddleware.checkAuth, (req, res) => {
+        fileModel.permaDelete(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
     app.post("/file/delete", accountMiddleware.checkAuth, (req, res) => {
         fileModel.deleteFile(req.body).then((msg) => {
             routes.sendResponse(res, msg);

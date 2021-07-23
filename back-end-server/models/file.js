@@ -6,6 +6,7 @@ const awsSdk = require("aws-sdk");
 const fileUtil = require("./fileUtil");
 const s3Helper = require("./s3Helper");
 const commonErrors = require("./commonErrors");
+const database = require("../config/database");
 
 var s3  = new awsSdk.S3({
     accessKeyId: appConstants.awsAccessKeyId,
@@ -14,6 +15,57 @@ var s3  = new awsSdk.S3({
 });
 var dbConnectionPool;
 
+function permaDeleteSingleFile(fullPath, decodedToken, connection) {
+    return new Promise((resolve, reject) => {
+        database.selectFromTable("File", "path='" + fullPath + "' AND owner_id=" + decodedToken.accountId, connection).then((results) => {
+            if (results.length == 0) {
+                reject({
+                    message: "Failed to find the specified object in the database.",
+                    httpStatus: 404,
+                    success: false,
+                    connectionToDrop: connection
+                });
+                return;
+            }
+            var deleteErr = {
+                message: "An error has occurred while deleting the specified file from the database.",
+                httpStatus: 500,
+                success: false,
+                connectionToDrop: connection
+            };
+            database.deleteFromTable("File_Permissions", "file_id=" + results[0].id, connection).then((results) => {
+                database.deleteFromTable("File", "path='" + fullPath + "' AND owner_id=" + decodedToken.accountId, connection).then((results) => {
+                    s3.deleteObject({
+                        Bucket: appConstants.awsBucketName,
+                        Key: fullPath
+                    }, (err, data) => {
+                        if (err) {
+                            reject(deleteErr);
+                            return;
+                        }
+                        resolve({
+                            message: "Successfully deleted the specified file from the database and file system permanently.",
+                            httpStatus: 200,
+                            success: true,
+                            connectionToDrop: connection
+                        });
+                    });
+                }).catch((results) => {
+                    reject(deleteErr);
+                });
+            }).catch((results) => {
+                reject(deleteErr);
+            });
+        }).catch((results) => {
+            reject({
+                message: "An error has occurred while retreiving the specified object from the database.",
+                httpStatus: 500,
+                success: false,
+                connectionToDrop: connection
+            });
+        });
+    });
+}
 module.exports.downloadFile = function(dlFileData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(dlFileData) || objectUtil.isNullOrUndefined(dlFileData.filePath)) {
@@ -401,6 +453,58 @@ module.exports.makeDir = function(makeDirData) {
                     });
                 });
             });
+        });
+    });
+};
+module.exports.permaDelete = function(permaDeleteData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(permaDeleteData) || objectUtil.isNullOrUndefined(permaDeleteData.path) || permaDeleteData.path.length == 0 || permaDeleteData.isDirectory != false && permaDeleteData.isDirectory != true) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        var decodedToken = permaDeleteData.decodedToken;
+        permaDeleteData.path = fileUtil.formatFilePath(permaDeleteData.path);
+        var fullPath = decodedToken.accountId + "_recycle/" + permaDeleteData.path;
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            if (permaDeleteData.isDirectory) {
+                database.selectFromTable("File", "path LIKE '" + fullPath + "/%'", connection).then((results) => {
+                    if (results.length == 0) {
+                        reject(failToFindErr);
+                        return;
+                    }
+                    var promises = [];
+                    for (var i = 0; i < results.length; i++) {
+                        promises.push(permaDeleteSingleFile(results[i].path, decodedToken, connection));
+                    }
+                    Promise.all(promises).then((successMsg) => {
+                        resolve({
+                            message: "Successfully deleted a directory permanently.",
+                            httpStatus: 200,
+                            success: true,
+                            connectionToDrop: connection
+                        });
+                    }).catch((failMsg) => {
+                        reject({
+                            message: "Failed to permanently delete a directory.",
+                            httpStatus: 500,
+                            success: false,
+                            connectionToDrop: connection
+                        });
+                    });
+                }).catch((results) => {
+                    reject(failedQueryErr);
+                });
+            } else {
+                permaDeleteSingleFile(fullPath, decodedToken, connection).then((successMsg) => {
+                    resolve(successMsg);
+                }).catch((errMsg) => {
+                    reject(errMsg);
+                });
+            }
         });
     });
 };
