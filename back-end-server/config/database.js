@@ -4,12 +4,14 @@ const accountModel = require("../models/account");
 const fileModel = require("../models/file");
 const appConstants = require("../config/appConstants");
 const objectUtil = require("../objectUtil");
+const favoritesModel = require("../models/favorites");
 
 module.exports.connectionPool = mySql.createPool(appConstants.mySqlCfg);
 
 module.exports.init = function() {
     accountModel.init(module.exports.connectionPool);
     fileModel.init(module.exports.connectionPool);
+    favoritesModel.init(module.exports.connectionPool);
 };
 module.exports.selectFromTable = function(tableName, whereClause, connection) {
     return new Promise((resolve, reject) => {
