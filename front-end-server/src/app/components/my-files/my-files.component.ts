@@ -13,9 +13,7 @@ import { folderName } from '../../validators/folderName.validator';
 export class MyFilesComponent implements OnInit {
 
   files: Array<any>;
-  fileToUpload: File;
   currentDir: string = null;
-  testDirName: string = "newer folder";
   newFolderForm: FormGroup;
 
   constructor(
@@ -42,23 +40,20 @@ export class MyFilesComponent implements OnInit {
 
   /* BEGIN DELETE FILE */
   deleteFile(file: any) : void {
-   
-    // We cannot delete directories, so we disable the functionality for a file that is a directory
-    if(!file.isDirectory){
 
-      let filePath: string;
+    let filePath: string;
 
-      //Add a slash to the route if you are not in the root directory
-      if(this.currentDir != (null || undefined)){
-        filePath = this.currentDir + '/' + file.name;
-      }
-      // File path is simply the name of the file if you are currently in the root directory
-      else {
-        filePath = file.name;
-      }
+    //Add a slash to the route if you are not in the root directory
+    if(this.currentDir != (null || undefined)){
+      filePath = this.currentDir + '/' + file.name;
+    }
+    // File path is simply the name of the file if you are currently in the root directory
+    else {
+      filePath = file.name;
+    }
 
        // Request to the back-end to delete the file
-    this.fileService.deleteFile(filePath).subscribe({
+    this.fileService.deleteFile(filePath, file.isDirectory).subscribe({
       next: (success) => {
         this.getFiles(this.currentDir);
         console.log("Great Success - " + filePath + " is deleted.");
@@ -67,11 +62,10 @@ export class MyFilesComponent implements OnInit {
         console.log("Error ocurred while trying to delete the file" + err.error);
       }
     });
-    }
+    
     
   }
-
-    /*END DELETE FILE */
+  /*END DELETE FILE */
 
   downloadFile(file: any) : void {
     //We cannot download directories, so we disable the functionality for a file that is a directory
@@ -117,13 +111,13 @@ export class MyFilesComponent implements OnInit {
   uploadFile(files: FileList) : void {
     //Contingency for weird error with file input, trying to read null file name
     if(files.item(0).name != null){
-      this.fileToUpload = files.item(0);
+      let fileToUpload = files.item(0);
 
-      let signUrlReq = this.fileService.getSignedUrlUpload(this.fileToUpload, this.currentDir);
+      let signUrlReq = this.fileService.getSignedUrlUpload(fileToUpload, this.currentDir);
       if (signUrlReq != null) {
         signUrlReq.subscribe({
           next: (success) => {
-            this.fileService.uploadFile(success.signedUrlData, this.fileToUpload).subscribe({
+            this.fileService.uploadFile(success.signedUrlData, fileToUpload).subscribe({
               next: (success) => {
                 this.getFiles(this.currentDir);
               },
