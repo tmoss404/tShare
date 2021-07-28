@@ -64,22 +64,33 @@ export class FileService {
   }
 
   // Delete File
-  public deleteFile(path: string) : Observable<any> {
+  public deleteFile(path: string, isDirectory: boolean) : Observable<any> {
     const deleteFileData = {
       loginToken: this.auth.getToken(),
       path: path,
-      isDirectory: false
+      isDirectory: isDirectory
     }
 
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/delete`, deleteFileData);
   }
 
+  // Permanent delete, delete from recycle bin
+  public purgeFile(path: string, isDirectory: boolean) {
+    const purgeFileData = {
+      loginToken: this.auth.getToken(),
+      path: path,
+      isDirectory: isDirectory
+    }
+
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/recycle/delete`, purgeFileData)
+  }
+
   // Get Deleted Files
-  public getDeletedFiles() : Observable<any> {
+  public getDeletedFiles(path: string) : Observable<any> {
     const getDeletedFilesData = { 
       loginToken: this.auth.getToken(),
-      dirPath: null,
-      showNestedFiles: true 
+      dirPath: path,
+      showNestedFiles: false 
     }
 
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/recycle/list`, getDeletedFilesData);
