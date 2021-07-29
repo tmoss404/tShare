@@ -1,25 +1,29 @@
 @import "~bootstrap-icons/font/bootstrap-icons.css";
 
-.new-folder-modal .modal-content {
+.modal-content,
+.modal-body {
     background-color: #202020;
     color: white;
 }
 
-.new-folder-modal .close {
+.modal-header .close {
     color: white;
 }
 
-.new-folder-modal .btn-dark {
+.btn-dark {
     border-radius: 6px !important;
     background-color: #323232;
     border: none;
 }
 
-.new-folder-modal .btn-dark:hover {
+.btn-dark:hover {
     background-color: #1ab9d1;
 }
 
-.new-folder-modal .modal-footer,
-.new-folder-modal .modal-header {
+.modal-footer,
+.modal-header {
     border: none;
 }
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
