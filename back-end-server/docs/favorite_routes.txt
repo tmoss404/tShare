@@ -36,3 +36,30 @@ xhttp.send(JSON.stringify({
     path: "your directory/file.txt",
     isDirectory: false
 }));
+
+
+/favorite/remove:
+
+This route allows a user to remove a favorite from their list of favorite paths. It takes three parameters: loginToken, path, and isDirectory all wrapped in an Object:
+- loginToken: String
+- path: String
+- isDirectory: boolean, indicates whether or not path specifies a directory or a file
+
+Returns an Object containing message and success:
+{"message":"Successfully removed a favorite.","success":true}
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/favorite/remove", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
+    path: "your directory/file.txt",
+    isDirectory: false
+}));

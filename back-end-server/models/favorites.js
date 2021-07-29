@@ -6,6 +6,60 @@ const database = require("../config/database");
 
 var dbConnectionPool;
 
+module.exports.removeFavorite = function(removeFavData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(removeFavData) || objectUtil.isNullOrUndefined(removeFavData.path) || objectUtil.isNullOrUndefined(removeFavData.isDirectory)
+            || removeFavData.isDirectory != false && removeFavData.isDirectory != true) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        removeFavData.path = fileUtil.formatFilePath(removeFavData.path);
+        var decodedToken = removeFavData.decodedToken;
+        var fullPath = decodedToken.accountId + "/" + removeFavData.path;
+        if (removeFavData.isDirectory) {
+            fullPath += "/" + appConstants.dirPlaceholderFile;
+        }
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            database.selectFromTable("File", "owner_id=" + decodedToken.accountId + " AND path='" + fullPath + "'", connection).then((results) => {
+                if (results.length == 0) {
+                    reject({
+                        message: "Could not find a file that you own with path \"" + fullPath + "\".",
+                        httpStatus: 403,
+                        success: false,
+                        connectionToDrop: connection
+                    });
+                    return;
+                }
+                database.deleteFromTable("Favorite", "owner_id=" + decodedToken.accountId + " AND file_id=" + results[0].id, connection).then((results) => {
+                    resolve({
+                        message: "Successfully removed a favorite.",
+                        httpStatus: 200,
+                        success: true,
+                        connectionToDrop: connection
+                    });
+                }).catch((results) => {
+                    reject({
+                        message: "An error has occurred while removing a favorite.",
+                        httpStatus: 500,
+                        success: false,
+                        connectionToDrop: connection
+                    });
+                });
+            }).catch((results) => {
+                reject({
+                    message: "An error has occurred while retreving the specified file.",
+                    httpStatus: 500,
+                    success: false,
+                    connectionToDrop: connection
+                });
+            });
+        });
+    });
+};
 module.exports.addFavorite = function(addFavData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(addFavData) || objectUtil.isNullOrUndefined(addFavData.path) || 
