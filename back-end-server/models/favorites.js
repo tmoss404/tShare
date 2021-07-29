@@ -6,6 +6,74 @@ const database = require("../config/database");
 
 var dbConnectionPool;
 
+module.exports.listFavorites = function(listFavoritesData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(listFavoritesData)) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        var decodedToken = listFavoritesData.decodedToken;
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            var errMsg = {
+                message: "An error has occurred while retreving your favorites.",
+                httpStatus: 500,
+                success: false,
+                connectionToDrop: connection
+            };
+            database.selectFromTable("Favorite", "owner_id=" + decodedToken.accountId, connection).then((results) => {
+                var favoriteList = [];
+                if (results.length == 0) {
+                    resolve({
+                        message: "Successfully retrieved your list of favorites.",
+                        httpStatus: 200,
+                        success: true,
+                        connectionToDrop: connection,
+                        favorites: favoriteList
+                    });
+                } else {
+                    var promises = [];
+                    for (var i = 0; i < results.length; i++) {
+                        var rejectMsg = {
+                            message: "Could not find a file with ID " + results[i].file_id,
+                            httpStatus: 403,
+                            success: false,
+                            connectionToDrop: connection
+                        };
+                        promises.push(database.selectFromTable("File", "id=" + results[i].file_id, connection).then((resultsFile) => {
+                            if (results.length == 0) {
+                                reject(rejectMsg);
+                                return;
+                            }
+                            favoriteList.push({
+                                path: resultsFile[0].is_directory != 0 ? resultsFile[0].path.substring(0, resultsFile[0].path.lastIndexOf("/" + appConstants.dirPlaceholderFile)) : resultsFile[0].path,
+                                isDirectory: resultsFile[0].is_directory != 0
+                            });
+                        }).catch((resultsFile) => {
+                            reject(rejectMsg);
+                        }));
+                    }
+                    Promise.all(promises).then((results) => {
+                        resolve({
+                            message: "Successfully retrieved your list of favorites.",
+                            httpStatus: 200,
+                            success: true,
+                            connectionToDrop: connection,
+                            favorites: favoriteList
+                        });
+                    }).catch((results) => {
+                        reject(errMsg);
+                    });
+                }
+            }).catch((results) => {
+                reject(errMsg);
+            });
+        });
+    });
+};
 module.exports.removeFavorite = function(removeFavData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(removeFavData) || objectUtil.isNullOrUndefined(removeFavData.path) || objectUtil.isNullOrUndefined(removeFavData.isDirectory)

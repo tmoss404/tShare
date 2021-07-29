@@ -17,4 +17,11 @@ module.exports.setupRoutes = function(app) {
             routes.sendResponse(res, err);
         });
     });
+    app.post("/favorite/list", accountMiddleware.checkAuth, (req, res) => {
+        favoritesModel.listFavorites(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
 };

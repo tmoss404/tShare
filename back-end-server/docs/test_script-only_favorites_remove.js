@@ -136,6 +136,19 @@ xhttp.send(JSON.stringify({
     isDirectory: true
 }));
 
+// Listing favorites:
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/favorite/list", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken
+}));
+
 // Removing a favorite:
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
@@ -149,4 +162,17 @@ xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
     path: "your directory",
     isDirectory: true
+}));
+
+// Listing favorites:
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/favorite/list", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken
 }));

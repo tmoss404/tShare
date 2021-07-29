@@ -63,3 +63,26 @@ xhttp.send(JSON.stringify({
     path: "your directory/file.txt",
     isDirectory: false
 }));
+
+
+/favorite/list:
+
+This route allows a user to list their favorites. It takes one parameter: loginToken wrapped in an Object:
+- loginToken: String
+
+Returns an Object containing message, success, and optionally favorites:
+{"message":"Successfully retrieved your list of favorites.","success":true,"favorites":[{"path":"3764/your directory/file.txt","isDirectory":false},{"path":"3764/your directory","isDirectory":true}]}
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/favorite/list", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU"
+}));
