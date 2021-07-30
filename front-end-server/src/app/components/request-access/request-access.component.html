@@ -7,7 +7,7 @@
             <input class="file-search" placeholder="What are you looking for?">    
         </div>
     </div>
-    <div class="user-container">
+    <div class="file-container">
         <div *ngIf="users; else loading">
             <app-user-card *ngFor="let user of users" [user]="user"></app-user-card>
         </div>
