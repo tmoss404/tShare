@@ -79,6 +79,15 @@ export class FileService {
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/recycle/delete`, purgeFileData)
   }
 
+  // Permanent delete, delete all files from recycle bin
+  public purgeAllFiles() {
+    const purgeFileData = {
+      loginToken: this.auth.getToken(),
+    }
+
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/recycle/delete-all`, purgeFileData)
+  }
+
   // Get Deleted Files
   public getDeletedFiles(path: string) : Observable<any> {
     const getDeletedFilesData = { 

@@ -3,7 +3,7 @@
         <div class="option-container">
             <button class="file-option-btn"><i class="bi bi-arrow-counterclockwise"></i>&#160;&#160;Restore Selected</button>
 
-            <button class="file-option-btn"><i class="bi bi-trash"></i>&#160;&#160;Delete Selected</button>
+            <button class="file-option-btn" (click)="openDeleteAllModal(delete_all_files)"><i class="bi bi-trash"></i>&#160;&#160;Delete All</button>
 
             <button class="file-option-btn" (click)="getDeletedFiles(currentDir)"><i class="bi bi-arrow-repeat"></i>&#160;&#160;Refresh</button>
 
@@ -56,7 +56,45 @@
     <ng-template contextMenuItem>
         Restore
     </ng-template>
-    <ng-template contextMenuItem let-item (execute)="deleteFile($event.item)">
+    <ng-template contextMenuItem let-item (execute)="openDeleteModal(delete_file, $event.item)">
         Delete
     </ng-template>
 </context-menu>
+
+<!-- Delete File confirmation modal template -->
+<ng-template #delete_file let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">Delete file</h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+        <div>
+            Are you sure?
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close('Cancel')">Cancel</button>
+        <button type="button" class="btn btn-dark" (click)="modal.close('Delete')">Delete</button>
+    </div>
+</ng-template>
+
+<!-- Delete All Files confirmation modal template -->
+<ng-template #delete_all_files let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">Delete All Files</h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+        <div>
+            Are you sure?
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
+        <button type="button" class="btn btn-dark" (click)="deleteAllFiles(modal)">Delete</button>
+    </div>
+</ng-template>

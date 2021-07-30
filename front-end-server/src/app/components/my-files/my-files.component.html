@@ -66,7 +66,7 @@
     <ng-template contextMenuItem let-item (execute)="downloadFile($event.item)">
         Download
     </ng-template>
-    <ng-template contextMenuItem let-item (execute)="deleteFile($event.item)">
+    <ng-template contextMenuItem let-item (execute)="openDeleteModal(delete_file, $event.item)">
         Delete
     </ng-template>
     <ng-template contextMenuItem let-item (execute)="openNewFolderModal(copy_file)">
@@ -75,7 +75,7 @@
     <ng-template contextMenuItem let-item (execute)="openNewFolderModal(move_file)">
         Move
     </ng-template>
-    <ng-template contextMenuItem>
+    <ng-template contextMenuItem let-item>
         Rename
     </ng-template>
 </context-menu>
@@ -109,6 +109,25 @@
             <button type="submit" class="btn btn-dark" [disabled]="!newFolderForm.valid">Create</button>
         </div>
     </form>
+</ng-template>
+
+<!-- Delete File confirmation modal template -->
+<ng-template #delete_file let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">Delete file</h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+        <div>
+            Are you sure?
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close('Cancel')">Cancel</button>
+        <button type="button" class="btn btn-dark" (click)="modal.close('Delete')">Delete</button>
+    </div>
 </ng-template>
 
 <!-- Copy File modal template -->
@@ -190,21 +209,33 @@
     </div>
 </ng-template>
 
-<!-- Delete File confirmation modal template -->
-<ng-template #delete_file let-modal>
+<!-- Rename modal template -->
+<!-- <ng-template #rename let-modal>
     <div class="modal-header">
-        <h4 class="modal-title" id="modal-basic-title">Delete file</h4>
+        <h4 class="modal-title" id="modal-basic-title">Rename</h4>
         <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
-    <div class="modal-body">
-        <div>
-            Are you sure?
+    <form (ngSubmit)="createFolder(modal)" [formGroup]="newFolderForm">
+        <div class="modal-body">
+            <div class="form-group">
+                <div class="input-group">
+                    <input type="text" class="form-control" formControlName='folderName' placeholder="Enter Folder Name" ngbAutofocus>
+                </div>
+            </div>
+            <div *ngIf="newFolderForm.controls.folderName.invalid && newFolderForm.controls.folderName.dirty">
+                <div *ngIf="newFolderForm.controls.folderName.errors?.required" class="form-control alert">
+                    You must enter a name.
+                </div>
+                <div *ngIf="newFolderForm.controls.folderName.errors?.invalidChars" class="form-control alert">
+                    Invalid characters.
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
-        <button type="button" class="btn btn-dark" >Delete</button>
-    </div>
-</ng-template>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
+            <button type="submit" class="btn btn-dark" [disabled]="!newFolderForm.valid">Create</button>
+        </div>
+    </form>
+</ng-template> -->

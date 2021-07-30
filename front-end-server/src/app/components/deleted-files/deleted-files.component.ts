@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { lastValueFrom } from 'rxjs';
 import { FileService } from 'src/app/services/file.service';
 
@@ -13,7 +14,8 @@ export class DeletedFilesComponent implements OnInit {
   currentDir: string = null;
 
   constructor(
-    private fileService: FileService
+    private fileService: FileService,
+    private modalService: NgbModal
   ) { }
 
   ngOnInit(): void {
@@ -93,6 +95,32 @@ export class DeletedFilesComponent implements OnInit {
       }
     });
     
+  }
+
+  openDeleteModal(content: any, file: any) : void {
+    this.modalService.open(content, {centered: true, windowClass: 'delete-file-modal', size: 'sm'}).result.then((result) => {
+      if(result == 'Delete')
+        this.deleteFile(file);
+    }, () => {
+      // Catch dismiss but do nothing since we don't have to do anything on dismiss
+    }); 
+  }
+
+  deleteAllFiles(modal: any) {
+    this.fileService.purgeAllFiles().subscribe({
+      next: (success) => {
+        modal.close();
+        this.currentDir = null;
+        this.getDeletedFiles(this.currentDir);
+      },
+      error: (err) => {
+        console.log(err.error);
+      }
+    });
+  }
+
+  openDeleteAllModal(content) : void {
+    this.modalService.open(content, {centered: true, windowClass: 'delete-file-modal', size: 'sm'}); 
   }
 
 }

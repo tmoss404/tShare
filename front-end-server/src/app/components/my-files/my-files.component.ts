@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgbModal, NgbProgressbar} from '@ng-bootstrap/ng-bootstrap';
 import { lastValueFrom, Subscription } from 'rxjs';
 import { FileService } from 'src/app/services/file.service';
@@ -12,7 +12,7 @@ import { finalize } from 'rxjs/operators';
   templateUrl: './my-files.component.html',
   styleUrls: ['./my-files.component.css']
 })
-export class MyFilesComponent implements OnInit {
+export class MyFilesComponent implements OnInit, OnDestroy {
 
   files: Array<any>;
   currentDir: string = null;
@@ -28,6 +28,11 @@ export class MyFilesComponent implements OnInit {
 
   ngOnInit(): void {
     this.getFiles(this.currentDir);
+  }
+
+  ngOnDestroy(): void {
+    if(this.uploadSub)
+      this.uploadSub.unsubscribe();
   }
 
   //Async get files function, returning a promise so I can execute certain operations after it resolves
@@ -127,7 +132,7 @@ export class MyFilesComponent implements OnInit {
   }
 
   //Opens the modal for creating a new folder
-  openNewFolderModal(content) : void {
+  openNewFolderModal(content: any) : void {
     //Creates a formgroup for entering the folder name
     this.newFolderForm = this.formBuilder.group({
       folderName: ['', [Validators.required, folderName()]]
@@ -136,16 +141,31 @@ export class MyFilesComponent implements OnInit {
     this.modalService.open(content, {centered: true, windowClass: 'new-folder-modal', size: 'md'}); 
   }
 
-  openCopyModal(content) {
+  //Opens the modal for renaming a file / folder
+  /* openRenameModal(content: any) : void {
+    //Creates a formgroup for entering the new name
+    let renameForm = this.formBuilder.group({
+      newName: ['', [Validators.required, folderName()]]
+    });
+
+    this.modalService.open(content, {centered: true, windowClass: 'rename-modal', size: 'md'}); 
+  } */
+
+  openCopyModal(content: any) {
     this.modalService.open(content, {centered: true, windowClass: 'copy-modal', size: 'md'}); 
   }
 
-  openMoveModal(content) {
+  openMoveModal(content: any) {
     this.modalService.open(content, {centered: true, windowClass: 'move-modal', size: 'md'}); 
   }
 
-  openDeleteModal(content) : void {
-    this.modalService.open(content, {centered: true, windowClass: 'delete-file-modal', size: 'sm'}); 
+  openDeleteModal(content: any, file: any) : void {
+    this.modalService.open(content, {centered: true, windowClass: 'delete-file-modal', size: 'sm'}).result.then((result) => {
+      if(result == 'Delete')
+        this.deleteFile(file);
+    }, () => {
+      // Catch dismiss but do nothing since we don't have to do anything on dismiss
+    }); 
   }
 
   //Creates a new folder in the system on submit of the modal form, takes the modal as an arg to close it on submit
