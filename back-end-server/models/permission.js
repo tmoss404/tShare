@@ -35,7 +35,8 @@ module.exports.requestPermission = function(requestPermData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(requestPermData) || objectUtil.isNullOrUndefined(requestPermData.path) || requestPermData.path.length == 0 || 
             objectUtil.isNullOrUndefined(requestPermData.isDirectory) || requestPermData.isDirectory != false && requestPermData.isDirectory != true || 
-            objectUtil.isNullOrUndefined(requestPermData.requesteeAccountId) || objectUtil.isNullOrUndefined(requestPermData.permissionFlags)) {
+            objectUtil.isNullOrUndefined(requestPermData.requesteeAccountId) || objectUtil.isNullOrUndefined(requestPermData.permissionFlags) ||
+            !requestPermData.isDirectory && (permissionUtil.hasFlag(requestPermData.permissionFlags, permissionUtil.createFilePerm) || permissionUtil.hasFlag(requestPermData.permissionFlags, permissionUtil.deleteFilePerm))) {
             reject(commonErrors.genericStatus400);
             return;
         }
@@ -96,7 +97,7 @@ module.exports.requestPermission = function(requestPermData) {
                       "attachments": [],
                       "title": "Someone Requested Access to a File You Own",
                       "html": "Hi,<br/><br/><br/>" +
-                              "This is a notification that user " + decodedToken.email + " has requested " + flagNameStr + " permissions for " + (requestPermData.isDirectory ? "directory" : "file") + " \"" + requestPermData.path + "\".<br/><br/>" +
+                              "This is a notification that user " + decodedToken.email + " has requested " + flagNameStr + " permissions for " + (requestPermData.isDirectory ? "directory" : "file") + " \"" + requestPermData.path + "\".<br/><br/><br/>" +
                               "Best,<br/><br/><br/>Eric McDonald - tShare",
                       "methods": {
                         "postmark": false,
@@ -148,7 +149,7 @@ module.exports.requestPermission = function(requestPermData) {
                         }
                         var promises = [];
                         for (var i = 0; i < resultsFile.length; i++) {
-                            promises.push(requestPermSingleFile(resultsFile[i], decodedToken, requestPermData, errMsg, promise, connection));
+                            promises.push(requestPermSingleFile(resultsFile[i], decodedToken, requestPermData, errMsg, connection));
                         }
                         Promise.all(promises).then((result) => {
                             request(trustifiOpts, function (error, response) {

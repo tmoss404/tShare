@@ -1,0 +1,42 @@
+All permission-related routes are prefixed with /permission/ and follow-this-naming-convention-with-hyphens. Data validation is done by this server.
+Also, all requests have the fields listed wrapped in an Object. All routes should return at least a message and a success status wrapped in an Object.
+
+
+
+// Add this function to your web browser's console before running the example scripts:
+// Hey, don't blame me! Tanner wanted the HTTP statuses to work like this for the Angular side of things.
+function statusReturnsResponse(status) {
+    return true;
+}
+
+
+
+/permission/request:
+
+This route allows a user to request permission to access another user's files. It takes five parameters: loginToken, path, isDirectory, requesteeAccountId, permissionFlags all wrapped in an Object:
+- loginToken: String
+- path: String
+- isDirectory: boolean, indicates whether or not path specifies a directory or a file,
+- requesteeAccountId: int, specifies the user to request the file from
+- permissionFlags: int, please see permissionUtil for more information on how these flags work. Please note that the create and delete permissions are not valid when isDirectory is false.
+
+Returns an Object containing message and success:
+{"message":"Successfully requested a directory from the requestee.","success":true}
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/permission/request", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
+    path: "your directory/file.txt",
+    isDirectory: false,
+    requesteeAccountId: 1034 /* eric.d.mcdonald@gmail.com */,
+    permissionFlags: (1 << 2) /* read */ | (1 << 3) /* write */
+}));

@@ -41,7 +41,6 @@ module.exports.selectAllFromTable = function(tableName, connection) {
 };
 module.exports.insertIntoTable = function(tableName, columnsClause, valuesClause, connection) {
     return new Promise((resolve, reject) => {
-        console.log(connection);
         connection.query("INSERT INTO " + tableName + " (" + columnsClause + ") VALUES (" + valuesClause + ")", function(err, results, fields) {
             if (!objectUtil.isNullOrUndefined(err)) {
                 console.log(err);

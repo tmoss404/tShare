@@ -55,8 +55,8 @@ xhttp.open("POST", "http://localhost/permission/request", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
-    path: "positiontest2.PTR",
-    isDirectory: false,
+    path: "my directory",
+    isDirectory: true,
     requesteeAccountId: 1034 /* eric.d.mcdonald@gmail.com */,
     permissionFlags: (1 << 0) /* create */ | (1 << 1) /* delete */ | (1 << 2) /* read */ | (1 << 3) /* write */
 }));
