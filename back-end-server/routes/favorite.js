@@ -1,4 +1,4 @@
-const favoritesModel = require("../models/favorites");
+const favoritesModel = require("../models/favorite");
 const routes = require("../routes");
 const accountMiddleware = require("../models/accountMiddleware");
 

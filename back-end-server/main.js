@@ -4,6 +4,7 @@ const cors = require("cors");
 const routes = require("./routes");
 const appConstants = require("./config/appConstants");
 const database = require("./config/database");
+const permissionUtil = require("./models/permissionUtil");
 
 var app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 
 // Setting up various systems:
 database.init();
+permissionUtil.init();
 routes.init(app);
 
 function handleShutdown() {
