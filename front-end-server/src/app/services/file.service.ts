@@ -14,16 +14,8 @@ export class FileService {
     private auth: AuthenticationService
   ) { }
   
-  public getSignedUrlUpload(fileToUpload: File, dir: string) : Observable<any> {
+  public getSignedUrlUpload(fileToUpload: File, filePath: string) : Observable<any> {
     if(fileToUpload.name != null){
-      let filePath: string;
-      if(dir != (null || undefined)) {
-        filePath = dir + '/' + fileToUpload.name; 
-      }
-      else {
-        filePath = fileToUpload.name;
-      }
-
       const signUrlData = {
         loginToken: this.auth.getToken(),
         filePath: filePath,
@@ -37,14 +29,16 @@ export class FileService {
   }
 
   public uploadFile(signedUrl: string, fileToUpload: File) : Observable<any>{
-    const httpOptions = {
+    const httpOptions : Object = {
       headers: new HttpHeaders({
         'Content-Type':  fileToUpload.type,
         'x-amz-acl': 'public-read'
-      })
+      }),
+      reportProgress: true,
+      observe: "events"
     };
     
-    return this.http.put<any>(signedUrl, fileToUpload, httpOptions);
+    return this.http.put(signedUrl, fileToUpload, httpOptions);
   }
 
   public getSignedUrlDownload(filePath: string) :Observable<any> {

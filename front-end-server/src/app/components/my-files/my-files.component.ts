@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { lastValueFrom } from 'rxjs';
+import { NgbModal, NgbProgressbar} from '@ng-bootstrap/ng-bootstrap';
+import { lastValueFrom, Subscription } from 'rxjs';
 import { FileService } from 'src/app/services/file.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { folderName } from '../../validators/folderName.validator';
+import { HttpEventType } from '@angular/common/http';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-my-files',
@@ -15,6 +17,8 @@ export class MyFilesComponent implements OnInit {
   files: Array<any>;
   currentDir: string = null;
   newFolderForm: FormGroup;
+  uploadProgress: number;
+  uploadSub: Subscription;
 
   constructor(
     private fileService: FileService,
@@ -41,16 +45,7 @@ export class MyFilesComponent implements OnInit {
   /* BEGIN DELETE FILE */
   deleteFile(file: any) : void {
 
-    let filePath: string;
-
-    //Add a slash to the route if you are not in the root directory
-    if(this.currentDir != (null || undefined)){
-      filePath = this.currentDir + '/' + file.name;
-    }
-    // File path is simply the name of the file if you are currently in the root directory
-    else {
-      filePath = file.name;
-    }
+    let filePath = this.getFilePath(file.name);
 
        // Request to the back-end to delete the file
     this.fileService.deleteFile(filePath, file.isDirectory).subscribe({
@@ -70,16 +65,7 @@ export class MyFilesComponent implements OnInit {
   downloadFile(file: any) : void {
     //We cannot download directories, so we disable the functionality for a file that is a directory
     if(!file.isDirectory){
-      let filePath: string;
-
-      //Add a slash to the route if you are not in the root directory
-      if(this.currentDir != (null || undefined)){
-        filePath = this.currentDir + '/' + file.name;
-      }
-      //File path is simply the name of the file if you are currently in the root directory
-      else {
-        filePath = file.name;
-      }
+      let filePath = this.getFilePath(file.name);
 
       this.fileService.getSignedUrlDownload(filePath).subscribe({
         next: (success) => {
@@ -110,21 +96,27 @@ export class MyFilesComponent implements OnInit {
 
   uploadFile(files: FileList) : void {
     //Contingency for weird error with file input, trying to read null file name
-    if(files.item(0).name != null){
+    if(files){
       let fileToUpload = files.item(0);
 
-      let signUrlReq = this.fileService.getSignedUrlUpload(fileToUpload, this.currentDir);
+      let signUrlReq = this.fileService.getSignedUrlUpload(fileToUpload, this.getFilePath(fileToUpload.name));
       if (signUrlReq != null) {
         signUrlReq.subscribe({
           next: (success) => {
-            this.fileService.uploadFile(success.signedUrlData, fileToUpload).subscribe({
-              next: (success) => {
+            const upload$ = this.fileService.uploadFile(success.signedUrlData, fileToUpload).pipe(
+              finalize(() => { 
+                this.uploadProgress = null;
+                this.uploadSub = null;
                 this.getFiles(this.currentDir);
-              },
-              error: (err) => {
-                console.log(err.error);
+              })
+            );
+
+            this.uploadSub = upload$.subscribe(event => {
+              if (event.type == HttpEventType.UploadProgress) {
+                this.uploadProgress = Math.round(100 * (event.loaded / event.total));
               }
-            });
+            })
+
           },
           error: (err) => {
             console.log(err.error);
@@ -144,12 +136,16 @@ export class MyFilesComponent implements OnInit {
     this.modalService.open(content, {centered: true, windowClass: 'new-folder-modal', size: 'md'}); 
   }
 
-  openCopyModal(copycontent) {
-    this.modalService.open(copycontent, {centered: true, windowClass: 'copy-modal', size: 'md'}); 
+  openCopyModal(content) {
+    this.modalService.open(content, {centered: true, windowClass: 'copy-modal', size: 'md'}); 
   }
 
-  openMoveModal(movecontent) {
-    this.modalService.open(movecontent, {centered: true, windowClass: 'move-modal', size: 'md'}); 
+  openMoveModal(content) {
+    this.modalService.open(content, {centered: true, windowClass: 'move-modal', size: 'md'}); 
+  }
+
+  openDeleteModal(content) : void {
+    this.modalService.open(content, {centered: true, windowClass: 'delete-file-modal', size: 'sm'}); 
   }
 
   //Creates a new folder in the system on submit of the modal form, takes the modal as an arg to close it on submit
@@ -157,7 +153,7 @@ export class MyFilesComponent implements OnInit {
     //Get the user input from the form
     let folderName = this.newFolderForm.value.folderName;
     //If the current dir is the root then the new dir is simply the name of the directory, if not, add a slash in between
-    let newDir = this.currentDir != (null || undefined) ? this.currentDir + '/' + folderName : folderName;
+    let newDir = this.getFilePath(folderName);
 
     //Post request to the back-end to create the folder
     this.fileService.createDir(newDir).subscribe({
@@ -176,7 +172,7 @@ export class MyFilesComponent implements OnInit {
   //Changes current directory to the specified directory
   changeCurrentDir(dirName: string) : void {
     //If the current dir is the root then the new dir is simply the name of the directory, if not, add a slash in between
-    let newDir = this.currentDir == (null || undefined) ? dirName : this.currentDir + '/' + dirName;
+    let newDir = this.getFilePath(dirName);
 
     //Update files array
     this.getFiles(newDir).then(() => {
@@ -205,6 +201,18 @@ export class MyFilesComponent implements OnInit {
         //Only change the current directory once the request completes and the files are updated
         this.currentDir = newDir;
       });
+    }
+  }
+
+  //Compile a proper path for a file / directory based on what the current directory is
+  getFilePath(fileName: string) : string {
+    //Add a slash to the route if you are not in the root directory
+    if(this.currentDir != (null || undefined)){
+      return this.currentDir + '/' + fileName;
+    }
+    // File path is simply the name of the file / dir if you are currently in the root directory
+    else {
+      return fileName;
     }
   }
 

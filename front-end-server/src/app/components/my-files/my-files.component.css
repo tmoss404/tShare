@@ -58,6 +58,27 @@
     color: white;
 }
 
+.progress-container {
+    display: inline-block;
+    text-align: center;
+    background-color: #323232;
+    color: white;
+    border: none;
+    width: 12%;
+    height: 100%;
+    padding: 5px;
+    margin-right: 6px;
+    border-radius: 6px;
+}
+
+.progress {
+    display: inline-flex;
+    width: 92%;
+    height: 10px;
+    vertical-align: middle;
+    color: #1ab9d1 !important;
+}
+
 .file-container {
     border-radius: 6px;
     margin-left: 4%;
