@@ -2,12 +2,12 @@
     <div class="option-bar">
         <div class="option-container">
             <button class="file-option-btn"><i class="bi bi-dash-circle"></i>&#160;&#160;Remove Selected</button>
-            <button class="file-option-btn"><i class="bi bi-arrow-repeat"></i>&#160;&#160;Refresh</button>
-    
-            <input class="file-search" placeholder="What are you looking for?">    
+            <button class="file-option-btn" (click)="getAllQuickAccessFiles()"><i class="bi bi-arrow-repeat"></i>&#160;&#160;Refresh</button>
+
+            <input class="file-search" placeholder="What are you looking for?">
         </div>
     </div>
-        <div *ngIf="currentDir != (null || undefined)" class="go-back-bar">
+    <div *ngIf="currentDir != (null || undefined)" class="go-back-bar">
         <div class="go-back">
             <div class="bi bi-arrow-90deg-up"> ../{{currentDir}}</div>
         </div>

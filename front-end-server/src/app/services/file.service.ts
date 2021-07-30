@@ -57,16 +57,36 @@ export class FileService {
 
   }
 
-  // Delete File
-  public deleteFile(path: string, isDirectory: boolean) : Observable<any> {
-    const deleteFileData = {
+  // Add Quick Access File
+  public addQuickAccessFile(path: string, isDirectory: boolean) : Observable<any> {
+    const quickAccessFileData = {
       loginToken: this.auth.getToken(),
       path: path,
       isDirectory: isDirectory
     }
 
-    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/delete`, deleteFileData);
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/favorite/add`, quickAccessFileData);
   }
+
+  // Quick Access Delete
+  public deleteQuickAccessFile(path: string, isDirectory: boolean) {
+    const deleteQuickAccessData = {
+      loginToken: this.auth.getToken(),
+      path: path,
+      isDirectory: isDirectory
+    }
+
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/favorite/remove`, deleteQuickAccessData)
+  }
+
+    // Get Quick Access Files
+    public getQuickAccessFiles() {
+      const getQuickAccessFilesData = { 
+        loginToken: this.auth.getToken()
+      }
+  
+      return this.http.post<any>(`https://tshare-back-end.herokuapp.com/favorite/list`, getQuickAccessFilesData);
+    }
 
   // Permanent delete, delete from recycle bin
   public purgeFile(path: string, isDirectory: boolean) {
@@ -97,6 +117,18 @@ export class FileService {
     }
 
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/recycle/list`, getDeletedFilesData);
+  }
+
+
+   // A File
+   public deleteFile(path: string, isDirectory: boolean) : Observable<any> {
+    const deleteFileData = {
+      loginToken: this.auth.getToken(),
+      path: path,
+      isDirectory: isDirectory
+    }
+
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/delete`, deleteFileData);
   }
 
   public getFiles(path: string) : Observable<any> {
