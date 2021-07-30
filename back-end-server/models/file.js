@@ -456,6 +456,67 @@ module.exports.makeDir = function(makeDirData) {
         });
     });
 };
+module.exports.permaDeleteAll = function(permaDeleteAllData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(permaDeleteAllData)) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        var decodedToken = permaDeleteAllData.decodedToken;
+        var fullPath = decodedToken.accountId + "_recycle/";
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            var errMsg = {
+                message: "An error has occured while deleting all files.",
+                success: false,
+                httpStatus: 500,
+                connectionToDrop: connection
+            };
+            database.deleteFromTable("File", "path LIKE '" + fullPath + "%' AND owner_id=" + decodedToken.accountId, connection).then((results) => {
+                s3.listObjectsV2({
+                    Bucket: appConstants.awsBucketName,
+                    Prefix: fullPath
+                }, (err, data) => {
+                    if (err) {
+                        reject(errMsg);
+                        return;
+                    }
+                    var promises = [];
+                    for (var i = 0; i < data.KeyCount; i++) {
+                        var key = data.Contents[i].Key;
+                        promises.push(new Promise((resolve, reject) => {
+                            s3.deleteObject({
+                                Bucket: appConstants.awsBucketName,
+                                Key: key
+                            }, (err, data) => {
+                                if (err) {
+                                    reject(errMsg);
+                                } else {
+                                    resolve(data);
+                                }
+                            });
+                        }));
+                    }
+                    Promise.all(promises).then((data) => {
+                        resolve({
+                            message: "Successfully deleted all files from your recycle bin.",
+                            success: true,
+                            httpStatus: 200,
+                            connectionToDrop: connection
+                        });
+                    }).catch((error) => {
+                        reject(error);
+                    });
+                });
+            }).catch((results) => {
+                reject(errMsg);
+            });
+        });
+    });
+};
 module.exports.permaDelete = function(permaDeleteData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(permaDeleteData) || objectUtil.isNullOrUndefined(permaDeleteData.path) || permaDeleteData.path.length == 0 || permaDeleteData.isDirectory != false && permaDeleteData.isDirectory != true) {
