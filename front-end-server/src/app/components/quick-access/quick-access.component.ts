@@ -23,15 +23,18 @@ export class QuickAccessComponent implements OnInit {
     this.getAllQuickAccessFiles();
   }
 
-   // Get Deleted Files Function
+   // Get Quick Access Files Function
    async getAllQuickAccessFiles() : Promise<any> {
 
-    this.files = undefined;
+    this.files = [];
 
     const files$ = this.fileService.getQuickAccessFiles();
 
     await lastValueFrom(files$).then((success) => {
-      this.files = success.favorites;
+     for(let i = 0; i < success.favorites.length; i++){
+       this.files.push(success.favorites[i].path);
+     }
+    //  this.files = success.favorites;
       console.log("Great Success - Quick Access Files: " + JSON.stringify(this.files));
     }).catch((err) => {
       console.log("Error ocurred while trying to get quick access files " + err);

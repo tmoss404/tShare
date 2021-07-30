@@ -5,12 +5,12 @@
 
             <button class="file-option-btn" (click)="uploader.click()" *ngIf="!uploadProgress"><i class="bi bi-upload"></i>&#160;&#160;Upload File</button>
             <input hidden type="file" #uploader (change)="uploadFile($event.target.files)" onclick="this.value = null" />
-            
+
             <div class="progress-container" *ngIf="uploadProgress">
                 <ngb-progressbar class="progress" type="info" [value]="uploadProgress">
                 </ngb-progressbar>
             </div>
-            
+
             <button class="file-option-btn"><i class="bi bi-trash"></i>&#160;&#160;Delete Selected</button>
 
             <button class="file-option-btn"><i class="bi bi-person-plus"></i>&#160;&#160;Grant Access</button>
@@ -78,7 +78,7 @@
     <ng-template contextMenuItem let-item>
         Rename
     </ng-template>
-    <ng-template contextMenuItem let-item>
+    <ng-template contextMenuItem let-item (execute)="addToFavoriteFile($event.item)">
         Add to 'Quick Access'
     </ng-template>
 </context-menu>
@@ -146,24 +146,25 @@
         <div class="row">
             <div class="col-md-4 border-right">
                 <th>
-                <p>My Files</p>
+                    <p>My Files</p>
                 </th>
                 <p>Folders here</p>
             </div>
             <div class="col-md-8">
                 <table>
                     <tr>
-                    <th>
-                    
-                <p>< My Files</p>
-                    </th>
-                </tr>
-            
-            <tr>
-                <p>Files here</p>
-            </tr>
+                        <th>
+
+                            <p>
+                                < My Files</p>
+                        </th>
+                    </tr>
+
+                    <tr>
+                        <p>Files here</p>
+                    </tr>
                 </table>
-                
+
             </div>
         </div>
     </div>
@@ -186,23 +187,24 @@
         <div class="row">
             <div class="col-md-4 border-right">
                 <th>
-                <p>My Files</p>
+                    <p>My Files</p>
                 </th>
                 <p>Folders here</p>
             </div>
             <div class="col-md-8">
                 <table>
                     <tr>
-                    <th>
-                    
-                <p>< My Files</p>
-                    </th>
-                </tr>
-            <tr>
-                <p>Files here</p>
-            </tr>
+                        <th>
+
+                            <p>
+                                < My Files</p>
+                        </th>
+                    </tr>
+                    <tr>
+                        <p>Files here</p>
+                    </tr>
                 </table>
-                
+
             </div>
         </div>
     </div>
