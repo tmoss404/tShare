@@ -7,6 +7,9 @@ import { Component, OnInit } from '@angular/core';
 })
 export class QuickAccessComponent implements OnInit {
 
+  files : Array<any>;
+  currentDir: string = null;
+
   constructor() { }
 
   ngOnInit(): void {
