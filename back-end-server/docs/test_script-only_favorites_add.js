@@ -135,3 +135,15 @@ xhttp.send(JSON.stringify({
     path: "your directory",
     isDirectory: true
 }));
+
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/favorite/list", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken
+}));

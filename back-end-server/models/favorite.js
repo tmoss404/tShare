@@ -3,7 +3,13 @@ const commonErrors = require("./commonErrors");
 const appConstants = require("../config/appConstants");
 const fileUtil = require("./fileUtil");
 const database = require("../config/database");
+const awsSdk = require("aws-sdk");
 
+var s3  = new awsSdk.S3({
+    accessKeyId: appConstants.awsAccessKeyId,
+    secretAccessKey: appConstants.awsAccessSecretKey,
+    region: appConstants.awsRegion
+});
 var dbConnectionPool;
 
 module.exports.listFavorites = function(listFavoritesData) {
@@ -25,7 +31,15 @@ module.exports.listFavorites = function(listFavoritesData) {
                 connectionToDrop: connection
             };
             database.selectFromTable("Favorite", "owner_id=" + decodedToken.accountId, connection).then((results) => {
-                var favoriteList = [];
+                var favoriteList = {
+                    IsTruncated: false,
+                    "KeyCount": 0,
+                    "Name": appConstants.awsBucketName,
+                    "Prefix":"",
+                    "MaxKeys":1000,
+                    "CommonPrefixes":[],
+                    "Contents":[]
+                };
                 if (results.length == 0) {
                     resolve({
                         message: "Successfully retrieved your list of favorites.",
@@ -43,17 +57,38 @@ module.exports.listFavorites = function(listFavoritesData) {
                             success: false,
                             connectionToDrop: connection
                         };
-                        promises.push(database.selectFromTable("File", "id=" + results[i].file_id, connection).then((resultsFile) => {
-                            if (results.length == 0) {
+                        promises.push(new Promise((resolve, reject) => {
+                            database.selectFromTable("File", "id=" + results[i].file_id, connection).then((resultsFile) => {
+                                if (results.length == 0) {
+                                    reject(rejectMsg);
+                                    return;
+                                }
+                                s3.getObject({
+                                    Bucket: appConstants.awsBucketName,
+                                    Key: resultsFile[0].path
+                                }, (err, data) => {
+                                    if (err) {
+                                        reject(rejectMsg);
+                                        return;
+                                    }
+                                    favoriteList.Contents.push({
+                                        "Key": resultsFile[0].is_directory != 0 ? resultsFile[0].path.substring(0, resultsFile[0].path.lastIndexOf("/" + appConstants.dirPlaceholderFile)) : resultsFile[0].path,
+                                        "LastModified": data.LastModified,
+                                        "ETag": data.ETag,
+                                        "Size":data.ContentLength,
+                                        "StorageClass":"STANDARD",
+                                        isDirectory: resultsFile[0].is_directory != 0,
+                                        owner: {
+                                            accountId: decodedToken.accountId,
+                                            email: decodedToken.email
+                                        }
+                                    });
+                                    ++favoriteList.KeyCount;
+                                    resolve();
+                                });
+                            }).catch((resultsFile) => {
                                 reject(rejectMsg);
-                                return;
-                            }
-                            favoriteList.push({
-                                path: resultsFile[0].is_directory != 0 ? resultsFile[0].path.substring(0, resultsFile[0].path.lastIndexOf("/" + appConstants.dirPlaceholderFile)) : resultsFile[0].path,
-                                isDirectory: resultsFile[0].is_directory != 0
-                            });
-                        }).catch((resultsFile) => {
-                            reject(rejectMsg);
+                            })
                         }));
                     }
                     Promise.all(promises).then((results) => {

@@ -10,4 +10,25 @@ module.exports.setupRoutes = function(app) {
             routes.sendResponse(res, err);
         });
     });
+    app.post("/permission/accept", accountMiddleware.checkAuth, (req, res) => {
+        permissionModel.acceptRequest(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
+    app.post("/permission/deny", accountMiddleware.checkAuth, (req, res) => {
+        permissionModel.denyRequest(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
+    app.post("/permission/list-pending", accountMiddleware.checkAuth, (req, res) => {
+        permissionModel.listPending(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
 };
