@@ -90,6 +90,37 @@ xhttp.setRequestHeader("Content-Type", "text/plain");  // This header MUST match
 xhttp.setRequestHeader("x-amz-acl", "public-read");  // You MUST have this header set, otherwise AWS will give you error 403.
 xhttp.send("This is the contents of my file!");
 
+// Uploading a file:
+signedUrl = null;
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+        signedUrl = JSON.parse(this.responseText).signedUrlData;
+        console.log(signedUrl);
+    }
+};
+xhttp.open("POST", "http://localhost/file/upload", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+loginToken: theLoginToken,
+filePath: "your directory/file2.txt",
+fileType: "text/plain"
+}));
+
+while (signedUrl == null) {}
+
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("PUT", signedUrl, false);
+xhttp.setRequestHeader("Content-Type", "text/plain");  // This header MUST match up with the fileType you provided in the sign URL request.
+xhttp.setRequestHeader("x-amz-acl", "public-read");  // You MUST have this header set, otherwise AWS will give you error 403.
+xhttp.send("This is the contents of my file!");
+
 // Listing files (no directory path):
 xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
@@ -118,6 +149,20 @@ xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken,
     path: "your directory/file.txt",
+    isDirectory: false
+}));
+
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/favorite/add", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken,
+    path: "your directory/file2.txt",
     isDirectory: false
 }));
 
