@@ -1,0 +1,20 @@
+{
+    "AcceptRanges":"bytes",
+    "LastModified":"2021-07-23T12:52:16.000Z",
+    "ContentLength":2,
+    "ETag":"\"4400cfde1728fb76198b09d56de41641\"",
+    "VersionId":"EKQVPM6erPIJBy2AMpnAbTcriFtYR.ql",
+    "ContentRange":"bytes 0-1/126589",
+    "ContentType":"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "Metadata":{
+       
+    },
+    "Body":{
+       "type":"Buffer",
+       "data":[
+          80,
+          75
+       ]
+    }
+ }
+ 
