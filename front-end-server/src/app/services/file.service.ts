@@ -28,7 +28,7 @@ export class FileService {
     }
   }
 
-  public uploadFile(signedUrl: string, fileToUpload: File) : Observable<any>{
+  public uploadFile(signedUrl: string, fileToUpload: File) : Observable<any> {
     const httpOptions : Object = {
       headers: new HttpHeaders({
         'Content-Type':  fileToUpload.type,
@@ -69,7 +69,7 @@ export class FileService {
   }
 
   // Quick Access Delete
-  public deleteQuickAccessFile(path: string, isDirectory: boolean) {
+  public deleteQuickAccessFile(path: string, isDirectory: boolean) : Observable<any> {
     const deleteQuickAccessData = {
       loginToken: this.auth.getToken(),
       path: path,
@@ -79,17 +79,17 @@ export class FileService {
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/favorite/remove`, deleteQuickAccessData)
   }
 
-    // Get Quick Access Files
-    public getQuickAccessFiles() {
-      const getQuickAccessFilesData = { 
-        loginToken: this.auth.getToken()
-      }
-  
-      return this.http.post<any>(`https://tshare-back-end.herokuapp.com/favorite/list`, getQuickAccessFilesData);
+  // Get Quick Access Files
+  public getQuickAccessFiles() : Observable<any> {
+    const getQuickAccessFilesData = { 
+      loginToken: this.auth.getToken()
     }
 
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/favorite/list`, getQuickAccessFilesData);
+  }
+
   // Permanent delete, delete from recycle bin
-  public purgeFile(path: string, isDirectory: boolean) {
+  public purgeFile(path: string, isDirectory: boolean) : Observable<any> {
     const purgeFileData = {
       loginToken: this.auth.getToken(),
       path: path,
@@ -100,7 +100,7 @@ export class FileService {
   }
 
   // Permanent delete, delete all files from recycle bin
-  public purgeAllFiles() {
+  public purgeAllFiles() : Observable<any> {
     const purgeFileData = {
       loginToken: this.auth.getToken(),
     }
