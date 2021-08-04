@@ -31,13 +31,9 @@ export class QuickAccessComponent implements OnInit {
     const files$ = this.fileService.getQuickAccessFiles();
 
     await lastValueFrom(files$).then((success) => {
-     for(let i = 0; i < success.favorites.length; i++){
-       this.files.push(success.favorites[i].path);
-     }
-    //  this.files = success.favorites;
-      console.log("Great Success - Quick Access Files: " + JSON.stringify(this.files));
+      this.files = success.favorites.Contents;
     }).catch((err) => {
-      console.log("Error ocurred while trying to get quick access files " + err);
+      console.log("Error ocurred while trying to get quick access files " + err.error);
     });
 
   }
