@@ -40,3 +40,75 @@ xhttp.send(JSON.stringify({
     requesteeAccountId: 1034 /* eric.d.mcdonald@gmail.com */,
     permissionFlags: (1 << 2) /* read */ | (1 << 3) /* write */
 }));
+
+
+/permission/accept:
+
+This route accepts a file permissions request using its request ID. It takes two parameters: loginToken and requestId wrapped in an Object. You can retrieve a request ID from the /permission/list-pending route.
+- loginToken: String
+- requestId: int
+
+Returns an Object containing messsge and success:
+{"message":"Successfully accepted a file permissions request.","success":true}
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/permission/accept", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
+    requestId: 104
+}));
+
+
+/permission/deny:
+
+This route denies a file permissions request using its request ID. It takes two parameters: loginToken and requestId wrapped in an Object. You can retrieve a request ID from the /permission/list-pending route.
+- loginToken: String
+- requestId: int
+
+Returns an Object containing messsge and success:
+{"message":"Successfully denied a file permissions request.","success":true}
+
+Example request:
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/permission/deny", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
+    requestId: 104
+}));
+
+
+/permission/list-pending:
+
+This route lists your pending file requests. It takes one parameter loginToken wrapped in an Object:
+- loginToken: String
+
+Returns an Object containing at least message and success:
+{"message":"Successfully retrieved a list of your pending file requests.","success":true,"permissionRequests":[{"requestId":114,"permissionFlags":15,"forAccountId":3964,"requestedFile":{"path":"1034/my directory/Part1a.docx","ownerId":1034,"isDirectory":false}},{"requestId":124,"permissionFlags":15,"forAccountId":3964,"requestedFile":{"path":"1034/my directory/PRO670 - Control Statements.pptm","ownerId":1034,"isDirectory":false}},{"requestId":134,"permissionFlags":15,"forAccountId":4074,"requestedFile":{"path":"1034/my directory/__tshare-placeholder__","ownerId":1034,"isDirectory":true}},{"requestId":144,"permissionFlags":15,"forAccountId":4074,"requestedFile":{"path":"1034/my directory/Part1a.docx","ownerId":1034,"isDirectory":false}},{"requestId":154,"permissionFlags":15,"forAccountId":4074,"requestedFile":{"path":"1034/my directory/PRO670 - Control Statements.pptm","ownerId":1034,"isDirectory":false}},{"requestId":164,"permissionFlags":15,"forAccountId":4084,"requestedFile":{"path":"1034/my directory/__tshare-placeholder__","ownerId":1034,"isDirectory":true}},{"requestId":174,"permissionFlags":15,"forAccountId":4084,"requestedFile":{"path":"1034/my directory/Part1a.docx","ownerId":1034,"isDirectory":false}},{"requestId":184,"permissionFlags":15,"forAccountId":4084,"requestedFile":{"path":"1034/my directory/PRO670 - Control Statements.pptm","ownerId":1034,"isDirectory":false}},{"requestId":194,"permissionFlags":15,"forAccountId":4094,"requestedFile":{"path":"1034/my directory/__tshare-placeholder__","ownerId":1034,"isDirectory":true}},{"requestId":204,"permissionFlags":15,"forAccountId":4094,"requestedFile":{"path":"1034/my directory/Part1a.docx","ownerId":1034,"isDirectory":false}},{"requestId":214,"permissionFlags":15,"forAccountId":4094,"requestedFile":{"path":"1034/my directory/PRO670 - Control Statements.pptm","ownerId":1034,"isDirectory":false}},{"requestId":224,"permissionFlags":15,"forAccountId":4104,"requestedFile":{"path":"1034/my directory/__tshare-placeholder__","ownerId":1034,"isDirectory":true}},{"requestId":234,"permissionFlags":15,"forAccountId":4104,"requestedFile":{"path":"1034/my directory/Part1a.docx","ownerId":1034,"isDirectory":false}},{"requestId":244,"permissionFlags":15,"forAccountId":4104,"requestedFile":{"path":"1034/my directory/PRO670 - Control Statements.pptm","ownerId":1034,"isDirectory":false}},{"requestId":254,"permissionFlags":15,"forAccountId":4114,"requestedFile":{"path":"1034/my directory/__tshare-placeholder__","ownerId":1034,"isDirectory":true}},{"requestId":264,"permissionFlags":15,"forAccountId":4114,"requestedFile":{"path":"1034/my directory/Part1a.docx","ownerId":1034,"isDirectory":false}},{"requestId":274,"permissionFlags":15,"forAccountId":4114,"requestedFile":{"path":"1034/my directory/PRO670 - Control Statements.pptm","ownerId":1034,"isDirectory":false}},{"requestId":284,"permissionFlags":15,"forAccountId":4124,"requestedFile":{"path":"1034/my directory/__tshare-placeholder__","ownerId":1034,"isDirectory":true}},{"requestId":294,"permissionFlags":15,"forAccountId":4124,"requestedFile":{"path":"1034/my directory/Part1a.docx","ownerId":1034,"isDirectory":false}},{"requestId":304,"permissionFlags":15,"forAccountId":4124,"requestedFile":{"path":"1034/my directory/PRO670 - Control Statements.pptm","ownerId":1034,"isDirectory":false}}]}
+
+Example request:
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/permission/list-pending", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU"
+}));

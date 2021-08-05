@@ -31,6 +31,132 @@ function requestPermSingleFile(fileResult, decodedToken, requestPermData, errMsg
         });
     });
 }
+module.exports.listPending = function(listPendingData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(listPendingData)) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        var decodedToken = listPendingData.decodedToken;
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            var errMsg = {
+                message: "An error has occurred while listing pending file requests.",
+                success: false,
+                httpStatus: 500,
+                connectionToDrop: connection
+            };
+            connection.query("SELECT file_permissions.id, permission_flags, for_account_id, path, owner_id, is_directory FROM file_permissions JOIN file ON file_permissions.file_id = file.id AND file.owner_id = " + decodedToken.accountId + " AND file_permissions.accepted = 0", function(err, results, fields) {
+                if (err) {
+                    reject(errMsg);
+                    return;
+                }
+                var permissionReqs = [];
+                for (var i = 0; i < results.length; i++) {
+                    permissionReqs.push({
+                        requestId: results[i].id,
+                        permissionFlags: results[i].permission_flags,
+                        forAccountId: results[i].for_account_id,
+                        requestedFile: {
+                            path: results[i].path,
+                            ownerId: results[i].owner_id,
+                            isDirectory: results[i].is_directory != 0
+                        }
+                    });
+                }
+                resolve({
+                    message: "Successfully retrieved a list of your pending file requests.",
+                    success: true,
+                    httpStatus: 200,
+                    connectionToDrop: connection,
+                    permissionRequests: permissionReqs
+                });
+            });
+        });
+    });
+};
+module.exports.acceptOrDenyRequest = function(acceptPermsData, accepting) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(acceptPermsData) || objectUtil.isNullOrUndefined(acceptPermsData.requestId)) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        var decodedToken = acceptPermsData.decodedToken;
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            var errMsg = {
+                message: accepting ? "An error has occurred while accepting file permissions from a user." : "An error has occurred while denying file permissions from a user.",
+                success: false,
+                httpStatus: 500,
+                connectionToDrop: connection
+            };
+            database.selectFromTable("File_Permissions", "id=" + acceptPermsData.requestId, connection).then((resultsPerms) => {
+                if (resultsPerms.length == 0) {
+                    reject({
+                        message: "Failed to find a record in the File_Permissions table with id " + acceptPermsData.requestId + ".",
+                        success: false,
+                        httpStatus: 403,
+                        connectionToDrop: connection
+                    });
+                    return;
+                }
+                database.selectFromTable("File", "id=" + resultsPerms[0].file_id, connection).then((resultsFile) => {
+                    if (resultsFile.length == 0) {
+                        reject({
+                            message: "Failed to find a record in the File table with id " + resultsPerms[0].file_id + ".",
+                            success: false,
+                            httpStatus: 403,
+                            connectionToDrop: connection
+                        });
+                        return;
+                    }
+                    if (resultsFile[0].owner_id != decodedToken.accountId) {
+                        reject({
+                            message: "You do not own this file.",
+                            success: false,
+                            httpStatus: 403,
+                            connectionToDrop: connection
+                        });
+                        return;
+                    }
+                    if (accepting) {
+                        database.updateTable("File_Permissions", "accepted=1", "id=" + acceptPermsData.requestId, connection).then((resultsUpdPerms) => {
+                            resolve({
+                                message: "Successfully accepted a file permissions request.",
+                                success: true,
+                                httpStatus: 200,
+                                connectionToDrop: connection
+                            });
+                        }).catch((resultsUpdPerms) => {
+                            reject(errMsg);
+                        });
+                    } else {
+                        database.deleteFromTable("File_Permissions", "id=" + acceptPermsData.requestId, connection).then((resultsUpdPerms) => {
+                            resolve({
+                                message: "Successfully denied a file permissions request.",
+                                success: true,
+                                httpStatus: 200,
+                                connectionToDrop: connection
+                            });
+                        }).catch((resultsUpdPerms) => {
+                            reject(errMsg);
+                        });
+                    }
+                }).catch((resultsFile) => {
+                    reject(errMsg);
+                });
+            }).catch((resultsPerms) => {
+                reject(errMsg);
+            });
+        });
+    });
+};
 module.exports.requestPermission = function(requestPermData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(requestPermData) || objectUtil.isNullOrUndefined(requestPermData.path) || requestPermData.path.length == 0 || 
