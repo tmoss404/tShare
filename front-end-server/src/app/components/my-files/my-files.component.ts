@@ -63,29 +63,27 @@ export class MyFilesComponent implements OnInit, OnDestroy {
       }
     });
     
-    
   }
   /*END DELETE FILE */
 
- /* BEGIN QUICK ACCESS FILE */
- addToFavoriteFile(file: any) : void {
+  /* BEGIN QUICK ACCESS FILE */
+  addToFavoriteFile(file: any) : void {
 
-  let filePath = this.getFilePath(file.name);
+    let filePath = this.getFilePath(file.name);
 
-     // Request to the back-end to add favorite file
-  this.fileService.addQuickAccessFile(filePath, file.isDirectory).subscribe({
-    next: (success) => {
-      this.getFiles(this.currentDir);
-      console.log("Great Success - " + filePath + " is added to quick access.");
-    },
-    error: (err) => {
-      console.log("Error ocurred while trying to add the file to quick access" + err.error);
-    }
-  });
-  
-  
-}
-/*END QUICK ACCESS FILE */
+    // Request to the back-end to add favorite file
+    this.fileService.addQuickAccessFile(filePath, file.isDirectory).subscribe({
+      next: (success) => {
+        this.getFiles(this.currentDir);
+        console.log("Great Success - " + filePath + " is added to quick access.");
+      },
+      error: (err) => {
+        console.log("Error ocurred while trying to add the file to quick access" + err.error);
+      }
+    });
+
+  }
+  /*END QUICK ACCESS FILE */
 
   downloadFile(file: any) : void {
     //We cannot download directories, so we disable the functionality for a file that is a directory
@@ -117,7 +115,6 @@ export class MyFilesComponent implements OnInit, OnDestroy {
       });
     }
   }
-
 
   uploadFile(files: FileList) : void {
     //Contingency for weird error with file input, trying to read null file name
@@ -206,7 +203,6 @@ export class MyFilesComponent implements OnInit, OnDestroy {
         console.log(err.error);
       }
     });
-    
   }
 
   //Changes current directory to the specified directory
