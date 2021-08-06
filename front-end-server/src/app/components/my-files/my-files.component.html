@@ -13,8 +13,6 @@
 
             <button class="file-option-btn"><i class="bi bi-trash"></i>&#160;&#160;Delete Selected</button>
 
-            <button class="file-option-btn"><i class="bi bi-person-plus"></i>&#160;&#160;Grant Access</button>
-
             <button class="file-option-btn" (click)="getFiles(currentDir)"><i class="bi bi-arrow-repeat"></i>&#160;&#160;Refresh</button>
 
             <input class="file-search" placeholder="What are you looking for?">
@@ -77,6 +75,9 @@
     </ng-template>
     <ng-template contextMenuItem let-item>
         Rename
+    </ng-template>
+    <ng-template contextMenuItem let-item>
+        Grant Access
     </ng-template>
     <ng-template contextMenuItem let-item (execute)="addToFavoriteFile($event.item)">
         Add to 'Quick Access'
