@@ -68,15 +68,15 @@ export class FileService {
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/favorite/add`, quickAccessFileData);
   }
 
-  // Quick Access Delete
-  public deleteQuickAccessFile(path: string, isDirectory: boolean) : Observable<any> {
-    const deleteQuickAccessData = {
+  // Quick Access Remove
+  public removeQuickAccessFile(path: string, isDirectory: boolean) : Observable<any> {
+    const removeQuickAccessData = {
       loginToken: this.auth.getToken(),
       path: path,
       isDirectory: isDirectory
     }
 
-    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/favorite/remove`, deleteQuickAccessData)
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/favorite/remove`, removeQuickAccessData)
   }
 
   // Get Quick Access Files
