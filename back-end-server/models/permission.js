@@ -37,6 +37,100 @@ function requestPermSingleFile(fileResult, decodedToken, requestPermData, errMsg
         });
     });
 }
+module.exports.listShared = function(listSharedData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(listSharedData)) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        var decodedToken = listSharedData.decodedToken;
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            var errMsg = {
+                message: "An error has occurred while listing shared files.",
+                success: false,
+                httpStatus: 500,
+                connectionToDrop: connection
+            };
+            connection.query("SELECT file_permissions.id, permission_flags, path, owner_id, is_directory FROM file_permissions JOIN file ON file_permissions.file_id = file.id AND file_permissions.for_account_id = " + decodedToken.accountId + " AND file_permissions.accepted = 1", function(err, results, fields) {
+                if (err) {
+                    reject(errMsg);
+                    return;
+                }
+                var fileList = {
+                    IsTruncated: false,
+                    "KeyCount": 0,
+                    "Name": appConstants.awsBucketName,
+                    "Prefix": "",
+                    "MaxKeys": 1000,
+                    "CommonPrefixes": [],
+                    "Contents": []
+                };
+                if (results.length == 0) {
+                    resolve({
+                        message: "Successfully retrieved your list of files that are shared with you.",
+                        success: true,
+                        httpStatus: 200,
+                        connectionToDrop: connection,
+                        files: fileList
+                    });
+                } else {
+                    var promises = [];
+                    for (var i = 0; i < results.length; i++) {
+                        var result = results[i];
+                        promises.push(new Promise((resolve, reject) => {
+                            database.selectFromTable("Account", "account_id=" + result.owner_id, connection).then((resultsAccount) => {
+                                if (resultsAccount.length == 0) {
+                                    reject(errMsg);
+                                    return;
+                                }
+                                s3.getObject({
+                                    Bucket: appConstants.awsBucketName,
+                                    Key: result.path
+                                }, (err, data) => {
+                                    if (err) {
+                                        reject(errMsg);
+                                        return;
+                                    }
+                                    fileList.Contents.push({
+                                        "Key": result.is_directory != 0 ? result.path.substring(0, result.path.lastIndexOf("/" + appConstants.dirPlaceholderFile)) : result.path,
+                                        "LastModified": data.LastModified,
+                                        "ETag": data.ETag,
+                                        "Size": data.ContentLength,
+                                        "StorageClass": "STANDARD",
+                                        isDirectory: result.is_directory != 0,
+                                        owner: {
+                                            accountId: result.owner_id,
+                                            email: resultsAccount[0].email
+                                        },
+                                        permissionFlags: result.permission_flags
+                                    });
+                                    ++fileList.KeyCount;
+                                    resolve();
+                                });
+                            }).catch((resultsAccount) => {
+                                reject(errMsg);
+                            });
+                        }));
+                    }
+                    Promise.all(promises).then((result) => {
+                        resolve({
+                            message: "Successfully retrieved a list of files that are shared with you.",
+                            success: true,
+                            httpStatus: 200,
+                            files: fileList
+                        })
+                    }).catch((result) => {
+                        reject(errMsg);
+                    });
+                }
+            });
+        });
+    });
+};
 module.exports.listFiles = function(listFilesData) {
     return new Promise((resolve, reject) => {
         if (!objectUtil.isNullOrUndefined(listFilesData) && objectUtil.isUndefined(listFilesData.dirPath)) {

@@ -140,3 +140,25 @@ xhttp.send(JSON.stringify({
     dirPath: null,
     targetAccountId: 1044
 }));
+
+
+/permission/list-shared:
+
+This route allows you to list files that are shared with you. It takes one parameter: loginToken wrapped in an Object:
+- loginToken: String
+
+Returns an Object containing at least message and success:
+{"message":"Successfully retrieved a list of files that are shared with you.","success":true,"files":{"IsTruncated":false,"KeyCount":1,"Name":"bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b","Prefix":"","MaxKeys":1000,"CommonPrefixes":[],"Contents":[{"Key":"1034/my directory/PRO670 - Control Statements.pptm","LastModified":"2021-07-30T05:41:52.000Z","ETag":"\"2ca337dabcdb6a4a38a4c3d005b55b99\"","Size":56431,"StorageClass":"STANDARD","isDirectory":false,"owner":{"accountId":1034,"email":"eric.d.mcdonald@gmail.com"},"permissionFlags":15}]}}
+
+Example request:
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/permission/list-shared", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: theLoginToken
+}));

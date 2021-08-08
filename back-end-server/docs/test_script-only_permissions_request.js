@@ -105,7 +105,7 @@ xhttp.open("POST", "http://localhost/permission/accept", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: theLoginToken2,
-    requestId: 104
+    requestId: 334
 }));
 
 xhttp = new XMLHttpRequest();
@@ -126,9 +126,8 @@ xhttp.onreadystatechange = function() {
         console.log(this.response);
     }
 };
-xhttp.open("POST", "http://localhost/permission/deny", false);
+xhttp.open("POST", "http://localhost/permission/list-shared", false);
 xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
-    loginToken: theLoginToken2,
-    requestId: 104
+    loginToken: theLoginToken
 }));
