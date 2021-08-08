@@ -112,3 +112,31 @@ xhttp.setRequestHeader("Content-Type", "application/json");
 xhttp.send(JSON.stringify({
     loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU"
 }));
+
+
+/permission/list-files:
+
+This route allows you to navigate through the specified user's files. It takes 4 parameters: loginToken, showNestedFiles, targetAccountId, and dirPath all wrapped in an Object. The dirPath parameter is optional. This route basically works the same as /file/list:
+- loginToken: String
+- showNestedFiles: boolean, indicates whether or not to show files that are in nested folders
+- targetAccountId: int, the account ID of the user you want to view their files
+- dirPath: String, specifies a directory/folder
+
+Returns an Object containing at least message and success:
+{"message":"Successfully retrieved the user's files.","success":true,"data":{"IsTruncated":false,"Contents":[{"Key":"new","LastModified":"2021-07-30T00:06:29.000Z","ETag":"\"d41d8cd98f00b204e9800998ecf8427e\"","Size":0,"StorageClass":"STANDARD","isDirectory":true,"owner":{"email":"tmoss404@gmail.com","accountId":1044}},{"Key":"newer","LastModified":"2021-07-30T00:07:28.000Z","ETag":"\"d41d8cd98f00b204e9800998ecf8427e\"","Size":0,"StorageClass":"STANDARD","isDirectory":true,"owner":{"email":"tmoss404@gmail.com","accountId":1044}},{"Key":"test file.txt","LastModified":"2021-07-28T06:44:57.000Z","ETag":"\"35514d826e43b73a16fb42048988f8e3\"","Size":13,"StorageClass":"STANDARD","isDirectory":false,"owner":{"email":"tmoss404@gmail.com","accountId":1044}},{"Key":"test file_1.txt","LastModified":"2021-07-29T16:48:49.000Z","ETag":"\"35514d826e43b73a16fb42048988f8e3\"","Size":13,"StorageClass":"STANDARD","isDirectory":false,"owner":{"email":"tmoss404@gmail.com","accountId":1044}},{"Key":"test file_2.txt","LastModified":"2021-07-29T16:48:58.000Z","ETag":"\"35514d826e43b73a16fb42048988f8e3\"","Size":13,"StorageClass":"STANDARD","isDirectory":false,"owner":{"email":"tmoss404@gmail.com","accountId":1044}},{"Key":"test file_3.txt","LastModified":"2021-07-29T16:50:17.000Z","ETag":"\"35514d826e43b73a16fb42048988f8e3\"","Size":13,"StorageClass":"STANDARD","isDirectory":false,"owner":{"email":"tmoss404@gmail.com","accountId":1044}},{"Key":"test file_4.txt","LastModified":"2021-07-29T18:51:30.000Z","ETag":"\"35514d826e43b73a16fb42048988f8e3\"","Size":13,"StorageClass":"STANDARD","isDirectory":false,"owner":{"email":"tmoss404@gmail.com","accountId":1044}}],"Name":"bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b","Prefix":"","MaxKeys":1000,"CommonPrefixes":[],"KeyCount":7}}
+
+Example request:
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("POST", "http://localhost/permission/list-files", true);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU,
+    showNestedFiles: false,
+    dirPath: null,
+    targetAccountId: 1044
+}));

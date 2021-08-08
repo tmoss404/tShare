@@ -5,7 +5,13 @@ const fileUtil = require("./fileUtil");
 const permissionUtil = require("./permissionUtil");
 const database = require("../config/database");
 const request = require("request");
+const awsSdk = require("aws-sdk");
 
+var s3  = new awsSdk.S3({
+    accessKeyId: appConstants.awsAccessKeyId,
+    secretAccessKey: appConstants.awsAccessSecretKey,
+    region: appConstants.awsRegion
+});
 var dbConnectionPool;
 
 function requestPermSingleFile(fileResult, decodedToken, requestPermData, errMsg, connection) {
@@ -31,6 +37,69 @@ function requestPermSingleFile(fileResult, decodedToken, requestPermData, errMsg
         });
     });
 }
+module.exports.listFiles = function(listFilesData) {
+    return new Promise((resolve, reject) => {
+        if (!objectUtil.isNullOrUndefined(listFilesData) && objectUtil.isUndefined(listFilesData.dirPath)) {
+            listFilesData.dirPath = null;
+        }
+        if (objectUtil.isNullOrUndefined(listFilesData) || objectUtil.isNullOrUndefined(listFilesData.targetAccountId) || listFilesData.dirPath != null && listFilesData.dirPath.length == 0 || listFilesData.showNestedFiles != false && listFilesData.showNestedFiles != true) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        if (listFilesData.dirPath != null) {
+            listFilesData.dirPath = fileUtil.formatFilePath(listFilesData.dirPath);
+        }
+        var pathPrefix = "" + listFilesData.targetAccountId + "/";
+        var accountIdPrefix = pathPrefix;
+        if (listFilesData.dirPath != null) {
+            pathPrefix += listFilesData.dirPath + "/";
+        }
+        var s3Params = {
+            Bucket: appConstants.awsBucketName,
+            MaxKeys: appConstants.awsMaxKeys,
+            Prefix: pathPrefix
+        };
+        s3.listObjectsV2(s3Params, (err, data_) => {
+            if (err) {
+                reject(commonErrors.createFailedToQueryS3Status500());
+            } else {
+                dbConnectionPool.getConnection((err, connection) => {
+                    if (err) {
+                        reject(commonErrors.failedToConnectDbStatus500);
+                        return;
+                    }
+                    var errMsg = {
+                        message: "An error has occurred while retrieving the target account.",
+                        httpStatus: 500,
+                        success: false,
+                        connectionToDrop: connection
+                    };
+                    database.selectFromTable("Account", "account_id=" + listFilesData.targetAccountId, connection).then((results) => {
+                        if (results.length == 0) {
+                            reject(errMsg);
+                            return;
+                        }
+                        // reject() is straight up unused in fileUtil#processS3Data. So, no need to handle the catch.
+                        fileUtil.processS3Data(data_, accountIdPrefix, {
+                            email: results[0].email,
+                            accountId: listFilesData.targetAccountId
+                        }, listFilesData.showNestedFiles, pathPrefix, false, connection).then((s3Data) => {
+                            resolve({
+                                message: "Successfully retrieved the user's files.",
+                                httpStatus: 200,
+                                success: true,
+                                data: s3Data,
+                                connectionToDrop: connection
+                            });
+                        });
+                    }).catch((results) => {
+                        reject(errMsg);
+                    });
+                });
+            }
+        });
+    });
+};
 module.exports.listPending = function(listPendingData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(listPendingData)) {

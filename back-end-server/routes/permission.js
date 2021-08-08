@@ -31,4 +31,11 @@ module.exports.setupRoutes = function(app) {
             routes.sendResponse(res, err);
         });
     });
+    app.post("/permission/list-files", accountMiddleware.checkAuth, (req, res) => {
+        permissionModel.listFiles(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
 };
