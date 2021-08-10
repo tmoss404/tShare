@@ -14,7 +14,7 @@ var s3  = new awsSdk.S3({
 });
 var dbConnectionPool;
 
-function requestPermSingleFile(fileResult, decodedToken, requestPermData, errMsg, connection) {
+function requestPermSingleFile(fileResult, decodedToken, requestPermData, errMsg, accepted, connection) {
     return new Promise((resolve, reject) => {
         var dbConnection = connection;
         database.selectFromTable("File_Permissions", "file_id=" + fileResult.id + " AND for_account_id=" + decodedToken.accountId, connection).then((resultsPerms) => {
@@ -27,7 +27,7 @@ function requestPermSingleFile(fileResult, decodedToken, requestPermData, errMsg
                 });
                 return;
             }
-            database.insertIntoTable("File_Permissions", "permission_flags, file_id, for_account_id, accepted", requestPermData.permissionFlags + ", " + fileResult.id + ", " + decodedToken.accountId + ", 0", dbConnection).then((resultsInsert) => {
+            database.insertIntoTable("File_Permissions", "permission_flags, file_id, for_account_id, accepted", requestPermData.permissionFlags + ", " + fileResult.id + ", " + decodedToken.accountId + ", " + (accepted ? 1 : 0), dbConnection).then((resultsInsert) => {
                 resolve(resultsInsert);
             }).catch((resultsInsert) => {
                 reject(errMsg);
@@ -37,6 +37,75 @@ function requestPermSingleFile(fileResult, decodedToken, requestPermData, errMsg
         });
     });
 }
+module.exports.grantAccess = function(grantAccessData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(grantAccessData) || objectUtil.isNullOrUndefined(grantAccessData.path) || grantAccessData.path.length == 0 || 
+            objectUtil.isNullOrUndefined(grantAccessData.isDirectory) || grantAccessData.isDirectory != false && grantAccessData.isDirectory != true || 
+            objectUtil.isNullOrUndefined(grantAccessData.forAccountId) || objectUtil.isNullOrUndefined(grantAccessData.permissionFlags) ||
+            !grantAccessData.isDirectory && (permissionUtil.hasFlag(grantAccessData.permissionFlags, permissionUtil.createFilePerm) || permissionUtil.hasFlag(grantAccessData.permissionFlags, permissionUtil.deleteFilePerm))) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        var decodedToken = grantAccessData.decodedToken;
+        grantAccessData.path = fileUtil.formatFilePath(grantAccessData.path);
+        var fullPath = decodedToken.accountId + "/" + grantAccessData.path;
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            var errMsg = {
+                message: "An error has occurred while granting a user access to your file.",
+                success: false,
+                httpStatus: 500,
+                connectionToDrop: connection
+            };
+            if (!grantAccessData.isDirectory) {
+                database.selectFromTable("File", "owner_id=" + decodedToken.accountId + " AND path='" + fullPath + "'", connection).then((results) => {
+                    if (results.length == 0) {
+                        reject(errMsg);
+                        return;
+                    }
+                    requestPermSingleFile(results[0], {accountId: grantAccessData.forAccountId}, grantAccessData, errMsg, true, connection).then((result) => {
+                        resolve({
+                            message: "Successfully granted a user access to your file.",
+                            httpStatus: 200,
+                            success: true,
+                            connectionToDrop: connection
+                        });
+                    }).catch((error) => {
+                        reject(errMsg);
+                    });
+                }).catch((results) => {
+                    reject(errMsg);
+                });
+            } else {
+                database.selectFromTable("File", "owner_id=" + decodedToken.accountId + " AND path LIKE '" + fullPath + "/%'", connection).then((results) => {
+                    if (results.length == 0) {
+                        reject(errMsg);
+                        return;
+                    }
+                    var promises = [];
+                    for (var i = 0; i < results.length; i++) {
+                        promises.push(requestPermSingleFile(results[i], {accountId: grantAccessData.forAccountId}, grantAccessData, errMsg, true, connection));
+                    }
+                    Promise.all(promises).then((resultPromises) => {
+                        resolve({
+                            message: "Successfully granted a user access to your directory.",
+                            success: true,
+                            httpStatus: 200,
+                            connectionToDrop: connection
+                        });
+                    }).catch((resultPromises) => {
+                        reject(errMsg);
+                    });
+                }).catch((results) => {
+                    reject(errMsg);
+                });
+            }
+        });
+    });
+};
 module.exports.listShared = function(listSharedData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(listSharedData)) {
@@ -406,7 +475,7 @@ module.exports.requestPermission = function(requestPermData) {
                             });
                             return;
                         }
-                        requestPermSingleFile(resultsFile[0], decodedToken, requestPermData, errMsg, connection).then((result) => {
+                        requestPermSingleFile(resultsFile[0], decodedToken, requestPermData, errMsg, false, connection).then((result) => {
                             request(trustifiOpts, function (error, response) {
                                 if (error) {
                                     reject(emailErrMsg);
@@ -438,7 +507,7 @@ module.exports.requestPermission = function(requestPermData) {
                         }
                         var promises = [];
                         for (var i = 0; i < resultsFile.length; i++) {
-                            promises.push(requestPermSingleFile(resultsFile[i], decodedToken, requestPermData, errMsg, connection));
+                            promises.push(requestPermSingleFile(resultsFile[i], decodedToken, requestPermData, errMsg, false, connection));
                         }
                         Promise.all(promises).then((result) => {
                             request(trustifiOpts, function (error, response) {
