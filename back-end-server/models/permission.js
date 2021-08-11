@@ -37,6 +37,235 @@ function requestPermSingleFile(fileResult, decodedToken, requestPermData, errMsg
         });
     });
 }
+module.exports.removeAll = function(removeAllData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(removeAllData) || objectUtil.isNullOrUndefined(removeAllData.path) || removeAllData.path.length == 0 || 
+            objectUtil.isNullOrUndefined(removeAllData.isDirectory) || removeAllData.isDirectory != false && removeAllData.isDirectory != true) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        var decodedToken = removeAllData.decodedToken;
+        removeAllData.path = fileUtil.formatFilePath(removeAllData.path);
+        var fullPath = decodedToken.accountId + "/" + removeAllData.path;
+        if (removeAllData.isDirectory) {
+            fullPath += "/" + appConstants.dirPlaceholderFile;
+        }
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            var errMsg = {
+                message: "An error has occurred while removing all users access from your file.",
+                success: false,
+                httpStatus: 500,
+                connectionToDrop: connection
+            };
+            database.selectFromTable("File", "owner_id=" + decodedToken.accountId + " AND path='" + fullPath + "'", connection).then((resultsFile) => {
+                if (resultsFile.length == 0) {
+                    reject(errMsg);
+                    return;
+                }
+                database.deleteFromTable("File_Permissions", "file_id=" + resultsFile[0].id + " AND accepted=1", connection).then((resultsPerms) => {
+                    resolve({
+                        message: "Successfully removed all users' access from your file.",
+                        success: true,
+                        httpStatus: 200,
+                        connectionToDrop: connection
+                    });
+                }).catch((resultsPerms) => {
+                    reject(errMsg);
+                });
+            }).catch((resultsFile) => {
+                reject(errMsg);
+            });
+        });
+    });
+};
+module.exports.getAccess = function(getAccessData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(getAccessData) || objectUtil.isNullOrUndefined(getAccessData.path) || getAccessData.path.length == 0 || 
+        objectUtil.isNullOrUndefined(getAccessData.isDirectory) || getAccessData.isDirectory != false && getAccessData.isDirectory != true || 
+        objectUtil.isNullOrUndefined(getAccessData.targetAccountId)) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        var decodedToken = getAccessData.decodedToken;
+        getAccessData.path = fileUtil.formatFilePath(getAccessData.path);
+        var fullPath = decodedToken.accountId + "/" + getAccessData.path;
+        if (getAccessData.isDirectory) {
+            fullPath += "/" + appConstants.dirPlaceholderFile;
+        }
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            var errMsg = {
+                message: "An error has occurred while retrieving a user's access level to your file.",
+                success: false,
+                httpStatus: 500,
+                connectionToDrop: connection
+            };
+            database.selectFromTable("File", "owner_id=" + decodedToken.accountId + " AND path='" + fullPath + "'", connection).then((resultsFile) => {
+                if (resultsFile.length == 0) {
+                    reject(errMsg);
+                    return;
+                }
+                database.selectFromTable("File_Permissions", "file_id=" + resultsFile[0].id + " AND for_account_id=" + getAccessData.targetAccountId + " AND accepted=1", connection).then((resultsPerms) => {
+                    if (resultsPerms.length == 0) {
+                        reject({
+                            message: "Failed to find an accepted file permissions request.",
+                            success: false,
+                            httpStatus: 403,
+                            connectionToDrop: connection
+                        });
+                        return;
+                    }
+                    resolve({
+                        message: "Successfully retrieved the specified user's permission level.",
+                        success: true,
+                        httpStatus: 200,
+                        connectionToDrop: connection,
+                        permissionFlags: resultsPerms[0].permission_flags
+                    });
+                }).catch((resultsPerms) => {
+                    reject(errMsg);
+                });
+            }).catch((resultsFile) => {
+                reject(errMsg);
+            });
+        });
+    });
+};
+module.exports.updateAccess = function(updateAccessData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(updateAccessData) || objectUtil.isNullOrUndefined(updateAccessData.path) || updateAccessData.path.length == 0 || 
+            objectUtil.isNullOrUndefined(updateAccessData.isDirectory) || updateAccessData.isDirectory != false && updateAccessData.isDirectory != true || 
+            objectUtil.isNullOrUndefined(updateAccessData.permissionFlags) || objectUtil.isNullOrUndefined(updateAccessData.targetAccountId)) {
+                reject(commonErrors.genericStatus400);
+                return;
+            }
+            var decodedToken = updateAccessData.decodedToken;
+            updateAccessData.path = fileUtil.formatFilePath(updateAccessData.path);
+            var fullPath = decodedToken.accountId + "/" + updateAccessData.path;
+            if (updateAccessData.isDirectory) {
+                fullPath += "/" + appConstants.dirPlaceholderFile;
+            }
+            dbConnectionPool.getConnection((err, connection) => {
+                if (err) {
+                    reject(commonErrors.failedToConnectDbStatus500);
+                    return;
+                }
+                var errMsg = {
+                    message: "An error has occurred while updating a user's access level to your file.",
+                    success: false,
+                    httpStatus: 500,
+                    connectionToDrop: connection
+                };
+                database.selectFromTable("File", "owner_id=" + decodedToken.accountId + " AND path='" + fullPath + "'", connection).then((resultsFile) => {
+                    if (resultsFile.length == 0) {
+                        reject(errMsg);
+                        return;
+                    }
+                    database.selectFromTable("File_Permissions", "file_id=" + resultsFile[0].id + " AND accepted=1", connection).then((resultsPerms) => {
+                        if (resultsPerms.length == 0) {
+                            reject({
+                                message: "Could not find an accepted File_Permissions entry with file ID " + resultsFile[0].id + ".",
+                                success: false,
+                                httpStatus: 403,
+                                connectionToDrop: connection
+                            });
+                            return;
+                        }
+                        if (updateAccessData.permissionFlags == 0) {
+                            database.deleteFromTable("File_Permissions", "file_id=" + resultsFile[0].id + " AND accepted=1 AND for_account_id=" + updateAccessData.targetAccountId, connection).then((resultsDelPerms) => {
+                                resolve({
+                                    message: "Successfully removed a user from being able to access your file.",
+                                    success: true,
+                                    httpStatus: 200,
+                                    connectionToDrop: connection
+                                });
+                            }).catch((resultsDelPerms) => {
+                                reject(errMsg);
+                            });
+                        } else {
+                            database.updateTable("File_Permissions", "permission_flags=" + updateAccessData.permissionFlags, "file_id=" + resultsFile[0].id + " AND accepted=1 AND for_account_id=" + updateAccessData.targetAccountId, connection).then((resultsUpdPerms) => {
+                                resolve({
+                                    message: "Successfully updated a user's access level to your file.",
+                                    success: true,
+                                    httpStatus: 200,
+                                    connectionToDrop: connection
+                                });
+                            }).catch((resultsUpdPerms) => {
+                                reject(errMsg);
+                            });
+                        }
+                    }).catch((resultsPerms) => {
+                        reject(errMsg);
+                    });
+                }).catch((resultsFile) => {
+                    reject(errMsg);
+                });
+            });
+    });
+};
+module.exports.listUsersAccessForFile = function(listUsersAccessData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(listUsersAccessData) || objectUtil.isNullOrUndefined(listUsersAccessData.path) || listUsersAccessData.path.length == 0 || 
+            objectUtil.isNullOrUndefined(listUsersAccessData.isDirectory) || listUsersAccessData.isDirectory != false && listUsersAccessData.isDirectory != true) {
+                reject(commonErrors.genericStatus400);
+                return;
+        }
+        var decodedToken = listUsersAccessData.decodedToken;
+        listUsersAccessData.path = fileUtil.formatFilePath(listUsersAccessData.path);
+        var fullPath = decodedToken.accountId + "/" + listUsersAccessData.path;
+        if (listUsersAccessData.isDirectory) {
+            fullPath += "/" + appConstants.dirPlaceholderFile;
+        }
+        dbConnectionPool.getConnection((err, connection) => {
+            if (err) {
+                reject(commonErrors.failedToConnectDbStatus500);
+                return;
+            }
+            var errMsg = {
+                message: "An error has occurred while listing users that have access to your file.",
+                success: false,
+                httpStatus: 500,
+                connectionToDrop: connection
+            };
+            database.selectFromTable("File", "owner_id=" + decodedToken.accountId + " AND path='" + fullPath + "'", connection).then((resultsFile) => {
+                if (resultsFile.length == 0) {
+                    reject(errMsg);
+                    return;
+                }
+                var userWithAccessList = [];
+                connection.query("SELECT * FROM File_Permissions JOIN File ON File_Permissions.file_id = File.id JOIN Account ON File_Permissions.for_account_id = Account.account_id WHERE accepted=1 AND File_Permissions.file_id = " + resultsFile[0].id, function(err, results, fields) {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    for (var i = 0; i < results.length; i++) {
+                        userWithAccessList.push({
+                            email: results[i].email,
+                            accountId: results[i].accountId,
+                            permissionFlags: results[i].permission_flags
+                        });
+                    }
+                    resolve({
+                        message: "Successfully retrieved a list of users who have access to your file.",
+                        success: true,
+                        httpStatus: 200,
+                        connectionToDrop: connection,
+                        usersWithAccess: userWithAccessList
+                    });
+                });
+            }).catch((resultsFile) => {
+                reject(errMsg);
+            });
+        });
+    });
+};
 module.exports.grantAccess = function(grantAccessData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(grantAccessData) || objectUtil.isNullOrUndefined(grantAccessData.path) || grantAccessData.path.length == 0 || 

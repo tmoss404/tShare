@@ -52,4 +52,32 @@ module.exports.setupRoutes = function(app) {
             routes.sendResponse(res, err);
         });
     });
+    app.post("/permission/list-users-access", accountMiddleware.checkAuth, (req, res) => {
+        permissionModel.listUsersAccessForFile(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
+    app.post("/permission/update-access", accountMiddleware.checkAuth, (req, res) => {
+        permissionModel.updateAccess(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
+    app.post("/permission/remove-all", accountMiddleware.checkAuth, (req, res) => {
+        permissionModel.removeAll(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
+    app.post("/permission/get-access", accountMiddleware.checkAuth, (req, res) => {
+        permissionModel.getAccess(req.body).then((msg) => {
+            routes.sendResponse(res, msg);
+        }).catch((err) => {
+            routes.sendResponse(res, err);
+        });
+    });
 };
