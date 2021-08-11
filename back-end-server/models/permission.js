@@ -510,7 +510,7 @@ module.exports.listPending = function(listPendingData) {
                 httpStatus: 500,
                 connectionToDrop: connection
             };
-            connection.query("SELECT file_permissions.id, permission_flags, for_account_id, path, owner_id, is_directory FROM file_permissions JOIN file ON file_permissions.file_id = file.id AND file.owner_id = " + decodedToken.accountId + " AND file_permissions.accepted = 0", function(err, results, fields) {
+            connection.query("SELECT file_permissions.id, permission_flags, for_account_id, path, owner_id, is_directory, (SELECT email FROM account WHERE for_account_id = account_id) AS email FROM file_permissions JOIN file ON file_permissions.file_id = file.id AND file.owner_id = " + decodedToken.accountId + " AND file_permissions.accepted = 0", function(err, results, fields) {
                 if (err) {
                     reject(errMsg);
                     return;
@@ -520,7 +520,10 @@ module.exports.listPending = function(listPendingData) {
                     permissionReqs.push({
                         requestId: results[i].id,
                         permissionFlags: results[i].permission_flags,
-                        forAccountId: results[i].for_account_id,
+                        forAccount: {
+                            accountId: results[i].for_account_id,
+                            email: results[i].email
+                        },
                         requestedFile: {
                             path: results[i].path,
                             ownerId: results[i].owner_id,
