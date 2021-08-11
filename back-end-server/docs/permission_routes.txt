@@ -218,3 +218,48 @@ xhttp.send(JSON.stringify({
     path: "my directory/Part1a.docx",
     isDirectory: false
 }));
+
+
+/permission/download:
+
+This route retrieves a "signed S3 URL" for directly downloading the requested file from our S3 bucket. This route should be used when a file is owned by another user. It takes three parameters: loginToken, filePath, and targetAccountId. 
+Trailing and prefixed backward/forward slashes in filePath will cause undefined behaviour. Please note that you CANNOT download a directory, as this 
+would result in a multi-download catastrophe. This route will return the signed S3 URL even if the file does not exist (although upon trying to use
+it, it will give you error 404. This shouldn't be a problem since you select the file to download through your UI, and isn't really a security risk):
+- loginToken: String
+- filePath: String
+- targetAccountId: int, indicates the owner of the file
+
+Returns an Object containing at least message, success, and (and only if it was successful), a signedUrl property:
+{"message":"Successfully retrieved a signed S3 URL for downloading a user'a file.","success":true,"signedUrl":"https://bucketeer-72303b66-e175-4b67-aade-fd2764a19e0b.s3.amazonaws.com/1204/your%20new/directory/path/file.txt?AWSAccessKeyId=AKIARVGPJVYVDSNAKJLB&Expires=1625782086&Signature=vLdo54Eh6Q6uL33nqAQUi9EoLhg%3D"}
+
+Example request:
+
+var signedDownload = null;
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+        signedDownload = JSON.parse(this.responseText).signedUrl;
+    }
+};
+xhttp.open("POST", "http://localhost/file/download", false);
+xhttp.setRequestHeader("Content-Type", "application/json");
+xhttp.send(JSON.stringify({
+    loginToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjI5NCwiZW1haWwiOiJ0ZXN0LmJhY2tlbmRAZ21haWwuY29tIiwiaWF0IjoxNjIzMDQ1ODEyLCJleHAiOjE2MjMwNDk0MTJ9.2wZoRaMeEifG9KgSCm-TWV6QnTYk8f6Z_uWd0bHceLU",
+    filePath: "your new/directory/path/file.txt",
+    targetAccountId: 1044
+}));
+
+while (signedDownload == null) {}
+
+Example of downloading the file via the returned signedUrl parameter:
+
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && statusReturnsResponse(this.status)) {
+        console.log(this.response);
+    }
+};
+xhttp.open("GET", signedDownload, false);
+xhttp.send();

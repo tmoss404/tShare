@@ -37,6 +37,31 @@ function requestPermSingleFile(fileResult, decodedToken, requestPermData, errMsg
         });
     });
 }
+module.exports.downloadFile = function(dlFileData) {
+    return new Promise((resolve, reject) => {
+        if (objectUtil.isNullOrUndefined(dlFileData) || objectUtil.isNullOrUndefined(dlFileData.filePath) || objectUtil.isNullOrUndefined(dlFileData.targetAccountId)) {
+            reject(commonErrors.genericStatus400);
+            return;
+        }
+        dlFileData.filePath = dlFileData.targetAccountId + "/" + fileUtil.formatFilePath(dlFileData.filePath);
+        var s3Params = {
+            Bucket: appConstants.awsBucketName,
+            Key: dlFileData.filePath
+        };
+        s3.getSignedUrl("getObject", s3Params, (err, url) => {
+            if (err) {
+                reject(commonErrors.createFailedToQueryS3Status500());
+            } else {
+                resolve({
+                    message: "Successfully retrieved a signed S3 URL for downloading a user's file.",
+                    httpStatus: 200,
+                    success: true,
+                    signedUrl: url
+                });
+            }
+        });
+    });
+};
 module.exports.removeAll = function(removeAllData) {
     return new Promise((resolve, reject) => {
         if (objectUtil.isNullOrUndefined(removeAllData) || objectUtil.isNullOrUndefined(removeAllData.path) || removeAllData.path.length == 0 || 
