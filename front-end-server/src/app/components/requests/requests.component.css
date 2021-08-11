@@ -2,3 +2,43 @@
     padding: 0 0 15px 0;
     height: 100%;
 }
+
+.list-header {
+    width: 1442px;
+    color: white;
+    border-radius: 10px;
+    padding: 4px;
+    overflow: hidden;
+    margin-bottom: .4rem;
+}
+
+.request-info {
+    display: inline-block;
+    vertical-align: middle;
+    padding: 0 8px;
+}
+
+.user-email {
+    text-align: left;
+    width: 30%;
+    font-size: 14px;
+    margin-left: 2.7rem;
+}
+
+.file-path {
+    text-align: left;
+    font-size: 14px;
+    width: 32%;
+}
+
+.access-level{
+    text-align: left;
+    font-size: 14px;
+    width: 20%;
+}
+
+.file-header-rule {
+    background-color: white;
+    margin: 6px 6px 1rem 0;
+    width: 100%;
+}

@@ -7,13 +7,43 @@
             <input class="file-search" placeholder="What are you looking for?">    
         </div>
     </div>
-    <div class="file-container">
-        <div *ngIf="users; else loading">
-            <app-user-card *ngFor="let user of users" [user]="user"></app-user-card>
+    <div *ngIf="currentDir != (null || undefined); else rootDir" class="go-back-bar">
+        <div class="go-back" (click)="goBack()">
+            <div class="bi bi-arrow-90deg-up"> ../{{currentDir}}</div>
         </div>
-        <ng-template #loading>
-            <div class="spinner"></div>
+    </div>
+    <ng-template #rootDir>
+        <div *ngIf="selectedUser != (null || undefined)">
+            <div class="go-back-bar">
+                <div class="go-back" (click)="backToUsers()">
+                    <div> Back To Users</div>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+    <div class="file-container">
+        <div *ngIf="selectedUser; else listUsers">
+            <div *ngIf="userFiles; else loading">
+                <app-file-card *ngFor="let file of userFiles" [file]="file" (changeDirEvent)="changeCurrentDir($event)"></app-file-card>
+            </div>
+            <ng-template #loading>
+                <div class="spinner"></div>
+            </ng-template>
+        </div>
+        <ng-template #listUsers>
+            <div *ngIf="users; else loading">
+                <app-user-card *ngFor="let user of users" [user]="user" (selectUserEvent)="selectUser($event)"></app-user-card>
+            </div>
+            <ng-template #loading>
+                <div class="spinner"></div>
+            </ng-template>
         </ng-template>
     </div>
 </div>
 
+<!-- Context menu template -->
+<context-menu>
+    <ng-template contextMenuItem let-item (execute)="openRequestAccessModal($event.item)">
+        Request Access
+    </ng-template>
+</context-menu>

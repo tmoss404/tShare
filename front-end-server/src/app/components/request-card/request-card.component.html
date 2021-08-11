@@ -1,0 +1,26 @@
+<div class="user-card">
+    <div class="user-info">
+        <div class="user-icon">
+             <i class="bi bi-bell"></i>
+        </div>
+    </div>
+    <div class="user-info user-email">
+        <div>
+            {{request.forAccount.email}}
+        </div>
+    </div>
+    <div class="user-info file-path bi bi-file-earmark">
+        {{request.requestedFile.path}}
+    </div>
+    <div class="user-info access-level">
+        {{request?.accessString}}
+    </div>
+    <div class="user-info request-option-box">
+        <div class="request-option" (click)="approve()">
+            Approve
+        </div>
+        <div class="request-option" (click)="deny()">
+            Deny
+        </div>
+    </div>
+</div>

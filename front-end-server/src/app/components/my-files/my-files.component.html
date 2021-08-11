@@ -67,10 +67,10 @@
     <ng-template contextMenuItem let-item (execute)="openDeleteModal(delete_file, $event.item)">
         Delete
     </ng-template>
-    <ng-template contextMenuItem let-item (execute)="openNewFolderModal(copy_file)">
+    <ng-template contextMenuItem let-item (execute)="openCopyModal(copy_file)">
         Copy
     </ng-template>
-    <ng-template contextMenuItem let-item (execute)="openNewFolderModal(move_file)">
+    <ng-template contextMenuItem let-item (execute)="openMoveModal(move_file)">
         Move
     </ng-template>
     <ng-template contextMenuItem let-item>
@@ -89,8 +89,8 @@
     <div class="modal-header">
         <h4 class="modal-title" id="modal-basic-title">Create Folder</h4>
         <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
-        <span aria-hidden="true">&times;</span>
-      </button>
+            <span aria-hidden="true">&times;</span>
+        </button>
     </div>
     <form (ngSubmit)="createFolder(modal)" [formGroup]="newFolderForm">
         <div class="modal-body">
@@ -171,7 +171,7 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
-        <button type="submit" class="btn btn-dark" (click)="!newFolderForm.valid">Copy</button>
+        <button type="submit" class="btn btn-dark">Copy</button>
     </div>
 </ng-template>
 
@@ -211,7 +211,7 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-dark" (click)="modal.close()">Cancel</button>
-        <button type="submit" class="btn btn-dark" (click)="!newFolderForm.valid">Move</button>
+        <button type="submit" class="btn btn-dark">Move</button>
     </div>
 </ng-template>
 

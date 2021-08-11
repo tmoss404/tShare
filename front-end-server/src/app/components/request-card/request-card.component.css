@@ -1,0 +1,58 @@
+.user-card {
+    width: 1442px;
+    color: white;
+    background-color: #323232;
+    border-radius: 10px;
+    padding: 6px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.user-info {
+    display: inline-block;
+    vertical-align: middle;
+    padding: 0 8px;
+}
+
+.user-email {
+    text-align: left;
+    width: 30%;
+    font-size: 14px;
+}
+
+.file-path {
+    text-align: left;
+    font-size: 14px;
+    width: 32%;
+}
+
+.access-level {
+    text-align: left;
+    font-size: 14px;
+    width: 12%;
+}
+
+.request-option-box {
+    text-align: right;
+    width: 20%;
+}
+
+.request-option {
+    background-color: #202020;
+    font-size: 14px;
+    border-radius: 6px;
+    text-align: center;
+    display: inline-block;
+    padding: 12px;
+    width: auto;
+    margin: 8px;
+}
+
+.request-option:hover {
+    background-color: #1ab9d1;
+    cursor: pointer;
+}
+
+.user-icon {
+    font-size: 28px;
+}

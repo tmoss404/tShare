@@ -1,0 +1,32 @@
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Request Access</h4>
+    <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<form (ngSubmit)="submit()" [formGroup]="requestAccessForm">
+    <div class="modal-body">
+        <div>
+        
+        <div class="bi bi-file-earmark">
+            {{file.name}}
+        </div>
+        <div *ngIf="currentDir != (null || undefined)"> 
+            Path: <h6>{{currentDir}}</h6>
+        </div>
+        Size: {{file.Size}} Bytes
+        </div>
+        <br>
+        <div class="form-group">
+            <div class="input-group">
+                <select class="form-control" formControlName="access">
+                <option value="Read">Read</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="activeModal.close()">Cancel</button>
+        <button type="submit" class="btn btn-dark" >Submit</button>
+    </div>
+</form>

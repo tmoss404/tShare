@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { NgbModal, NgbProgressbar} from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { lastValueFrom, Subscription } from 'rxjs';
 import { FileService } from 'src/app/services/file.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';

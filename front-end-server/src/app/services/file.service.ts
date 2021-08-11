@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthenticationService } from './authentication.service';
-import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -119,9 +118,7 @@ export class FileService {
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/file/recycle/list`, getDeletedFilesData);
   }
 
-
-   // A File
-   public deleteFile(path: string, isDirectory: boolean) : Observable<any> {
+  public deleteFile(path: string, isDirectory: boolean) : Observable<any> {
     const deleteFileData = {
       loginToken: this.auth.getToken(),
       path: path,

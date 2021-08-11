@@ -33,10 +33,12 @@ import { ComingSoonComponent } from './components/coming-soon/coming-soon.compon
 import { AccountPreferencesComponent } from './components/account-preferences/account-preferences.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { FileCardComponent } from './components/file-card/file-card.component';
+import { RequestAccessModalComponent } from './components/request-access-modal/request-access-modal.component';
 
 /* Services */
 import { AuthInterceptorService } from './services/auth-interceptor.service';
 import { UserCardComponent } from './components/user-card/user-card.component';
+import { RequestCardComponent } from './components/request-card/request-card.component';
 
 @NgModule({
   declarations: [
@@ -64,7 +66,9 @@ import { UserCardComponent } from './components/user-card/user-card.component';
     AccountPreferencesComponent,
     ChangePasswordComponent,
     FileCardComponent,
-    UserCardComponent
+    UserCardComponent,
+    RequestAccessModalComponent,
+    RequestCardComponent
   ],
   imports: [
     BrowserModule,

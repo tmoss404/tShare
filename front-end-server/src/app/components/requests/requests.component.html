@@ -5,6 +5,26 @@
             <input class="file-search" placeholder="What are you looking for?">    
         </div>
     </div>
+    <div class="file-container">
+        <div *ngIf="activeRequests; else loading">
+            <div class="list-header">
+                <div class="request-info user-email">
+                    User Email
+                </div>
+                <div class="request-info file-path">
+                    File Path
+                </div>
+                <div class="request-info access-level">
+                    Access Level
+                </div>
+                <hr class="file-header-rule">
+            </div>
+            <app-request-card *ngFor="let request of activeRequests" [request]="request" (answerRequestEvent)="answerRequest($event)"></app-request-card>
+        </div>
+        <ng-template #loading>
+            <div class="spinner"></div>
+        </ng-template>
+    </div>
 </div>
 
 
