@@ -33,8 +33,6 @@ export class PermissionService {
       permissionFlags: flags 
     }
 
-    console.log(requestAccessData);
-
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/permission/request`, requestAccessData);
   }
 
@@ -81,6 +79,18 @@ export class PermissionService {
 
     return this.http.post<any>(`https://tshare-back-end.herokuapp.com/permission/download`, signUrlData);
 
+  }
+
+  public grantAccess(filePath: string, accountId: number, flags: any) : Observable<any> {
+    const grantAccessData = {
+      loginToken: this.auth.getToken(),
+      isDirectory: false,
+      path: filePath,
+      forAccountId: accountId,
+      permissionFlags: flags
+    }
+
+    return this.http.post<any>(`https://tshare-back-end.herokuapp.com/permission/grant`, grantAccessData)
   }
 
 

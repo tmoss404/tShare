@@ -1,0 +1,39 @@
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Grant Access</h4>
+    <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<form (ngSubmit)="submit()" [formGroup]="grantAccessForm">
+    <div class="modal-body">
+        <div>
+            <div class="bi bi-file-earmark file-info">
+                {{file.name}}
+            </div>
+            <div *ngIf="currentDir != (null || undefined)" class="file-info"> 
+                Path: ../{{currentDir}}/
+            </div>
+            <div class="file-info">
+                Size: {{file.Size}} Bytes
+            </div>
+        </div>
+        <br>
+        <div class="form-group">
+            <div class="input-group">
+                <select class="form-control" formControlName="user">
+                    <option [ngValue]="null" disabled>Select a user</option>
+                    <option *ngFor="let user of users" [ngValue]="user">{{user.email}}</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <select class="form-control" formControlName="access">
+                    <option value="Read">Read</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="activeModal.close()">Cancel</button>
+        <button type="submit" class="btn btn-dark" [disabled]="grantAccessForm.controls['user'].value == null">Submit</button>
+    </div>
+</form>

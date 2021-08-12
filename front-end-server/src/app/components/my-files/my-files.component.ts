@@ -6,6 +6,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { folderName } from '../../validators/folderName.validator';
 import { HttpEventType } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
+import { GrantAccessModalComponent } from '../grant-access-modal/grant-access-modal.component';
+import { PermissionService } from 'src/app/services/permission.service';
 
 @Component({
   selector: 'app-my-files',
@@ -23,7 +25,8 @@ export class MyFilesComponent implements OnInit, OnDestroy {
   constructor(
     private fileService: FileService,
     private modalService: NgbModal,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private permissionService: PermissionService
   ) { }
 
   ngOnInit(): void {
@@ -162,22 +165,37 @@ export class MyFilesComponent implements OnInit, OnDestroy {
     this.modalService.open(content, {centered: true, windowClass: 'new-folder-modal', size: 'md'}); 
   }
 
-  //Opens the modal for renaming a file / folder
-  /* openRenameModal(content: any) : void {
-    //Creates a formgroup for entering the new name
-    let renameForm = this.formBuilder.group({
-      newName: ['', [Validators.required, folderName()]]
-    });
-
-    this.modalService.open(content, {centered: true, windowClass: 'rename-modal', size: 'md'}); 
-  } */
-
   openCopyModal(content: any) {
     this.modalService.open(content, {centered: true, windowClass: 'copy-modal', size: 'md'}); 
   }
 
   openMoveModal(content: any) {
     this.modalService.open(content, {centered: true, windowClass: 'move-modal', size: 'md'}); 
+  }
+
+  openGrantAccessModal(file: any) {
+    if(!file.isDirectory){
+      const grantAccessModalRef = this.modalService.open(GrantAccessModalComponent, {centered: true, windowClass: 'grant-access-modal', size: 'md'});
+
+      grantAccessModalRef.componentInstance.file = file;
+      grantAccessModalRef.componentInstance.currentDir = this.currentDir;
+
+      grantAccessModalRef.result.then((result) => {
+        
+        this.permissionService.grantAccess(result.filePath, result.accountId, result.flags)
+          .subscribe({
+            next: (success) => {
+              this.getFiles(null);
+              this.currentDir = null;
+            },
+            error: (err) => {
+              console.log(err.error);
+            }
+          });
+      }, () => {
+        // Catch dismiss but do nothing since we don't have to do anything on dismiss
+      });
+    }
   }
 
   openDeleteModal(content: any, file: any) : void {

@@ -39,6 +39,7 @@ import { RequestAccessModalComponent } from './components/request-access-modal/r
 import { AuthInterceptorService } from './services/auth-interceptor.service';
 import { UserCardComponent } from './components/user-card/user-card.component';
 import { RequestCardComponent } from './components/request-card/request-card.component';
+import { GrantAccessModalComponent } from './components/grant-access-modal/grant-access-modal.component';
 
 @NgModule({
   declarations: [
@@ -68,7 +69,8 @@ import { RequestCardComponent } from './components/request-card/request-card.com
     FileCardComponent,
     UserCardComponent,
     RequestAccessModalComponent,
-    RequestCardComponent
+    RequestCardComponent,
+    GrantAccessModalComponent
   ],
   imports: [
     BrowserModule,

@@ -76,7 +76,7 @@
     <ng-template contextMenuItem let-item>
         Rename
     </ng-template>
-    <ng-template contextMenuItem let-item>
+    <ng-template contextMenuItem let-item (execute)="openGrantAccessModal($event.item)">
         Grant Access
     </ng-template>
     <ng-template contextMenuItem let-item (execute)="addToFavoriteFile($event.item)">
