@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { lastValueFrom } from 'rxjs';
 import { AccountService } from 'src/app/services/account.service';
@@ -131,7 +130,7 @@ export class RequestAccessComponent implements OnInit {
         this.permissionService.requestAccess(filePath, this.selectedUser.accountId, result)
           .subscribe({
             next: (success) => {
-              console.log(success);
+              this.backToUsers();
             },
             error: (err) => {
               console.log(err.error);
