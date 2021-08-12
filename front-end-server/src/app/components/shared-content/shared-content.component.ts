@@ -21,6 +21,8 @@ export class SharedContentComponent implements OnInit {
   }
 
   getSharedFiles() {
+    this.sharedFiles = undefined;
+
     this.permissionService.listShared().subscribe({
       next: (success) => {
         this.sharedFiles = success.files.Contents;
