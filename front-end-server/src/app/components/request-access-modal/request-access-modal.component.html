@@ -7,14 +7,15 @@
 <form (ngSubmit)="submit()" [formGroup]="requestAccessForm">
     <div class="modal-body">
         <div>
-        
-        <div class="bi bi-file-earmark">
-            {{file.name}}
-        </div>
-        <div *ngIf="currentDir != (null || undefined)"> 
-            Path: <h6>{{currentDir}}</h6>
-        </div>
-        Size: {{file.Size}} Bytes
+            <div class="bi bi-file-earmark file-info">
+                {{file.name}}
+            </div>
+            <div *ngIf="currentDir != (null || undefined)" class="file-info"> 
+                Path: ../{{currentDir}}/
+            </div>
+            <div class="file-info">
+                Size: {{file.Size}} Bytes
+            </div>
         </div>
         <br>
         <div class="form-group">

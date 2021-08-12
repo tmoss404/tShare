@@ -1,3 +1,8 @@
 .bi-file-earmark {
     font-size: 26px;
 }
+
+.file-info {
+    margin-top: 6px;
+    width: 100%;
+}
