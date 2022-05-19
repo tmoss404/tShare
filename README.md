@@ -1,6 +1,10 @@
 # tShare
 PRJ666 - tShare
 
+Visit tShare here:
+(Unfortunately the servers are now down so it is no longer functional)
+https://t-share.netlify.app/home
+
 Following this directory structure (at least in back-end-server): https://www.tutorialspoint.com/expressjs/expressjs_best_practices.htm 
 
 Installation (Back-end server):
